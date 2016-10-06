@@ -1,1 +1,1 @@
-rsync -av static/ madeinhaste:projects/u4ia/
+rsync -avL static/ madeinhaste:projects/u4ia/
