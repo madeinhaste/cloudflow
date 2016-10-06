@@ -15,6 +15,7 @@ function main() {
             'shaders/shoe_pick.glsl',
             'shaders/envmap.glsl',
             'shaders/cyc.glsl',
+            'shaders/funworld.glsl',
         ]
     });
 
@@ -110,6 +111,45 @@ function main() {
 
     }());
 
+    
+    var funworld = (function() {
+        var ob = null;
+        load_objects('data/sphere.msgpack').then(obs => {
+            ob = obs.Icosphere;
+        });
+
+        var funworld = {
+            draw: draw
+        };
+
+        var programs = {
+            funworld: webgl.get_program('funworld'),
+        };
+
+        var mvp = mat4.create();
+
+        function draw(env) {
+            if (!ob) return;
+
+            mat4.copy(mvp, env.camera.view);
+            mvp[12] = mvp[13] = mvp[14] = 0;
+            mat4.multiply(mvp, env.camera.proj, mvp);
+
+            var pgm = programs.funworld.use();
+            pgm.uniformMatrix4fv('mvp', mvp);
+            webgl.bind_vertex_buffer(ob.buffers.position);
+            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
+            webgl.bind_element_buffer(ob.buffers.index);
+
+            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(gl.FRONT);
+            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+        }
+
+        return funworld;
+    }());
+
     var cyc = (function() {
 
         var cyc = {
@@ -161,7 +201,8 @@ function main() {
             draw: draw2,
             pick: pick,
             update: update,
-            selected_part_index: -1
+            selected_part_index: -1,
+            rumble: false
         };
 
         var programs = {
@@ -425,10 +466,25 @@ function main() {
     }());
 
     var shoe_rot = vec2.create();
+    var shoe_trans = vec3.create();
+
+    var rumble = vec2.create();
+    var rumble_start_time = 0;
+
+    function fbm(x, y, n) {
+        var w = 1;
+        var s = 0.0;
+        while (n-- > 0) {
+            s += w * noise.perlin2(x, y);
+            x *= 2.0;
+            y *= 2.0;
+            w *= 0.5;
+        }
+        return s;
+    }
 
     canvas.draw = function() {
-        if (envmap)
-            envmap.draw(this);
+        //if (envmap) envmap.draw(this);
 
         var cw = this.el.width;
         var ch = this.el.height;
@@ -440,9 +496,49 @@ function main() {
         shoe_rot[0] = lerp(shoe_rot[0], rx, k);
         shoe_rot[1] = lerp(shoe_rot[1], ry, k);
 
+        //var t = 0.01 * time;
+        if (shoe.rumble) {
+            var t = (time - rumble_start_time)/1000;
+
+            if (t > 3.35) {
+                funworld.draw(this);
+                return;
+            } else if (t > 3.0) {
+                var u = t - 3.0;
+                shoe_trans[2] += 10.5 * u;
+                shoe_trans[1] += 0.9 * u;
+                shoe_trans[0] -= 2.0 * u;
+
+                rumble[0] += 0.35;
+                rumble[1] += 0.12;
+            } else {
+                var u = Math.min(1, t/3);
+
+                var freq = lerp(0, 7, u);
+                var amp = u*u * QWQ.RAD_PER_DEG * 25;
+                var tt = freq * t;
+
+                rumble[0] = amp * fbm(tt, 0.1, 2);
+                rumble[1] = amp * fbm(tt, 0.3, 2);
+
+                var amp2 = u * QWQ.RAD_PER_DEG * 15;
+                rumble[0] += amp2 * Math.cos(5 * t);
+                rumble[1] += amp2 * Math.sin(5 * t);
+
+                shoe_trans[1] = 5 * amp2 * fbm(0.5*tt, 0.4, 2);
+            }
+
+        } else {
+            var damp = 0.1;
+            rumble[0] *= damp;
+            rumble[1] *= damp;
+            vec3.scale(shoe_trans, shoe_trans, 0.9);
+        }
+
         mat4.identity(shoe.mat);
-        mat4.rotateX(shoe.mat, shoe.mat, -shoe_rot[0]);
-        mat4.rotateY(shoe.mat, shoe.mat, -shoe_rot[1]);
+        mat4.translate(shoe.mat, shoe.mat, shoe_trans);
+        mat4.rotateX(shoe.mat, shoe.mat, rumble[0] - shoe_rot[0]);
+        mat4.rotateY(shoe.mat, shoe.mat, rumble[1] - shoe_rot[1]);
 
         //vec3.set(canvas.orbit.rotate, -0.15*ry, -0.15*rx, 0);
 
@@ -456,6 +552,22 @@ function main() {
         // TODO
         shoe.pick(this);
     };
+
+    document.addEventListener('mousedown', function(e) {
+        shoe.rumble = true;
+        rumble_start_time = time;
+    }, false);
+
+    document.addEventListener('mouseup', function(e) {
+        shoe.rumble = false;
+
+        if (time - rumble_start_time > 3000) {
+            canvas.orbit.distance = 500;
+            vec2.set(shoe_rot, 0, 0);
+            vec2.set(shoe_trans, 0, 0);
+            vec2.set(canvas.orbit.rotate, 0, 0);
+        }
+    }, false);
 
     var last_time = 0;
     function animate(t) {
@@ -486,7 +598,7 @@ function main() {
     }
     animate(0);
 
-    1 && (function() {
+    0 && (function() {
         var gui = new dat.GUI();
         //gui.add(params, 'part', [0, 1, 2]);
         //gui.add(params, 'background');
