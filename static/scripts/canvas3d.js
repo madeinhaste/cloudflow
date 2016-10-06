@@ -213,6 +213,7 @@ var Canvas3D = (function() {
         this.on_camera_moved = function() {};
         this.on_click = function() {};
         this.freeze_camera = false;
+        this.pick_required = false;
     }
 
     Canvas3D.prototype.update_mouse = function(e) {
@@ -265,6 +266,7 @@ var Canvas3D = (function() {
 
         function mousemove(e) {
             self.update_mouse(e);
+            self.pick_required = true;
 
             var mouse = self.mouse;
             var orbit = self.orbit;
@@ -334,15 +336,8 @@ var Canvas3D = (function() {
 
     Canvas3D.prototype.redraw = function() {
         var self = this;
-
-        if (!this.redraw_queued) {
-            this.redraw_queued = true;
-            requestAnimationFrame(function() { 
-                self._pick();
-                self._draw();
-                self.redraw_queued = false;
-            });
-        }
+        self._pick();
+        self._draw();
     };
 
     Canvas3D.prototype.check_resize = function() {
@@ -421,8 +416,8 @@ var Canvas3D = (function() {
     })();
 
     Canvas3D.prototype._pick = function() {
-        if (!this._pick_request)
-            return;
+        if (!this.pick_required)
+            return undefined;
 
         this.update_camera();
 
@@ -432,8 +427,9 @@ var Canvas3D = (function() {
         var camera_mvp = this.camera.mvp;
         var dx = pick_size;
         var dy = pick_size;
-        var mx = this._pick_request.x;
-        var my = this._pick_request.y;
+
+        var mx = this.mouse.pos[0];
+        var my = this.mouse.pos[1];
 
         mat4.identity(mvp);
         mat4.translate(mvp, mvp, [ (vp[2] - 2*(mx - vp[0])) / dx, -(vp[3] - 2*(my - vp[1])) / dy, 0]);
@@ -480,11 +476,8 @@ var Canvas3D = (function() {
             }
         }
 
-        var callback = this._pick_request.callback;
-        this._pick_request = null;
-
-        if (callback)
-            callback(best_id);
+        this.pick_required = false;
+        return best_id;
     };
 
     Canvas3D.prototype.request_pick = function(x, y, callback) {

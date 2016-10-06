@@ -1,7 +1,7 @@
 function main() {
 
     var canvas = new Canvas3D({
-        antialias: false,
+        antialias: true,
         extensions: [
             'OES_element_index_uint',
             'OES_texture_half_float',
@@ -12,11 +12,23 @@ function main() {
         sources: [
             'shaders/default.glsl',
             'shaders/shoe.glsl',
+            'shaders/shoe_pick.glsl',
             'shaders/envmap.glsl',
+            'shaders/cyc.glsl',
         ]
     });
-    canvas.show_grid = true;
-    canvas.orbit.distance = 15;
+
+    var lerp = QWQ.lerp;
+    var time = 0;
+
+    canvas.show_grid = false;
+    canvas.orbit.distance = 500;
+    var target_orbit_distance = 35;
+    canvas.camera.fov = 25;
+    canvas.camera.far = 800;
+    vec3.set(canvas.orbit.rotate, 0, 0, 0);
+    //canvas.camera.fov = 80;
+
     //canvas.orbit.translate[1] = 2.5;
 
     $('#main').prepend(canvas.el);
@@ -31,14 +43,15 @@ function main() {
         color: [255, 255, 255],
         background: false,
         wire: false,
-        gloss: 3.0,
+        gloss: 4.0,
         specular: 0.8,
-        f0: 5,
+        f0: 9,
         normal: 1,
-        twist: 0
     };
 
     var envmap = (function() {
+
+        return null;
 
         var ob = null;
         load_objects('data/sphere.msgpack').then(obs => {
@@ -49,6 +62,10 @@ function main() {
             texture: null,
             draw: draw
         };
+
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_skybox.ktx').then(tex => {
+            envmap.texture = tex;
+        });
 
         var programs = {
             envmap: webgl.get_program('envmap'),
@@ -93,16 +110,64 @@ function main() {
 
     }());
 
+    var cyc = (function() {
 
-    var object = (function() {
-
-        var ob = null;
-        load_objects('data/cloudflow_01_40k.msgpack').then(obs => {
-            ob = obs.cloudflow_01_40k;
-        });
+        var cyc = {
+            ob: null,
+            draw: draw
+        };
 
         var programs = {
-            shoe: webgl.get_program('shoe'),
+            cyc: webgl.get_program('cyc'),
+        };
+
+        var textures = {
+            color: webgl.load_texture('data/nike/nike_CYC.jpg', {flip: 1, mipmap: 1}),
+        };
+
+        var mat = mat4.create();
+        var mvp = mat4.create();
+
+        function draw(env) {
+            if (!cyc.ob) return;
+            var ob = cyc.ob;
+
+            var pgm = programs.cyc.use();
+            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+            pgm.uniformSampler2D('t_color', textures.color);
+
+            webgl.bind_vertex_buffer(ob.buffers.position);
+            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
+
+            webgl.bind_vertex_buffer(ob.buffers.texcoord);
+            pgm.vertexAttribPointer('texcoord', 2, gl.FLOAT, false, 0, 0);
+
+            webgl.bind_element_buffer(ob.buffers.index);
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.disable(gl.CULL_FACE);
+            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+        }
+
+        return cyc;
+
+    }());
+
+    var shoe = (function() {
+
+        var shoe = {
+            ob: null,
+            mat: mat4.create(),
+            draw: draw2,
+            pick: pick,
+            update: update,
+            selected_part_index: -1
+        };
+
+        var programs = {
+            shoe: webgl.get_program('shoe', {defines: { NORMAL_MAP:1, AMBOCC_MAP:1 }}),
+            midsole: webgl.get_program('shoe'),
+            pick: webgl.get_program('shoe_pick')
         };
         
         var part_index = 0;
@@ -110,47 +175,60 @@ function main() {
         var textures = {
             iem: null,
             rem: null,
-            color: webgl.load_texture('data/tex_Color2.png', {flip: 1, mipmap: 1}),
-            //occ: webgl.load_texture('data/tex_occ.png', {flip: 1, mipmap: 1}),
-            //normal: webgl.load_texture('data/tex_normal.png', {flip: 1, mipmap: 1})
-            occ: webgl.load_texture('data/tex_AmbOcc.png', {flip: 1, mipmap: 1}),
-            normal: webgl.load_texture('data/tex_Normal2.png', {flip: 1, mipmap: 1})
+            rem2: null,
+            color: webgl.load_texture('data/nike/nike_COLOR.jpg', {flip: 1, mipmap: 1}),
+            occ: webgl.load_texture('data/nike/nike_AMBOCC.jpg', {flip: 1, mipmap: 1}),
+            normal: webgl.load_texture('data/nike/nike_NORMAL.jpg', {flip: 1, mipmap: 1}),
+            midsole: webgl.load_texture('data/nike/nike_MIDSOLE.jpg', {flip: 1, mipmap: 1})
         };
 
-        webgl.load_texture_ktx('data/iem.ktx').then(tex => {
-            textures.iem = tex;
-        });
-
-        webgl.load_texture_ktx('data/rem.ktx').then(tex => {
-            textures.rem = tex;
-        });
-
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_iem.ktx').then(tex => { textures.iem = tex });
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_pmrem.ktx').then(tex => { textures.rem = tex });
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP2_pmrem.ktx').then(tex => { textures.rem2 = tex });
 
         var mat = mat4.create();
         var mvp = mat4.create();
+        var mat_normal = mat3.create();
 
-        function draw(env) {
-            if (!ob) return;
-            if (!textures.iem) return;
+        function setup_matrix(pgm, matrix) {
+            mat3.normalFromMat4(mat_normal, matrix);
+            pgm.uniformMatrix4fv('model_matrix', matrix);
+            pgm.uniformMatrix3fv('normal_matrix', mat_normal);
+        }
 
-            mat4.copy(mvp, env.camera.mvp);
+        var show_midsole = 0;
+        var midsole_anim = 0;
+        var selection_anim = 0;
 
-            var pgm = programs.shoe.use();
-            pgm.uniformMatrix4fv('mvp', mvp);
-            pgm.uniformMatrix4fv('view', env.camera.view);
-            //pgm.uniform4f('color', 0.5, 0.5, 0.5, 0.5);
-            pgm.uniform3f('color', params.color[0]/255, params.color[1]/255, params.color[2]/255);
+        function setup_draw(opts) {
+            var pgm = opts.midsole ? programs.midsole : programs.shoe;
+            pgm.use();
+
+            var camera = opts.camera;
+            var ob = opts.object;
+
+            pgm.uniformMatrix4fv('mvp', camera.mvp);
+            pgm.uniform3fv('viewpos', camera.view_pos);
+
+            if (opts.matrix)
+                setup_matrix(pgm, opts.matrix);
+
+            pgm.uniformMatrix4fv('view', camera.view);
             pgm.uniformSamplerCube('t_iem', textures.iem);
             pgm.uniformSamplerCube('t_rem', textures.rem);
-            pgm.uniformSampler2D('t_color', textures.color);
-            pgm.uniformSampler2D('t_occ', textures.occ);
-            pgm.uniformSampler2D('t_normal', textures.normal);
+
+            if (opts.midsole) {
+                pgm.uniformSampler2D('t_color', textures.midsole);
+            } else {
+                pgm.uniformSampler2D('t_color', textures.color);
+                pgm.uniformSampler2D('t_occ', textures.occ);
+                pgm.uniformSampler2D('t_normal', textures.normal);
+            }
+
             pgm.uniform1f('lod', params.gloss);
             pgm.uniform1f('f0', 1/params.f0);
-            pgm.uniform1f('specular', params.specular);
+            pgm.uniform1f('specular', params.specular * 1.0);
             pgm.uniform1f('normal_mix', params.normal);
-            pgm.uniform3fv('viewpos', env.camera.view_pos);
-            pgm.uniform1f('twist', twist_curr * QWQ.RAD_PER_DEG);
 
             webgl.bind_vertex_buffer(ob.buffers.position);
             pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
@@ -164,102 +242,266 @@ function main() {
             webgl.bind_vertex_buffer(ob.buffers.texcoord);
             pgm.vertexAttribPointer('texcoord', 2, gl.FLOAT, false, 0, 0);
 
-            if (params.wire) {
-                webgl.bind_element_buffer(ob.buffers.edge_index);
-                gl.enable(gl.BLEND);
-                gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-                gl.drawElements(gl.LINES, ob.edge_index_count, gl.UNSIGNED_INT, 0);
-                gl.disable(gl.BLEND);
-            } else {
-                gl.enable(gl.DEPTH_TEST);
-                gl.disable(gl.CULL_FACE);
-                //gl.cullFace(gl.BACK);
+            gl.enable(gl.DEPTH_TEST);
+            gl.disable(gl.CULL_FACE);
+            webgl.bind_element_buffer(ob.buffers.index);
+            return pgm;
+        }
 
-                webgl.bind_element_buffer(ob.buffers.index);
+        function draw_part(ob, index) {
+            var part = ob.parts[index];
+            start = part.start << 2;
+            count = part.count;
+            gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_INT, start);
+        }
 
-                var part = ob.parts[part_index];
+        // 0: shoe
+        // 1: sole
+        // 2: mesh
+        // 3: enforcement
+        // 4: midsole
 
-                var start = 0;
-                var count = ob.index_count;
+        var mat_part = mat4.create();
+        var part_delta = [1, -1, 1, 1, 0];
+        var part_select = [0, 0, 0, 0, 0];
 
-                var part_index = +params.part;
-                if (part_index) {
-                    var part = ob.parts[part_index - 1];
-                    start = part.start << 2;
-                    count = part.count;
+        var part_trans = vec3.create();
+        var curve = easing.easeOutBounce;
+
+        function draw_translated_part(pgm, ob, index, picking) {
+            part_trans[1] = part_delta[index] * curve(midsole_anim);
+            mat4.translate(mat_part, shoe.mat, part_trans);
+
+            if (index == 4) {
+
+                if (picking) {
+                    // draw this big
+                    var s = 1.5;
+                    mat4.scale(mat_part, mat_part, [s, 1, s]);
+                } else {
+                    // for animation
+                    var s = QWQ.clamp(midsole_anim * 2, 0, 1);
+                    s = easing.easeInOutCubic(s);
                 }
+            }
 
-                gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_INT, start);
+            var sel = part_select[index];
+            if (sel > 0) {
+                pgm.uniformSamplerCube('t_rem', textures.rem2);
+                var s = lerp(0.5, 2.5 + 0.5*Math.sin(0.005*time), sel);
+                pgm.uniform1f('specular', s * params.specular);
+                pgm.uniform1f('lod', 0.0);
+                pgm.uniform1f('f0', 0.80);
+            } else {
+                pgm.uniformSamplerCube('t_rem', textures.rem);
+                pgm.uniform1f('specular', 1.0 * params.specular);
+                pgm.uniform1f('lod', params.gloss);
+                pgm.uniform1f('f0', 1/params.f0);
+            }
 
-                gl.disable(gl.CULL_FACE);
-                gl.disable(gl.DEPTH_TEST);
+            /*
+            if (shoe.selected_part_index >= 0) {
+                if (index == shoe.selected_part_index) {
+                } else {
+                    pgm.uniformSamplerCube('t_rem', textures.rem);
+                    pgm.uniform1f('specular', 1.0 * params.specular);
+                    pgm.uniform1f('lod', params.gloss);
+                    pgm.uniform1f('f0', 1/params.f0);
+                }
+            }
+            */
+
+            setup_matrix(pgm, mat_part);
+            draw_part(shoe.ob, index);
+        }
+
+        key('space', function() {
+            if (!show_midsole) {
+                show_midsole = true;
+                curve = easing.easeOutBounce;
+            } else {
+                show_midsole = false;
+                curve = easing.easeInQuad;
+            }
+        });
+
+        function draw2(env) {
+            if (!shoe.ob) return;
+
+            var pgm = setup_draw({
+                camera: env.camera,
+                matrix: shoe.mat,
+                object: shoe.ob,
+                midsole: false
+            });
+
+            for (var i = 0; i < 4; ++i) {
+                draw_translated_part(pgm, shoe.ob, i);
+            }
+
+            if (midsole_anim > 0.1) {
+                var pgm = setup_draw({
+                    camera: env.camera,
+                    matrix: shoe.mat,
+                    object: shoe.ob,
+                    midsole: true
+                });
+
+                draw_translated_part(pgm, shoe.ob, 4);
             }
         }
 
-        return {
-            draw: draw,
-        };
+        function pick(env) {
+            if (!shoe.ob) return;
+            var ob = shoe.ob;
+
+            var pgm = programs.pick.use();
+            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+
+            webgl.bind_vertex_buffer(ob.buffers.position);
+            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.disable(gl.CULL_FACE);
+            webgl.bind_element_buffer(ob.buffers.index);
+
+            for (var i = 0; i < 4; ++i) {
+                pgm.uniform4f('color', i/255, 0, 0, 1);
+                draw_translated_part(pgm, ob, i);
+            }
+
+            //if (midsole_anim > 0.1) {
+            pgm.uniform4f('color', 4/255, 0, 0, 1);
+            draw_translated_part(pgm, ob, 4, true);
+            //}
+        }
+
+        var show_midsole_time = 0;
+
+        function update(dt) {
+            if (shoe.selected_part_index == 4) {
+                if (!show_midsole) {
+                    if (show_midsole_time == 0) {
+                        // 1 sec delay
+                        show_midsole_time = time + 500;
+                    } else if (time >= show_midsole_time) {
+                        // open sesame
+                        show_midsole = true;
+                        show_midsole_time = 0;
+                        curve = easing.easeOutBounce;
+                    }
+                }
+            //} else if (shoe.selected_part_index >= 0) {
+            } else {
+                if (show_midsole && midsole_anim == 1) {
+                    if (show_midsole_time == 0) {
+                        show_midsole_time = time + 1000;
+                    } else if (time >= show_midsole_time) {
+                        // open sesame
+                        show_midsole = false;
+                        show_midsole_time = 0;
+                        curve = easing.easeInQuad;
+                    }
+                }
+            }
+
+            var delta = dt * 0.0015;
+            if (show_midsole) {
+                midsole_anim = Math.min(1, midsole_anim + delta);
+            } else {
+                midsole_anim = Math.max(0, midsole_anim - 2*delta);
+            }
+
+            for (var i = 0; i < 5; ++i) {
+                if (i == shoe.selected_part_index)
+                    part_select[i] = Math.min(1, part_select[i] + delta);
+                else
+                    part_select[i] = Math.max(0, part_select[i] - 3*delta);
+            }
+        }
+
+        return shoe;
 
     }());
 
+    var shoe_rot = vec2.create();
+
     canvas.draw = function() {
-        if (params.background)
+        if (envmap)
             envmap.draw(this);
-        object.draw(this);
+
+        var cw = this.el.width;
+        var ch = this.el.height;
+
+        var Q = 2;
+        var rx = ((this.mouse.pos[1] / ch) - 0.5) * Q;
+        var ry = ((this.mouse.pos[0] / cw) - 0.5) * Q;
+        var k = 0.1;
+        shoe_rot[0] = lerp(shoe_rot[0], rx, k);
+        shoe_rot[1] = lerp(shoe_rot[1], ry, k);
+
+        mat4.identity(shoe.mat);
+        mat4.rotateX(shoe.mat, shoe.mat, -shoe_rot[0]);
+        mat4.rotateY(shoe.mat, shoe.mat, -shoe_rot[1]);
+
+        //vec3.set(canvas.orbit.rotate, -0.15*ry, -0.15*rx, 0);
+
+        //if (params.background) envmap.draw(this);
+
+        cyc.draw(this);
+        shoe.draw(this);
     };
 
+    canvas.pick = function() {
+        // TODO
+        shoe.pick(this);
+    };
+
+    var last_time = 0;
     function animate(t) {
+        time = t;
+        var dt;
+        if (!last_time) {
+            last_time = t;
+            dt = 0;
+        } else {
+            var dt = t - last_time;
+            last_time = t;
+        }
+
+        if (shoe.ob)
+            canvas.orbit.distance = lerp(canvas.orbit.distance, target_orbit_distance, 0.003*dt);
+
         requestAnimationFrame(animate);
-        update_twist();
-        canvas.redraw();
+        shoe.update(dt);
+
+        var result = canvas._pick();
+        if (result !== undefined) {
+            var id = result;
+            shoe.selected_part_index = id;
+            //$('#debug').text(''+id);
+        }
+
+        canvas._draw();
     }
-    animate();
+    animate(0);
 
     1 && (function() {
         var gui = new dat.GUI();
         //gui.add(params, 'part', [0, 1, 2]);
-        gui.addColor(params, 'color');
-        gui.add(params, 'background');
-        gui.add(params, 'wire');
+        //gui.add(params, 'background');
+        //gui.add(params, 'wire');
         gui.add(params, 'gloss', 0, 6);
         gui.add(params, 'specular', 0, 1);
         gui.add(params, 'f0', 1, 100);
         gui.add(params, 'normal', 0, 1);
-        //gui.add(params, 'twist', -100, 100);
     }());
 
-    1 && webgl.load_texture_ktx('data/sky3.ktx').then(tex => {
-        envmap.texture = tex;
+    // load the geometry
+    load_objects('data/nike/nike.msgpack').then(obs => {
+        shoe.ob = obs.SHOE_LO;
+        cyc.ob = obs.CYC_LO;
     });
-
-    var twisting = false;
-
-    $(document).on('keydown', function(e) {
-        if (e.keyCode == 32)
-            twisting = true;
-    });
-
-    $(document).on('keyup', function(e) {
-        if (e.keyCode == 32)
-            twisting = false;
-    });
-
-    var twist_curr = 0.0;
-    var twist_prev = 0.0;
-
-    function update_twist() {
-        var dt = 1/1.05;
-
-        var twist_next = twist_curr + (twist_curr - twist_prev)*dt;
-        twist_prev = twist_curr;
-        twist_curr = twist_next;
-
-        if (twisting) {
-            twist_curr = QWQ.lerp(twist_curr, 100, 0.002);
-        } else {
-            twist_curr= QWQ.lerp(twist_curr, 0, 0.20);
-        }
-    }
 }
 
 $(main);

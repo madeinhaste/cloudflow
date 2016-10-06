@@ -40,7 +40,7 @@
 
         // correct endianness
         le = (read_u32() == KTX_ENDIAN);
-        console.log(le);
+        //console.log(le);
 
         var glType = read_u32();                    // HALF_FLOAT
         var glTypeSize = read_u32();                // 2
@@ -74,7 +74,7 @@
         */
         sp += bytesOfKeyValueData;
 
-        console.assert(numberOfArrayElements == 0);
+        //console.assert(numberOfArrayElements == 0);
 
         //var numComponents = 3;
         //var imageSize = pixelWidth * pixelHeight * glTypeSize * numComponents;
@@ -155,7 +155,7 @@
 
                 var image = new Uint16Array(3 * levelWidth * levelHeight);
                 gl.texImage2D(target, level, glBaseInternalFormat, levelWidth, levelHeight, 0, glBaseInternalFormat, glType, image);
-                console.log(level, levelWidth, levelHeight);
+                //console.log(level, levelWidth, levelHeight);
             }
         }
 
@@ -178,7 +178,10 @@
     function load_texture_ktx(url) {
         return fetch(url)
             .then(res => res.arrayBuffer())
-            .then(data => parse_ktx(data));
+            .then(data => {
+                console.log('loaded', url);
+                return parse_ktx(data);
+            });
     }
 
     webgl.load_texture_ktx = load_texture_ktx;

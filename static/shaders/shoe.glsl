@@ -6,11 +6,12 @@ attribute vec2 texcoord;
 
 varying vec3 v_normal;
 varying vec3 v_tangent;
-varying vec3 v_bitangent;
 varying vec3 v_position;
 varying vec2 v_texcoord;
 
 uniform mat4 mvp;
+uniform mat4 model_matrix;
+uniform mat3 normal_matrix;
 uniform mat4 view;
 uniform vec3 color;
 
@@ -25,48 +26,15 @@ uniform vec3 viewpos;
 uniform float f0;
 uniform float normal_mix;
 uniform float specular;
-uniform float twist;
 
 // shoe.vertex //
 void main() {
-    // rotate around X axis
-    vec3 P = position;
-
-    vec3 N = normal;
-    vec3 T = tangent;
-    vec3 B = cross(N, T);
-
-    if (false) {
-        float d = P.x*P.x;
-        d = 0.15 + max(0.0, 0.1*d);
-        float t = twist * d;
-        //float t = 3.14/2.0;
-
-        float c = cos(t);
-        float s = sin(t);
-
-        mat3 deform = mat3(
-            1.0, 0.0, 0.0,
-            0.0, c, -s,
-            0.0, s, c);
-
-        float y = 3.0;
-        P.y -= y;
-        P = deform * P;
-        P.y += y;
-
-        T = deform * T;
-        B = deform * B;
-        N = cross(T, B);
-    }
-
-    gl_Position = mvp * vec4(P, 1.0);
-
-    v_normal = N;
-    v_tangent = T;
-    v_position = P;
-
+    vec4 P = model_matrix * vec4(position, 1.0);
+    v_normal = normal_matrix * normal;
+    v_tangent = normal_matrix * tangent;
+    v_position = P.xyz;
     v_texcoord = texcoord;
+    gl_Position = mvp * P;
 }
 
 // shoe.fragment //
@@ -107,7 +75,8 @@ void main() {
     // worldspace
     vec3 N = normalize(v_normal);
 
-    if (true) {
+#ifdef NORMAL_MAP
+    {
         vec3 T = normalize(v_tangent);
         vec3 B = cross(N, T);
         mat3 TBN = mat3(T, B, N);   // ts -> ws
@@ -115,42 +84,32 @@ void main() {
         vec3 s = texture2D(t_normal, v_texcoord).rgb;
         N = mix(N, normalize(TBN * 2.0*(s - 0.5)), normal_mix);
     }
+#endif
 
     vec3 V = normalize(viewpos - v_position);
     vec3 R = -reflect(V, N);
 
+    // output color
+    vec3 C = vec3(0.0);
+
+    // diffuse part
     vec3 Cd = toLinear(texture2D(t_color, v_texcoord).rgb);
-
-    vec3 Ambient = toLinear(textureCube(t_iem, N).rgb) * 5.0;
-    Cd = Cd * Ambient;
-
-    vec3 C = Cd;
-
-    vec3 Cs = (textureCubeLodEXT(t_rem, R, lod).rgb);
+    vec3 Ambient = textureCube(t_iem, N).rgb * 1.0;
+    C += Ambient * Cd;
 
     {
         float F0 = f0;
         float NdotV = max(0.0, dot(N, V));
         float NdotL = max(0.0, dot(N, R));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
+        vec3 Cs = textureCubeLodEXT(t_rem, R, lod).rgb;
         C += specular * F * Cs;
     }
 
-
-    //vec3 Cd = textureCubeLodEXT(t_iem, R, lod).rgb;
-    //vec3 Cd = textureCube(t_iem, R).rgb;
-    //Cd = vec3(v_texcoord, 0.0);
-
+#ifdef AMBOCC_MAP
     float occ = texture2D(t_occ, v_texcoord).g;
     C *= occ;
-
-    //C = Ambient;
+#endif
 
     gl_FragColor = vec4(toAcesFilmic(C), 1.0);
-    //gl_FragColor = vec4( (0.5*N) + 0.5, 1.0 );
-    //gl_FragColor = vec4(C, 1.0);
-
-    //gl_FragColor = vec4((R*0.5)+0.5, 1.0);
-
-    //gl_FragColor = vec4(texture2D(t_normal, v_texcoord).rgb, 1.0);
 }
