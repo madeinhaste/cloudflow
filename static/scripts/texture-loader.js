@@ -169,8 +169,12 @@
         } else {
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         }
-        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 
+        if (USE_TEXLOD_FIX) {
+            // don't mipmap
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            console.log('dont mipmap');
+        }
 
         return texture;
     }

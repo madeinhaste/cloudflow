@@ -102,8 +102,13 @@ void main() {
         float NdotV = max(0.0, dot(N, V));
         float NdotL = max(0.0, dot(N, R));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
-        //vec3 Cs = textureCubeLodEXT(t_rem, R, lod).rgb;
+
+#if HAVE_TEXLOD
+        vec3 Cs = textureCubeLodEXT(t_rem, R, lod).rgb;
+#else
         vec3 Cs = textureCube(t_rem, R).rgb;
+#endif
+
         C += specular * F * Cs;
     }
 

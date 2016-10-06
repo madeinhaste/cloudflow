@@ -1,3 +1,5 @@
+var USE_TEXLOD_FIX = false;
+
 function main() {
 
     var canvas = new Canvas3D({
@@ -206,8 +208,14 @@ function main() {
         };
 
         var programs = {
-            shoe: webgl.get_program('shoe', {defines: { NORMAL_MAP:1, AMBOCC_MAP:1 }}),
-            midsole: webgl.get_program('shoe'),
+            shoe: webgl.get_program('shoe', {defines: {
+                NORMAL_MAP: 1,
+                AMBOCC_MAP: 1,
+                HAVE_TEXLOD: USE_TEXLOD_FIX ? 0 : 1
+            }}),
+            midsole: webgl.get_program('shoe', {defines: {
+                HAVE_TEXLOD: USE_TEXLOD_FIX ? 0 : 1
+            }}),
             pick: webgl.get_program('shoe_pick')
         };
         
