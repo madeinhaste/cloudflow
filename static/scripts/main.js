@@ -544,7 +544,7 @@ function main() {
 
         //if (params.background) envmap.draw(this);
 
-        cyc.draw(this);
+        //cyc.draw(this);
         shoe.draw(this);
     };
 
