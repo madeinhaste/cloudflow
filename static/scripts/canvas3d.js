@@ -271,7 +271,7 @@ var Canvas3D = (function() {
             var camera = self.camera;
 
             var dscale = 0.002;
-            var tscale = -0.0005;
+            var tscale = -0.0010;
 
             if (mouse.button < 0)
                 return;
