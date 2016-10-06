@@ -525,7 +525,7 @@ function main() {
                 rumble[0] += amp2 * Math.cos(5 * t);
                 rumble[1] += amp2 * Math.sin(5 * t);
 
-                shoe_trans[1] = 5 * amp2 * fbm(0.5*tt, 0.4, 2);
+                shoe_trans[1] = 2.5 * amp2 * fbm(0.5*tt, 0.4, 2);
             }
 
         } else {
