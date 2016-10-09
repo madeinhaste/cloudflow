@@ -1,4 +1,4 @@
-var USE_TEXLOD_FIX = false;
+var USE_TEXLOD_FIX = true;
 
 function main() {
 
@@ -126,7 +126,25 @@ function main() {
 
         var programs = {
             funworld: webgl.get_program('funworld'),
+            funworld_prim: webgl.get_program('funworld_prim'),
         };
+
+        var prims = [];
+        for (var i = 0; i < 200; ++i) {
+            var v = vec4.create();
+            var theta = Math.random() * Math.PI * 2;
+            var phi = Math.random() * Math.PI;
+            var r = lerp(20, 300, Math.random());
+
+            v[0] = r * Math.cos(theta);
+            v[2] = r * Math.sin(theta);
+            //v[1] = r * Math.cos(phi);
+
+            v[1] = lerp(0.5, 30, Math.random());
+            //v[2] = lerp(-50, -300, Math.random());
+            v[3] = lerp(1, 2, Math.random());
+            prims.push(v);
+        }
 
         var mvp = mat4.create();
 
@@ -147,6 +165,23 @@ function main() {
             gl.enable(gl.CULL_FACE);
             gl.cullFace(gl.FRONT);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+
+            // primitives
+            var pgm = programs.funworld_prim.use();
+            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+
+            webgl.bind_vertex_buffer(ob.buffers.position);
+            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
+            webgl.bind_element_buffer(ob.buffers.index);
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(gl.BACK);
+
+            prims.forEach(tfm => {
+                pgm.uniform4fv('transform', tfm);
+                gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+            });
         }
 
         return funworld;
@@ -478,6 +513,7 @@ function main() {
 
     var rumble = vec2.create();
     var rumble_start_time = 0;
+    var rumble_amount = 0;
 
     function fbm(x, y, n) {
         var w = 1;
@@ -504,15 +540,25 @@ function main() {
         shoe_rot[0] = lerp(shoe_rot[0], rx, k);
         shoe_rot[1] = lerp(shoe_rot[1], ry, k);
 
-        //var t = 0.01 * time;
         if (shoe.rumble) {
-            var t = (time - rumble_start_time)/1000;
+            rumble_amount = 1.0;
+        } else {
+            rumble_amount = Math.max(0.0, rumble_amount - 0.015);
+        }
 
-            if (t > 3.35) {
-                funworld.draw(this);
-                return;
-            } else if (t > 3.0) {
-                var u = t - 3.0;
+        var draw_funworld = false;
+
+        //var t = 0.01 * time;
+        if (rumble_amount > 0.0) {
+            var t = (time - rumble_start_time)/1000;
+            var duration = 2.0;
+            var post_duration = 0.35;
+
+            if (t > duration + post_duration) {
+                draw_funworld = true;
+            } else if (t > duration) {
+                var u = t - duration;
+
                 shoe_trans[2] += 10.5 * u;
                 shoe_trans[1] += 0.9 * u;
                 shoe_trans[0] -= 2.0 * u;
@@ -520,27 +566,36 @@ function main() {
                 rumble[0] += 0.35;
                 rumble[1] += 0.12;
             } else {
-                var u = Math.min(1, t/3);
+                var u = Math.min(1, t/duration);
+                u = Math.pow(u, 0.25);
 
                 var freq = lerp(0, 7, u);
                 var amp = u*u * QWQ.RAD_PER_DEG * 25;
                 var tt = freq * t;
 
+                var A = Math.pow(rumble_amount, 2.0);
+
+                amp *= A;
+
                 rumble[0] = amp * fbm(tt, 0.1, 2);
                 rumble[1] = amp * fbm(tt, 0.3, 2);
 
                 var amp2 = u * QWQ.RAD_PER_DEG * 15;
+                amp2 *= A;
+
                 rumble[0] += amp2 * Math.cos(5 * t);
                 rumble[1] += amp2 * Math.sin(5 * t);
 
-                shoe_trans[1] = 2.5 * amp2 * fbm(0.5*tt, 0.4, 2);
+                shoe_trans[1] = 1.5 * amp2 * fbm(0.5*tt, 0.4, 2);
             }
 
-        } else {
-            var damp = 0.1;
+        }
+        
+        if (!shoe.rumble) {
+            var damp = 0.98;
             rumble[0] *= damp;
             rumble[1] *= damp;
-            vec3.scale(shoe_trans, shoe_trans, 0.9);
+            vec3.scale(shoe_trans, shoe_trans, 0.50);
         }
 
         mat4.identity(shoe.mat);
@@ -553,7 +608,10 @@ function main() {
         //if (params.background) envmap.draw(this);
 
         //cyc.draw(this);
-        shoe.draw(this);
+        if (draw_funworld && shoe.rumble)
+            funworld.draw(this);
+        else
+            shoe.draw(this);
     };
 
     canvas.pick = function() {
@@ -569,7 +627,7 @@ function main() {
     document.addEventListener('mouseup', function(e) {
         shoe.rumble = false;
 
-        if (time - rumble_start_time > 3000) {
+        if (time - rumble_start_time > 2000) {
             canvas.orbit.distance = 500;
             vec2.set(shoe_rot, 0, 0);
             vec2.set(shoe_trans, 0, 0);

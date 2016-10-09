@@ -27,3 +27,30 @@ void main() {
     //gl_FragColor = vec4((N*0.5)+0.5, 1.0);
     gl_FragColor = vec4(C, 1.0);
 }
+
+
+// funworld_prim //
+attribute vec3 position;
+varying vec3 v_normal;
+uniform mat4 mvp;
+uniform vec4 transform;
+
+// funworld_prim.vertex //
+void main() {
+    vec3 P = position;
+    P *= transform.w;
+    P += transform.xyz;
+    gl_Position = mvp * vec4(P, 1.0);
+    v_normal = normalize(position);
+}
+
+// funworld_prim.fragment //
+void main() {
+    vec3 N = normalize(v_normal);
+
+    vec3 L = vec3(5, 3, 2);
+    float NdotL = max(0.0, dot(N, L));
+    vec3 C = mix(vec3(0.9, 0.5, 0.9), vec3(1.0), NdotL);
+
+    gl_FragColor = vec4(C, 1.0);
+}
