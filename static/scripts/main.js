@@ -1,4 +1,4 @@
-var USE_TEXLOD_FIX = true;
+var USE_TEXLOD_FIX = false;
 
 function main() {
 
@@ -8,6 +8,9 @@ function main() {
             'OES_element_index_uint',
             'OES_texture_half_float',
             'OES_texture_half_float_linear',
+            'OES_texture_float',
+            'OES_texture_float_linear',
+            'OES_standard_derivatives',
             'WEBGL_compressed_texture_s3tc',
             'EXT_shader_texture_lod',
         ],
@@ -18,6 +21,7 @@ function main() {
             'shaders/envmap.glsl',
             'shaders/cyc.glsl',
             'shaders/funworld.glsl',
+            'shaders/tunnel.glsl',
         ]
     });
 
@@ -26,20 +30,14 @@ function main() {
 
     canvas.show_grid = false;
     canvas.orbit.distance = 500;
-    var target_orbit_distance = 35;
+    var target_orbit_distance = 25;
     canvas.camera.fov = 25;
     canvas.camera.far = 800;
     vec3.set(canvas.orbit.rotate, 0, 0, 0);
-    //canvas.camera.fov = 80;
-
-    //canvas.orbit.translate[1] = 2.5;
 
     $('#main').prepend(canvas.el);
-    window.onresize = () => canvas.redraw();
 
-    key('g', function() {
-        canvas.show_grid = !canvas.show_grid;
-    });
+    //key('g', function() { canvas.show_grid = !canvas.show_grid; });
 
     var params = {
         part: 0,
@@ -53,7 +51,6 @@ function main() {
     };
 
     var envmap = (function() {
-
         return null;
 
         var ob = null;
@@ -115,6 +112,8 @@ function main() {
 
     
     var funworld = (function() {
+        return null;
+
         var ob = null;
         load_objects('data/sphere.msgpack').then(obs => {
             ob = obs.Icosphere;
@@ -204,13 +203,14 @@ function main() {
 
         var mat = mat4.create();
         var mvp = mat4.create();
+        mat4.copy(mvp, [2.6898298263549805, 0, 0, 0, 0, 4.510708332061768, 0, 0, 0, 0, -1.000249981880188, -1, 0, 0, 34.8922004699707, 35.08345413208008]);
 
         function draw(env) {
             if (!cyc.ob) return;
             var ob = cyc.ob;
 
             var pgm = programs.cyc.use();
-            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+            pgm.uniformMatrix4fv('mvp', mvp);
             pgm.uniformSampler2D('t_color', textures.color);
 
             webgl.bind_vertex_buffer(ob.buffers.position);
@@ -221,7 +221,7 @@ function main() {
 
             webgl.bind_element_buffer(ob.buffers.index);
 
-            gl.enable(gl.DEPTH_TEST);
+            gl.disable(gl.DEPTH_TEST);
             gl.disable(gl.CULL_FACE);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
         }
@@ -238,6 +238,7 @@ function main() {
             draw: draw2,
             pick: pick,
             update: update,
+            selected_part_id: -1,
             selected_part_index: -1,
             rumble: false
         };
@@ -245,12 +246,14 @@ function main() {
         var programs = {
             shoe: webgl.get_program('shoe', {defines: {
                 NORMAL_MAP: 1,
-                AMBOCC_MAP: 1,
                 HAVE_TEXLOD: USE_TEXLOD_FIX ? 0 : 1
             }}),
-            midsole: webgl.get_program('shoe', {defines: {
+
+            shoe_highlight: webgl.get_program('shoe', {defines: {
+                HIGHLIGHT: 1,
                 HAVE_TEXLOD: USE_TEXLOD_FIX ? 0 : 1
             }}),
+
             pick: webgl.get_program('shoe_pick')
         };
         
@@ -260,10 +263,15 @@ function main() {
             iem: null,
             rem: null,
             rem2: null,
-            color: webgl.load_texture('data/nike/nike_COLOR.jpg', {flip: 1, mipmap: 1}),
-            occ: webgl.load_texture('data/nike/nike_AMBOCC.jpg', {flip: 1, mipmap: 1}),
-            normal: webgl.load_texture('data/nike/nike_NORMAL.jpg', {flip: 1, mipmap: 1}),
-            midsole: webgl.load_texture('data/nike/nike_MIDSOLE.jpg', {flip: 1, mipmap: 1})
+
+            shoe_color: webgl.load_texture('data/cloudflow/shoe_diffuse.jpg', {flip: 1, mipmap: 1}),
+            shoe_normal: webgl.load_texture('data/cloudflow/shoe_normal.jpg', {flip: 1, mipmap: 1}),
+
+            tongue_color: webgl.load_texture('data/cloudflow/tongue_diffuse.jpg', {flip: 1, mipmap: 1}),
+            tongue_normal: webgl.load_texture('data/cloudflow/tongue_normal.jpg', {flip: 1, mipmap: 1}),
+
+            shoe_id: webgl.load_texture('data/cloudflow/shoe_id.png', {flip: 1, filter: gl.NEAREST}),
+            shoe_alpha: webgl.load_texture('data/cloudflow/shoe_alpha.png', {flip: 1})
         };
 
         webgl.load_texture_ktx('data/nike/nike_ENVMAP_iem.ktx').then(tex => { textures.iem = tex });
@@ -280,12 +288,10 @@ function main() {
             pgm.uniformMatrix3fv('normal_matrix', mat_normal);
         }
 
-        var show_midsole = 0;
-        var midsole_anim = 0;
         var selection_anim = 0;
 
         function setup_draw(opts) {
-            var pgm = opts.midsole ? programs.midsole : programs.shoe;
+            var pgm = opts.highlight ? programs.shoe_highlight : programs.shoe;
             pgm.use();
 
             var camera = opts.camera;
@@ -301,18 +307,20 @@ function main() {
             pgm.uniformSamplerCube('t_iem', textures.iem);
             pgm.uniformSamplerCube('t_rem', textures.rem);
 
-            if (opts.midsole) {
-                pgm.uniformSampler2D('t_color', textures.midsole);
-            } else {
-                pgm.uniformSampler2D('t_color', textures.color);
-                pgm.uniformSampler2D('t_occ', textures.occ);
-                pgm.uniformSampler2D('t_normal', textures.normal);
+            //pgm.uniformSampler2D('t_occ', textures.occ);
+            pgm.uniformSampler2D('t_color', textures.shoe_color);
+            pgm.uniformSampler2D('t_normal', textures.shoe_normal);
+
+            if (opts.highlight) {
+                pgm.uniformSampler2D('t_id', textures.shoe_id);
+                pgm.uniformSampler2D('t_alpha', textures.shoe_alpha);
             }
 
             pgm.uniform1f('lod', params.gloss);
             pgm.uniform1f('f0', 1/params.f0);
             pgm.uniform1f('specular', params.specular * 1.0);
             pgm.uniform1f('normal_mix', params.normal);
+            pgm.uniform1f('ambient', 2.0);
 
             webgl.bind_vertex_buffer(ob.buffers.position);
             pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
@@ -346,92 +354,95 @@ function main() {
         // 4: midsole
 
         var mat_part = mat4.create();
-        var part_delta = [1, -1, 1, 1, 0];
-        var part_select = [0, 0, 0, 0, 0];
+        var part_select = [0, 0, 0, 0];
 
-        var part_trans = vec3.create();
-        var curve = easing.easeOutBounce;
+        var part_ids = [
+            0xffff00,   // mesh
+            0x00ff00,   // sole
+            0xff00ff,   // enforcement
+            0x0000ff,   // midsole
+        ];
 
-        function draw_translated_part(pgm, ob, index, picking) {
-            part_trans[1] = part_delta[index] * curve(midsole_anim);
-            mat4.translate(mat_part, shoe.mat, part_trans);
-
-            if (index == 4) {
-
-                if (picking) {
-                    // draw this big
-                    var s = 1.5;
-                    mat4.scale(mat_part, mat_part, [s, 1, s]);
-                } else {
-                    // for animation
-                    var s = QWQ.clamp(midsole_anim * 2, 0, 1);
-                    s = easing.easeInOutCubic(s);
-                }
-            }
-
-            var sel = part_select[index];
-            if (sel > 0) {
-                pgm.uniformSamplerCube('t_rem', textures.rem2);
-                var s = lerp(0.5, 2.5 + 0.5*Math.sin(0.005*time), sel);
-                pgm.uniform1f('specular', s * params.specular);
-                pgm.uniform1f('lod', 0.0);
-                pgm.uniform1f('f0', 0.80);
-            } else {
-                pgm.uniformSamplerCube('t_rem', textures.rem);
-                pgm.uniform1f('specular', 1.0 * params.specular);
-                pgm.uniform1f('lod', params.gloss);
-                pgm.uniform1f('f0', 1/params.f0);
-            }
-
-            /*
-            if (shoe.selected_part_index >= 0) {
-                if (index == shoe.selected_part_index) {
-                } else {
-                    pgm.uniformSamplerCube('t_rem', textures.rem);
-                    pgm.uniform1f('specular', 1.0 * params.specular);
-                    pgm.uniform1f('lod', params.gloss);
-                    pgm.uniform1f('f0', 1/params.f0);
-                }
-            }
-            */
-
-            setup_matrix(pgm, mat_part);
-            draw_part(shoe.ob, index);
-        }
-
-        key('space', function() {
-            if (!show_midsole) {
-                show_midsole = true;
-                curve = easing.easeOutBounce;
-            } else {
-                show_midsole = false;
-                curve = easing.easeInQuad;
-            }
-        });
+        var highlight_rot = mat3.create();
 
         function draw2(env) {
             if (!shoe.ob) return;
 
-            var pgm = setup_draw({
-                camera: env.camera,
-                matrix: shoe.mat,
-                object: shoe.ob,
-                midsole: false
-            });
+            if (!textures.iem) return;
+            if (!textures.rem) return;
+            if (!textures.rem2) return;
 
-            for (var i = 0; i < 4; ++i) {
-                draw_translated_part(pgm, shoe.ob, i);
-            }
-
-            if (midsole_anim > 0.1) {
+            if (1) {
                 var pgm = setup_draw({
                     camera: env.camera,
                     matrix: shoe.mat,
                     object: shoe.ob,
-                    midsole: true
+                    highlight: false
                 });
 
-                draw_translated_part(pgm, shoe.ob, 4);
+                var s = Math.max(part_select[0], part_select[1], part_select[2], part_select[3]);
+                s = Math.min(1.0, s * 2.0);
+                s *= (1.0 - rumble_amount);
+
+                var ambient = lerp(2.0, 0.5, Math.pow(s, 0.5));
+                pgm.uniform1f('ambient', ambient);
+
+                var specular = lerp(params.specular, 0.5, s);
+                pgm.uniform1f('specular', specular);
+
+                gl.enable(gl.POLYGON_OFFSET_FILL);
+                gl.polygonOffset(1, 1);
+
+                pgm.uniformSampler2D('t_color', textures.shoe_color);
+                pgm.uniformSampler2D('t_normal', textures.shoe_normal);
+
+                draw_part(shoe.ob, 0);
+
+                pgm.uniformSampler2D('t_color', textures.tongue_color);
+                pgm.uniformSampler2D('t_normal', textures.tongue_normal);
+                draw_part(shoe.ob, 1);
+
+                gl.disable(gl.POLYGON_OFFSET_FILL);
+            }
+
+            // HIGHLIGHT
+            if (shoe.selected_part_index >= 0) {
+                var pgm = setup_draw({
+                    camera: env.camera,
+                    matrix: shoe.mat,
+                    object: shoe.ob,
+                    highlight: true
+                });
+
+                mat3.identity(highlight_rot);
+                var rad = 0.003 * time;
+                var s = Math.sin(rad), c = Math.cos(rad);
+                highlight_rot[0] = c;
+                highlight_rot[2] = s;
+                highlight_rot[5] = c;
+                highlight_rot[7] = -s;
+
+                pgm.uniformSampler2D('t_color', textures.shoe_color);
+                pgm.uniformSampler2D('t_normal', textures.shoe_normal);
+                pgm.uniformMatrix3fv('highlight_rot', highlight_rot);
+
+                pgm.uniformSamplerCube('t_rem', textures.rem2);
+                pgm.uniform1f('lod', 0.0);
+                pgm.uniform1f('f0', 0.80);
+                pgm.uniform1f('ambient', 2.0);
+
+                setup_matrix(pgm, shoe.mat);
+
+                for (var i = 0; i < 4; ++i) {
+                    var sel = part_select[i];
+                    if (sel == 0.0) continue;
+
+                    var s = lerp(0.5, 2.5 + 0.5*Math.sin(0.005*time), sel);
+                    pgm.uniform1f('specular', s * params.specular);
+                    var c = part_ids[i];
+                    pgm.uniform3f('highlight_id', (c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255);
+                    draw_part(shoe.ob, 0);
+                }
             }
         }
 
@@ -445,58 +456,25 @@ function main() {
             webgl.bind_vertex_buffer(ob.buffers.position);
             pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
 
+            webgl.bind_vertex_buffer(ob.buffers.texcoord);
+            pgm.vertexAttribPointer('texcoord', 2, gl.FLOAT, false, 0, 0);
+
             gl.enable(gl.DEPTH_TEST);
             gl.disable(gl.CULL_FACE);
             webgl.bind_element_buffer(ob.buffers.index);
 
-            for (var i = 0; i < 4; ++i) {
-                pgm.uniform4f('color', i/255, 0, 0, 1);
-                draw_translated_part(pgm, ob, i);
-            }
+            pgm.uniformSampler2D('t_color', textures.shoe_id);
 
-            //if (midsole_anim > 0.1) {
-            pgm.uniform4f('color', 4/255, 0, 0, 1);
-            draw_translated_part(pgm, ob, 4, true);
-            //}
+            setup_matrix(pgm, shoe.mat);
+            draw_part(shoe.ob, 0);
         }
 
-        var show_midsole_time = 0;
-
         function update(dt) {
-            if (shoe.selected_part_index == 4) {
-                if (!show_midsole) {
-                    if (show_midsole_time == 0) {
-                        // 1 sec delay
-                        show_midsole_time = time + 500;
-                    } else if (time >= show_midsole_time) {
-                        // open sesame
-                        show_midsole = true;
-                        show_midsole_time = 0;
-                        curve = easing.easeOutBounce;
-                    }
-                }
-            //} else if (shoe.selected_part_index >= 0) {
-            } else {
-                if (show_midsole && midsole_anim == 1) {
-                    if (show_midsole_time == 0) {
-                        show_midsole_time = time + 1000;
-                    } else if (time >= show_midsole_time) {
-                        // open sesame
-                        show_midsole = false;
-                        show_midsole_time = 0;
-                        curve = easing.easeInQuad;
-                    }
-                }
-            }
-
             var delta = dt * 0.0015;
-            if (show_midsole) {
-                midsole_anim = Math.min(1, midsole_anim + delta);
-            } else {
-                midsole_anim = Math.max(0, midsole_anim - 2*delta);
-            }
+            shoe.selected_part_index = part_ids.indexOf(shoe.selected_part_id);
+            //$('#debug').text(''+selected_part_index);
 
-            for (var i = 0; i < 5; ++i) {
+            for (var i = 0; i < 4; ++i) {
                 if (i == shoe.selected_part_index)
                     part_select[i] = Math.min(1, part_select[i] + delta);
                 else
@@ -527,15 +505,15 @@ function main() {
         return s;
     }
 
-    canvas.draw = function() {
-        //if (envmap) envmap.draw(this);
+    var draw_funworld;
 
-        var cw = this.el.width;
-        var ch = this.el.height;
+    function update_shoe(env) {
+        var cw = env.el.width;
+        var ch = env.el.height;
 
-        var Q = 2;
-        var rx = ((this.mouse.pos[1] / ch) - 0.5) * Q;
-        var ry = ((this.mouse.pos[0] / cw) - 0.5) * Q;
+        var Q = 3;
+        var rx = ((env.mouse.pos[1] / ch) - 0.5) * Q;
+        var ry = ((env.mouse.pos[0] / cw) - 0.5) * Q;
         var k = 0.1;
         shoe_rot[0] = lerp(shoe_rot[0], rx, k);
         shoe_rot[1] = lerp(shoe_rot[1], ry, k);
@@ -546,7 +524,7 @@ function main() {
             rumble_amount = Math.max(0.0, rumble_amount - 0.015);
         }
 
-        var draw_funworld = false;
+        draw_funworld = false;
 
         //var t = 0.01 * time;
         if (rumble_amount > 0.0) {
@@ -602,29 +580,43 @@ function main() {
         mat4.translate(shoe.mat, shoe.mat, shoe_trans);
         mat4.rotateX(shoe.mat, shoe.mat, rumble[0] - shoe_rot[0]);
         mat4.rotateY(shoe.mat, shoe.mat, rumble[1] - shoe_rot[1]);
+    }
 
-        //vec3.set(canvas.orbit.rotate, -0.15*ry, -0.15*rx, 0);
+    var tunnel = new Tunnel;
 
-        //if (params.background) envmap.draw(this);
+    canvas.draw = function() {
+        //tunnel.update(this);
+        //tunnel.draw(this);
+        //return;
 
-        //cyc.draw(this);
-        if (draw_funworld && shoe.rumble)
-            funworld.draw(this);
-        else
-            shoe.draw(this);
+        if (1) {
+            if (draw_funworld && shoe.rumble) {
+                tunnel.update(this);
+                tunnel.draw(this);
+            } else {
+                update_shoe(this);
+                cyc.draw(this);
+                shoe.draw(this);
+            }
+        }
     };
 
     canvas.pick = function() {
-        // TODO
-        shoe.pick(this);
+        if (!draw_funworld)
+            shoe.pick(this);
     };
 
     document.addEventListener('mousedown', function(e) {
-        shoe.rumble = true;
-        rumble_start_time = time;
+        if (shoe.selected_part_id >= 0) {
+            shoe.rumble = true;
+            rumble_start_time = time;
+        }
     }, false);
 
     document.addEventListener('mouseup', function(e) {
+        if (!shoe.rumble)
+            returnl
+
         shoe.rumble = false;
 
         if (time - rumble_start_time > 2000) {
@@ -647,17 +639,19 @@ function main() {
             last_time = t;
         }
 
-        if (shoe.ob)
+        if (1 && shoe.ob)
             canvas.orbit.distance = lerp(canvas.orbit.distance, target_orbit_distance, 0.003*dt);
 
         requestAnimationFrame(animate);
-        shoe.update(dt);
 
-        var result = canvas._pick();
-        if (result !== undefined) {
-            var id = result;
-            shoe.selected_part_index = id;
-            //$('#debug').text(''+id);
+        if (1) {
+            shoe.update(dt);
+            var result = canvas._pick();
+            if (result !== undefined) {
+                var id = result;
+                shoe.selected_part_id = id;
+                //$('#debug').text(''+id);
+            }
         }
 
         canvas._draw();
@@ -676,9 +670,9 @@ function main() {
     }());
 
     // load the geometry
-    load_objects('data/nike/nike.msgpack').then(obs => {
-        shoe.ob = obs.SHOE_LO;
-        cyc.ob = obs.CYC_LO;
+    load_objects('data/cloudflow/cloudflow.msgpack').then(obs => {
+        shoe.ob = obs.cloudflow;
+        cyc.ob = obs.cove;
     });
 }
 

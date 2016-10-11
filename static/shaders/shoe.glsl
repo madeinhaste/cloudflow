@@ -18,14 +18,26 @@ uniform vec3 color;
 uniform samplerCube t_iem;
 uniform samplerCube t_rem;
 uniform sampler2D t_color;
+
+#ifdef AMBOCC_MAP
 uniform sampler2D t_occ;
+#endif
+
 uniform sampler2D t_normal;
+
+#ifdef HIGHLIGHT
+uniform sampler2D t_id;
+uniform sampler2D t_alpha;
+uniform vec3 highlight_id;
+uniform mat3 highlight_rot;
+#endif
 
 uniform float lod;
 uniform vec3 viewpos;
 uniform float f0;
 uniform float normal_mix;
 uniform float specular;
+uniform float ambient;
 
 // shoe.vertex //
 void main() {
@@ -72,6 +84,16 @@ vec3 filmic(vec3 c) {
 }
 
 void main() {
+    float alpha = 1.0;
+
+#ifdef HIGHLIGHT
+    {
+        vec3 id = texture2D(t_id, v_texcoord).rgb;
+        if (id != highlight_id) discard;
+        alpha = texture2D(t_alpha, v_texcoord).g;
+    }
+#endif
+
     // worldspace
     vec3 N = normalize(v_normal);
 
@@ -94,7 +116,7 @@ void main() {
 
     // diffuse part
     vec3 Cd = toLinear(texture2D(t_color, v_texcoord).rgb);
-    vec3 Ambient = textureCube(t_iem, N).rgb * 1.0;
+    vec3 Ambient = textureCube(t_iem, N).rgb * ambient;
     C += Ambient * Cd;
 
     {
@@ -103,18 +125,22 @@ void main() {
         float NdotL = max(0.0, dot(N, R));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
 
+#ifdef HIGHLIGHT
+        R = highlight_rot * R;
+#endif
+
 #if HAVE_TEXLOD
         vec3 Cs = textureCubeLodEXT(t_rem, R, lod).rgb;
 #else
         vec3 Cs = textureCube(t_rem, R).rgb;
 #endif
 
-        C += specular * F * Cs;
+        C += alpha * specular * F * Cs;
     }
 
 #ifdef AMBOCC_MAP
     float occ = texture2D(t_occ, v_texcoord).g;
-    C *= occ;
+    //C *= occ;
 #endif
 
     gl_FragColor = vec4(toAcesFilmic(C), 1.0);

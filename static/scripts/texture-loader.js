@@ -154,8 +154,11 @@
                 levelHeight = pixelHeight >> level;
 
                 var image = new Uint16Array(3 * levelWidth * levelHeight);
-                gl.texImage2D(target, level, glBaseInternalFormat, levelWidth, levelHeight, 0, glBaseInternalFormat, glType, image);
-                //console.log(level, levelWidth, levelHeight);
+
+                for (var face = 0; face < numberOfFaces; ++face) {
+                    var target = targets[face];
+                    gl.texImage2D(target, level, glBaseInternalFormat, levelWidth, levelHeight, 0, glBaseInternalFormat, glType, image);
+                }
             }
         }
 

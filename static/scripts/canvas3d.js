@@ -134,7 +134,6 @@ var Canvas3D = (function() {
         if (!gl) return;
 
         this.draw = function() {};
-        this.redraw_queued = false;
 
         this.init_input();
 
@@ -209,7 +208,6 @@ var Canvas3D = (function() {
             button: -1
         };
 
-        this.redraw();
         this.on_camera_moved = function() {};
         this.on_click = function() {};
         this.freeze_camera = false;
@@ -305,8 +303,6 @@ var Canvas3D = (function() {
                 orbit.dolly(2 * dscale * d);
                 self.on_camera_moved();
             }
-
-            self.redraw();
         }
 
         function mouseup(e) {
@@ -315,14 +311,11 @@ var Canvas3D = (function() {
                 remove_event_listeners();
                 self.mouse.button = -1;
             }
-
-            self.redraw();
         }
 
         function mousewheel(e) {
             var dy = e.wheelDelta / 120;
             self.orbit.zoom((dy < 0) ? 0.90 : 1.1);
-            self.redraw();
             self.on_camera_moved();
             return false;
         }
@@ -332,12 +325,6 @@ var Canvas3D = (function() {
 
         // disable menu on right click
         el.addEventListener('contextmenu', function(e) { e.preventDefault() });
-    };
-
-    Canvas3D.prototype.redraw = function() {
-        var self = this;
-        self._pick();
-        self._draw();
     };
 
     Canvas3D.prototype.check_resize = function() {
@@ -354,7 +341,6 @@ var Canvas3D = (function() {
 
     Canvas3D.prototype.reset_camera = function() {
         // TODO
-        this.redraw();
     };
 
     // this is being updated before a draw... maybe better after a camera modification
@@ -478,17 +464,6 @@ var Canvas3D = (function() {
 
         this.pick_required = false;
         return best_id;
-    };
-
-    Canvas3D.prototype.request_pick = function(x, y, callback) {
-        this._pick_request = {
-            x: x,
-            y: y,
-            callback: callback
-        };
-        // FIXME don't need to redraw the entire scene on pick
-        // flag pick vs draw request
-        this.redraw();
     };
 
     return Canvas3D;
