@@ -8,6 +8,12 @@
     background-size: cover;
 }
 
+.cf-webgl {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
 /* sticker */
 
 .cf-sticker {
@@ -19,6 +25,7 @@
     width: 320px;
 
     //background-color: #fdd;
+    pointer-events: none;
 }
 
 .cf-sticker-transform-large {
@@ -94,19 +101,25 @@
     left: 0;
     bottom: 50px;
     width: 100%;
-
-    font: 400 23px 'Roboto Slab';
-    color: #444;
-
     text-align: center;
-    text-transform: uppercase;
-    white-space: pre-line;
+    pointer-events: none;
 }
 
-.cf-instructions hr {
-    border: none;
+.cf-instructions-hr {
+    display: inline-block;
     background-color: #23c;
     height: 1px;
+    margin: 0;
+    text-align: center;
+    width: 10px;
+}
+
+.cf-instructions-text {
+    font: 400 23px 'Roboto Slab';
+    color: #444;
+    text-transform: uppercase;
+    white-space: pre-line;
+    margin: 0;
 }
 
 .cf-part-description {
@@ -171,4 +184,11 @@
     font: 300 20px 'Roboto Slab';
     color: #3c3c3c;
     text-transform: uppercase;
+
+    pointer-events: none;
+}
+
+.cf-webgl-blurred {
+    filter: blur(30px);
+    opacity: 0.3;
 }

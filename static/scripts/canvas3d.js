@@ -117,9 +117,9 @@ var Canvas3D = (function() {
     };
 
     function Canvas3D(opts) {
-        var canvas = this.el = document.createElement('canvas');
-
         opts = opts || {};
+
+        var canvas = this.el = (opts.el || document.createElement('canvas'));
 
         var sources = [ 'shaders/default.glsl' ];
         if (opts.sources) sources.push.apply(sources, opts.sources);

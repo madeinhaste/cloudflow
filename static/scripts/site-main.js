@@ -16,10 +16,34 @@ $(function() {
         $(this).blur();
     });
 
+    var cf_api = null;
+
     // load html
     $.get('cloudflow.html')
         .then(function(html) {
             $('.cloudflow').html(html);
+
+            cf_api = cloudflow_main($('.cf-webgl')[0]);
+            cf_api.set_visible(false);
+
+            cf_api.on_experience = function(b) {
+                if (b) {
+                    hide_all();
+                } else {
+                    show_page(4);
+                }
+            };
+
+            cf_api.on_hover = function(part) {
+                if (page_index == 2 && part >= 0)
+                    show_page(3);
+                else if (page_index == 3 && part < 0)
+                    show_page(2);
+            };
+
+            cf_api.on_rumble = function(v) {
+                // TODO
+            };
 
             $('.cf-experienced-close-bar a').on('click', function(e) {
                 e.preventDefault();
@@ -50,6 +74,8 @@ $(function() {
         names.forEach(function(name) {
             $('.cf-' + name).hide();
         });
+
+        $('.cf-webgl').removeClass('cf-webgl-blurred');
     }
 
     function get_copy(id) {
@@ -86,8 +112,8 @@ $(function() {
     }
 
     function configure_instructions(text) {
-        $('.cf-instructions')
-            .show()
+        $('.cf-instructions').show();
+        $('.cf-instructions-text')
             .text(get_copy('instructions.' + text));
     }
 
@@ -106,17 +132,20 @@ $(function() {
     function page1() {
         configure_sticker('large', 'shortcut', 'swiss_engineering');
         configure_loading(16);
+        cf_api.set_visible(false);
     }
 
     function page2() {
         configure_sticker('large', 'introducing', 'swiss_engineering');
         configure_loading(68);
+        cf_api.set_visible(false);
     }
 
     function page3() {
         configure_sticker('small', 'shortcut', 'introducing');
         configure_links();
         configure_instructions('hover');
+        cf_api.set_visible(true);
     }
 
     function page4() {
@@ -128,6 +157,7 @@ $(function() {
 
     function page5() {
         configure_experienced('speedboard');
+        $('.cf-webgl').addClass('cf-webgl-blurred');
     }
 
     function close_experienced() {
@@ -142,6 +172,9 @@ $(function() {
 
         if (index < 0 || index >= pages.length)
             return;
+
+        if (index == 2 && page_index == 1)
+            cf_api.reset();
 
         hide_all();
         page_index = index;
@@ -158,6 +191,5 @@ $(function() {
 
     key('left', show_prev_page);
     key('right', show_next_page);
-
 
 });

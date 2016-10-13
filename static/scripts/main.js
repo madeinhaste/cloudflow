@@ -1,8 +1,9 @@
 var USE_TEXLOD_FIX = false;
 
-function main() {
+function cloudflow_main(canvas) {
 
     var canvas = new Canvas3D({
+        el: canvas,
         antialias: true,
         extensions: [
             'OES_element_index_uint',
@@ -33,10 +34,10 @@ function main() {
     var target_orbit_distance = 25;
     canvas.camera.fov = 25;
     canvas.camera.far = 800;
+    vec4.set(canvas.clear_color, 0, 0, 0, 0);
     vec3.set(canvas.orbit.rotate, 0, 0, 0);
 
-    $('#main').prepend(canvas.el);
-
+    //$('#main').prepend(canvas.el);
     //key('g', function() { canvas.show_grid = !canvas.show_grid; });
 
     var params = {
@@ -584,26 +585,54 @@ function main() {
 
     var tunnel = new Tunnel;
 
+    var experience_visible = false;
+    function set_experience_visible(b) {
+        if (b == experience_visible)
+            return;
+
+        experience_visible = b;
+        api.on_experience(b);
+    }
+
+    var hover_part = -1;
+    function set_hover_part() {
+        var part = shoe.selected_part_index;
+        if (part == hover_part)
+            return;
+
+        hover_part = shoe.selected_part_index;
+        api.on_hover(hover_part);
+    }
+
+
     canvas.draw = function() {
+        if (!visible)
+            return;
+
         //tunnel.update(this);
         //tunnel.draw(this);
         //return;
 
         if (1) {
             if (draw_funworld && shoe.rumble) {
+                set_experience_visible(true);
                 tunnel.update(this, this.camera);
                 tunnel.draw(this);
             } else {
+                set_experience_visible(false);
+                api.on_rumble(vec2.length(rumble));
                 update_shoe(this);
-                cyc.draw(this);
+                //cyc.draw(this);
                 shoe.draw(this);
             }
         }
     };
 
     canvas.pick = function() {
-        if (!draw_funworld)
+        if (!draw_funworld) {
             shoe.pick(this);
+            set_hover_part();
+        }
     };
 
     document.addEventListener('mousedown', function(e) {
@@ -674,6 +703,24 @@ function main() {
         shoe.ob = obs.cloudflow;
         cyc.ob = obs.cove;
     });
-}
 
-$(main);
+    var visible = true;
+
+    var api = {
+        set_visible: function(v) {
+            visible = v;
+        },
+
+        reset: function() {
+            canvas.orbit.distance = 500;
+            //vec2.set(shoe_rot, Math.random() - 0.5, Math.random() - 0.5);
+            //vec2.scale(shoe_rot, shoe_rot, 10.0);
+        },
+
+        on_hover: function(part) {},
+        on_experience: function(b) {},
+        on_rumble: function(v) {}
+    };
+
+    return api;
+}
