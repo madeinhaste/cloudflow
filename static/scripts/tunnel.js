@@ -16,7 +16,7 @@ var Tunnel = (function() {
                     var B = A - 1;
                     var C = B - n_cols;
                     var D = C + 1;
-                    //elems.push(B, A);
+                    //elems.push(A, B);
                     //elems.push(A, C);
 
                     elems.push(A, B, C);
@@ -37,7 +37,8 @@ var Tunnel = (function() {
         };
 
         this.programs = {
-            tunnel: webgl.get_program('tunnel')
+            outer: webgl.get_program('tunnel'),
+            inner: webgl.get_program('tunnel', {defines:{INNER:1}})
         };
 
         this.n_elems = elems.length;
@@ -54,38 +55,56 @@ var Tunnel = (function() {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        var P = this.P;
-        var dp = 0;
-        for (var i = 0; i < n_rows; ++i) {
-            var u = i / (n_rows - 1);
-            P[dp + 0] = 0;
-            P[dp + 1] = 3*Math.sin(2*Math.PI * u);
-            P[dp + 2] = lerp(-10, 10, u);
-            P[dp + 3] = 0;
-            dp += 4;
-        }
-
         this.update();
     }
 
     Tunnel.prototype.draw = function(env) {
-        var pgm = this.programs.tunnel.use();
-
-        pgm.uniformMatrix4fv('mvp', env.camera.mvp);
-        pgm.uniform4f('color', 1.0, 0.0, 0.0, 1.0);
-        pgm.uniform1f('time', time/n_rows);
-        pgm.uniformSampler2D('t_frames', this.tex);
-
-        webgl.bind_vertex_buffer(this.buffers.verts);
-        pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
-
-        webgl.bind_element_buffer(this.buffers.elems);
-
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.FRONT);
-        gl.drawElements(gl.TRIANGLES, this.n_elems, gl.UNSIGNED_INT, 0);
         gl.cullFace(gl.BACK);
+
+        if (1) {
+            var pgm = this.programs.outer.use();
+            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+            pgm.uniform4f('color', 1.0, 0.0, 0.0, 1.0);
+            pgm.uniform1f('time', time/n_rows);
+            pgm.uniformSampler2D('t_frames', this.tex);
+            pgm.uniform1f('radius', 2.0);
+
+            webgl.bind_vertex_buffer(this.buffers.verts);
+            pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
+
+            webgl.bind_element_buffer(this.buffers.elems);
+
+            gl.drawElements(gl.TRIANGLES, this.n_elems, gl.UNSIGNED_INT, 0);
+        }
+        
+        if (1) {
+            var pgm = this.programs.inner.use();
+            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+            pgm.uniform4f('color', 1.0, 0.0, 0.0, 1.0);
+            pgm.uniform1f('time', time/n_rows);
+            pgm.uniformSampler2D('t_frames', this.tex);
+            pgm.uniform1f('radius', 1.0);
+
+            var tt = 0.01 * time;
+            var amp = 0.2 * noise.simplex2(tt, 0.624);
+            //var freq = 30.0 * noise.simplex2(3*tt, 0.232);
+            freq = 30.0;
+            pgm.uniform2f('warp', amp, freq);
+
+            webgl.bind_vertex_buffer(this.buffers.verts);
+            pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
+
+            webgl.bind_element_buffer(this.buffers.elems);
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.depthMask(false);
+            gl.drawElements(gl.TRIANGLES, this.n_elems, gl.UNSIGNED_INT, 0);
+            gl.depthMask(true);
+            gl.disable(gl.BLEND);
+        }
     };
 
     function lerp(a, b, x) {
@@ -95,7 +114,10 @@ var Tunnel = (function() {
     var T0 = vec3.create();
     var Q0 = quat.create();
     var T = vec3.create();
+    var F = vec3.create();
+
     var Q = quat.create();
+    var dQ = quat.create();
 
     var tt = 0;
 
@@ -106,72 +128,83 @@ var Tunnel = (function() {
     var mvp = mat4.create();
 
 
-    Tunnel.prototype.update = function(env) {
+    Tunnel.prototype.update = function(env, camera) {
         var P = this.P;
 
-        // make the curve
-        var dp = 0;
-        for (var i = 0; i < n_rows - 1; ++i) {
-            P[dp + 0] = P[dp + 4];
-            P[dp + 1] = P[dp + 5];
-            //P[dp + 2] = P[dp + 6];
-            //P[dp + 3] = P[dp + 7];
-            dp += 4;
+        // "cursor"
+        vec3.set(T, 0, 0, 0);
+
+        // "advance"
+        vec3.set(F, 0, 0, -20/(n_rows-1));
+
+        // "rotate"
+        var rx = 0;
+        var ry = 0;
+        var rz = 0;
+
+        if (env) {
+            var cw = window.innerWidth;
+            var ch = window.innerHeight;
+            var a = 0.05;
+            rx += ((env.mouse.pos[1] / ch) - 0.5) * a;
+            ry += ((env.mouse.pos[0] / cw) - 0.5) * a;
         }
 
-        P[dp + 0] = 1*noise.simplex2(tt, 0.123);
-        P[dp + 1] = 1*noise.simplex2(tt, 0.983);
-        P[dp + 2] = 10;
-        tt += 0.01;
+        if (1) {
+            var tt = 0.01 * time;
+            var a = 0.0040;
+            rx += a * noise.simplex2(tt, 0.123);
+            ry += a * noise.simplex2(tt, 0.983);
 
-        // make the quat frame
-        var dp = 4 * n_rows;
-        var sp = 0;
+            rz += 0.05 * noise.simplex2(0.5*tt, 0.348);
+        }
+
+        //rx = ry = rz = 0;
+
+        //var rx = 0;
+        //var ry = 0;
+        //var rz = 0;
+
+        // dQ is the incremental rotate
+        quat.identity(dQ);
+        quat.rotateX(dQ, dQ, rx);
+        quat.rotateY(dQ, dQ, ry);
+        quat.rotateZ(dQ, dQ, rz);
+
+        // Q is the accumulated rotate
+        quat.identity(Q);
+
+        // make the curve
+        var vp = 0;
+        var qp = 4 * n_rows;
         for (var i = 0; i < n_rows; ++i) {
-            if (i < n_rows - 1) {
-                if (i !== 0) {
-                    vec3.copy(T0, T);
-                    quat.copy(Q0, Q);
-                }
+            var u = i / (n_rows - 1);
+            P[vp + 0] = T[0];
+            P[vp + 1] = T[1];
+            P[vp + 2] = T[2];
+            P[vp + 3] = 0;  // unused
 
-                // tangent for this segment
-                T[0] = P[sp + 4] - P[sp + 0];
-                T[1] = P[sp + 5] - P[sp + 1];
-                T[2] = P[sp + 6] - P[sp + 2];
-                vec3.normalize(T, T);
+            P[qp + 0] = Q[0];
+            P[qp + 1] = Q[1];
+            P[qp + 2] = Q[2];
+            P[qp + 3] = Q[3];
 
-                sp += 4;
+            // advance cursor
+            quat.multiply(Q, Q, dQ);
+            quat.normalize(Q, Q);
 
-                if (i === 0) {
-                    vec3.copy(T0, T);
-                    quat.rotationTo(Q, [1,0,0], T);
-                    quat.copy(Q0, Q);
-                } else {
-                    // compare to previous
-                    var dot = vec3.dot(T0, T);
-                    if (dot < 0.999999) {
-                        vec3.cross(Q, T0, T);
-                        Q[3] = 1 + dot;
-                        quat.normalize(Q, Q);
-                        quat.multiply(Q, Q, Q0);
-                        if (quat.dot(Q0, Q) < 0)
-                            quat.scale(Q, Q, -1);
-                    }
-                }
-            }
+            vec3.transformQuat(F, F, dQ);
+            vec3.add(T, T, F);
 
-            P[dp + 0] = Q[0];
-            P[dp + 1] = Q[1];
-            P[dp + 2] = Q[2];
-            P[dp + 3] = Q[3];
-            dp += 4;
+            vp += 4;
+            qp += 4;
         }
 
         // update texture
         gl.bindTexture(gl.TEXTURE_2D, this.tex);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, n_rows, 2, gl.RGBA, gl.FLOAT, P);
 
-        if (env) {
+        if (camera) {
             T[0] = P[0];
             T[1] = P[1];
             T[2] = P[2] - 0;
@@ -182,7 +215,7 @@ var Tunnel = (function() {
             Q[2] = P[4*n + 2];
             vec3.sub(Q, Q, T);
 
-            env.camera.update(T, Q);
+            camera.update(T, Q);
         }
 
         time += 1;

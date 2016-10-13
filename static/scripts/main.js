@@ -591,7 +591,7 @@ function main() {
 
         if (1) {
             if (draw_funworld && shoe.rumble) {
-                tunnel.update(this);
+                tunnel.update(this, this.camera);
                 tunnel.draw(this);
             } else {
                 update_shoe(this);
@@ -615,7 +615,7 @@ function main() {
 
     document.addEventListener('mouseup', function(e) {
         if (!shoe.rumble)
-            returnl
+            return;
 
         shoe.rumble = false;
 

@@ -1,19 +1,14 @@
 {
   "name": "u4ia",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
+  "main": "index.js",
+  "author": "Daniel Lewis <actiondan@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
     "express": "^4.14.0",
-    "express-livereload": "0.0.24",
+    "express-livereload": "^0.0.24",
     "morgan": "^1.7.0",
+    "rollup": "^0.36.3",
     "serve-static": "^1.11.1"
   }
 }

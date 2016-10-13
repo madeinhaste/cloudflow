@@ -31,7 +31,7 @@ function main() {
     });
 
     canvas.draw = function() {
-        tunnel.update(use_player_cam ? this : null);
+        tunnel.update(this, use_player_cam ? this.camera : null);
         tunnel.draw(this);
     };
 
