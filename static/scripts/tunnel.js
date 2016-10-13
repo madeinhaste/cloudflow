@@ -28,8 +28,8 @@ var Tunnel = (function() {
         verts = new Float32Array(verts);
         elems = new Uint32Array(elems);
 
-        console.log(verts.length);
-        console.log(elems.length);
+        //console.log(verts.length);
+        //console.log(elems.length);
 
         this.buffers = {
             verts: webgl.new_vertex_buffer(verts),

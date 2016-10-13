@@ -1,19 +1,10 @@
 <!doctype html>
 <meta charset="UTF-8">
-<title>On | Cloudflow</title>
+<title>On | Cloudflow (161013)</title>
 <link rel="stylesheet" href="styles/site.css">
 <link rel="shortcut icon" href="images/favicon.ico">
 
-<script>
-(function() {
-    var script = document.createElement('script');
-    script.src = `${location.protocol}//${location.hostname}:35729/livereload.js`;
-    script.async = true;
-    document.querySelector('head').appendChild(script);
-}());
-</script>
-
-<div class="container">
+<div class="main">
     <nav>
         <div></div>
 
@@ -35,7 +26,13 @@
         <div class="header-logo"></div>
     </nav>
 
-    <section class="cloudflow">
+    <section class="cloudflow-container">
+
+        <!-- the cloudflow iframe with language attribute -->
+        <iframe class="cloudflow" lang="en" src="http://madeinhaste.org/cloudflow/161013/cloudflow.html"></iframe>
+
+    </section>
+
     </section>
 
     <footer>
@@ -43,22 +40,29 @@
     </footer>
 </div>
 
-<script src="scripts/vendor/jquery.js"></script>
-<script src="scripts/vendor/lodash.js"></script>
-<script src="scripts/vendor/keymaster.js"></script>
 
-<!-- webgl stuff -->
-<script src="scripts/vendor/gl-matrix.js"></script>
-<script src="scripts/vendor/msgpack.js"></script>
-<script src="scripts/vendor/easing.js"></script>
-<script src="scripts/vendor/noise.js"></script>
-<script src="scripts/qwq/utils.js"></script>
-<script src="scripts/qwq/webgl.js"></script>
-<script src="scripts/canvas3d.js"></script>
-<script src="scripts/texture-loader.js"></script>
-<script src="scripts/object-loader.js"></script>
-<script src="scripts/tunnel.js"></script>
-<script src="scripts/main.js"></script>
+<script>
+    // this code is sets the language dynamically, by posting a message to the iframe.
+    // you shouldn't need this in practice, if the iframe is served from the same origin.
+    function cloudflowSetLanguage(language) {
+        var cf = document.querySelector('iframe.cloudflow');
+        language = language || (cf.attributes.lang ? cf.attributes.lang.value : 'en');
+        cloudflowSendMessage({ set_language: language });
+    }
 
-<!-- site code -->
-<script src="scripts/site-main.js"></script>
+    function cloudflowSendMessage(msg) {
+        var cf = document.querySelector('iframe');
+        cf.contentWindow.postMessage(JSON.stringify(msg), '*');
+    }
+
+    window.onload = function() {
+        // set language from "lang" attribute
+        setTimeout(cloudflowSetLanguage, 0);
+
+        // set language from value of select
+        document.querySelector('select').onchange = function() {
+            cloudflowSetLanguage(this.value);
+            this.blur();
+        };
+    };
+</script>

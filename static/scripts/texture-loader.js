@@ -183,10 +183,12 @@
     }
 
     function load_texture_ktx(url) {
+        var label = 'texload: ' + url;
+        console.time(label);
         return fetch(url)
             .then(res => res.arrayBuffer())
             .then(data => {
-                console.log('loaded', url);
+                console.timeEnd(label);
                 return parse_ktx(data);
             });
     }

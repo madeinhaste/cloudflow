@@ -1,65 +1,83 @@
 $(function() {
 
-    var copy_table = null;
+    // iframe events
+    window.onmessage = function(e) {
+        var o = (e.origin || e.originalEvent.origin);
+        // FIXME check o
 
-    function load_language(code) {
-        $.getJSON('data/copy/copy-' + code + '.json').then(function(data) {
-            copy_table = data;
-            show_page(page_index);
-        });
+        var msg = JSON.parse(e.data);
+        if (msg.set_language)
+            set_language(msg.set_language);
+    }; 
+
+    function set_language(language) {
+        load_language(language)
+            .then(function() {
+                show_page(page_index);
+            });
     }
 
-    load_language('en');
+    hide_all();
 
-    $('.language-selector select').on('change', function() {
-        load_language(this.value);
-        $(this).blur();
-    });
+    var copy_table = null;
+    var language = $(window.frameElement).attr('lang') || 'en';
 
-    var cf_api = null;
+    var pages = [ page1, page2, page3, page4, page5 ];
+    var page_index = -1;
 
-    // load html
-    $.get('cloudflow.html')
-        .then(function(html) {
-            $('.cloudflow').html(html);
-
-            cf_api = cloudflow_main($('.cf-webgl')[0]);
-            cf_api.set_visible(false);
-
-            cf_api.on_experience = function(b) {
-                if (b) {
-                    hide_all();
-                } else {
-                    show_page(4);
-                }
-            };
-
-            cf_api.on_hover = function(part) {
-                if (page_index == 2 && part >= 0)
-                    show_page(3);
-                else if (page_index == 3 && part < 0)
-                    show_page(2);
-            };
-
-            cf_api.on_rumble = function(v) {
-                // TODO
-            };
-
-            $('.cf-experienced-close-bar a').on('click', function(e) {
-                e.preventDefault();
-                close_experienced();
-            });
-
-            show_page(0);
+    load_language(language)
+        .then(start)
+        .catch(function(err) {
+            console.warn('cloudflow: couldn\'t load language', language);
+            language = 'en';
+            load_language(language).then(start);
         });
 
-    // load styles
-    (function() {
-        var l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = 'styles/cloudflow.css';
-        $('head').append(l);
+    function start() {
+        show_page(0);
+        $('.cf-container')
+            .addClass('cf-container-visible');
+    }
+
+    function load_language(code) {
+        return $.getJSON('data/copy/copy-' + code + '.json')
+            .then(function(data) {
+                copy_table = data;
+            });
+    }
+
+    show_page(page_index);
+
+    var cf_api = (function() {
+        cf_api = cloudflow_main($('.cf-webgl')[0]);
+        cf_api.set_visible(false);
+
+        cf_api.on_experience = function(b) {
+            if (b) {
+                hide_all();
+            } else {
+                show_page(4);
+            }
+        };
+
+        cf_api.on_hover = function(part) {
+            if (page_index == 2 && part >= 0)
+                show_page(3);
+            else if (page_index == 3 && part < 0)
+                show_page(2);
+        };
+
+        cf_api.on_rumble = function(v) {
+            // TODO
+        };
+
+        return cf_api;
     }());
+
+    $('.cf-experienced-close-bar a').on('click', function(e) {
+        e.preventDefault();
+        close_experienced();
+    });
 
     function hide_all() {
         var names = [
@@ -164,9 +182,6 @@ $(function() {
         show_page(3);
     }
 
-    var pages = [ page1, page2, page3, page4, page5 ];
-    var page_index = -1;
-
     function show_page(index) {
         //if (index == page_index) return;
 
@@ -189,7 +204,16 @@ $(function() {
         show_page(page_index - 1);
     }
 
-    key('left', show_prev_page);
-    key('right', show_next_page);
+    $('.cf-webgl').on('click', function() {
+        if (page_index < 2)
+            show_next_page();
+    });
+
+    $('.cf-links a').on('click', function(e) {
+        e.preventDefault();
+    });
+
+    //key('left', show_prev_page);
+    //key('right', show_next_page);
 
 });
