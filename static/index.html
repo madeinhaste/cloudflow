@@ -42,24 +42,20 @@
 
 
 <script>
-    // this code is sets the language dynamically, by posting a message to the iframe.
+    // this function sets the language dynamically by posting a message to the iframe.
     // you shouldn't need this in practice, if the iframe is served from the same origin.
     function cloudflowSetLanguage(language) {
         var cf = document.querySelector('iframe.cloudflow');
         language = language || (cf.attributes.lang ? cf.attributes.lang.value : 'en');
-        cloudflowSendMessage({ set_language: language });
-    }
-
-    function cloudflowSendMessage(msg) {
-        var cf = document.querySelector('iframe');
+        var msg = { set_language: language };
         cf.contentWindow.postMessage(JSON.stringify(msg), '*');
     }
 
     window.onload = function() {
         // set language from "lang" attribute
-        setTimeout(cloudflowSetLanguage, 0);
+        cloudflowSetLanguage();
 
-        // set language from value of select
+        // set language from select
         document.querySelector('select').onchange = function() {
             cloudflowSetLanguage(this.value);
             this.blur();
