@@ -1,0 +1,91 @@
+@import "https://fonts.googleapis.com/css?family=Open+Sans|Roboto+Slab:300,400,700";
+
+body {
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+
+    margin: auto;
+    width: 90%;
+    height: 100%;
+}
+
+nav {
+    position: relative;
+    height: 60px;
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+nav ul {
+    margin: 0;
+    text-align: right;
+}
+
+nav li {
+    list-style: none;
+    display: inline-block;
+
+    font: 0.9rem 'Roboto Slab';
+    line-height: 60px;
+    color: #888;
+    padding: 0 20px;
+}
+
+nav a {
+    color: #888;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.cloudflow {
+    height: 800px;
+}
+
+footer {
+    background-color: #333;
+    height: 600px;
+}
+
+.header-logo {
+    background-color: #000;
+    background-image: url( ../images/header_logo.svg );
+    background-size: cover;
+
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    left: 20px;
+    top: 0;
+
+    z-index: 1;
+}
+
+.footer-logo {
+    background-image: url( ../images/header_logo.svg );
+    background-size: cover;
+    width: 130px;
+    height: 130px;
+    margin: auto;
+    margin-top: 20px;
+}
+
+.language-selector {
+    text-align: right;
+}
+
+.language-selector select {
+    font: 0.9rem 'Roboto Slab';
+    color: #ccc;
+    border: none;
+    background-color: transparent;
+    height: 100%;
+}

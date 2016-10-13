@@ -1,0 +1,174 @@
+.cf-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    background: url( ../images/background.jpg ) no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+/* sticker */
+
+.cf-sticker {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    color: #3c3c3c;
+    width: 320px;
+
+    //background-color: #fdd;
+}
+
+.cf-sticker-transform-large {
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%) skewY(-7deg) scale(2);
+}
+
+.cf-sticker-transform-small {
+    left: 100px;
+    top: 60px;
+    transform: skewY(-7deg);
+}
+
+.cf-sticker-swiss-flag {
+    position: relative;
+    top: 4px;
+    height: 17px;
+    margin-right: 4px;
+}
+
+.cf-sticker-subheading {
+    font: 400 13px 'Open Sans';
+    margin-bottom: 2px;
+}
+
+.cf-sticker-heading {
+    font: 700 37px 'Roboto Slab';
+    text-transform: uppercase;
+    line-height: 100%;
+    white-space: pre-line;
+}
+
+/* links */
+
+.cf-links {
+    position: absolute;
+    top: 40px;
+    right: 60px;
+    color: #3c3c3c;
+}
+
+.cf-links ul {
+    margin: 0;
+}
+
+.cf-links li {
+    list-style: none;
+    display: inline-block;
+
+    font: 400 16px 'Roboto Slab';
+    padding: 0 20px;
+}
+
+.cf-links :not(:last-child) {
+    border-right: 1px solid #888;
+}
+
+.cf-links a {
+    color: #444;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.cf-links a:hover {
+    text-decoration: underline;
+}
+
+/* instructions */
+
+.cf-instructions {
+    position: absolute;
+    left: 0;
+    bottom: 50px;
+    width: 100%;
+
+    font: 400 23px 'Roboto Slab';
+    color: #444;
+
+    text-align: center;
+    text-transform: uppercase;
+    white-space: pre-line;
+}
+
+.cf-instructions hr {
+    border: none;
+    background-color: #23c;
+    height: 1px;
+}
+
+.cf-part-description {
+    position: absolute;
+    left: 0;
+    bottom: 140px;
+
+    text-align: center;
+    width: 100%;
+
+    font: 300 23px 'Roboto Slab';
+    color: #444;
+}
+
+/* experienced */
+
+.cf-experienced-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* filter: blur(50px); */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cf-experienced-container {
+    width: 650px;
+}
+
+.cf-experienced {
+    transform: skewY(-7deg);
+    color: #3c3c3c;
+}
+
+.cf-experienced {
+    font: 600 37px 'Roboto Slab';
+    color: #3c3c3c;
+    text-transform: uppercase;
+    line-height: 110%;
+    margin-bottom: 15px;
+}
+
+.cf-experienced-close-bar {
+    padding-top: 50px;
+    text-align: center;
+}
+
+.cf-experienced-close-icon {
+    height: 25px;
+}
+
+/* loading */
+
+.cf-loading {
+    position: absolute;
+    left: 50%;
+    bottom: 100px;
+    transform: translate(-50%, 0);
+
+    font: 300 20px 'Roboto Slab';
+    color: #3c3c3c;
+    text-transform: uppercase;
+}
