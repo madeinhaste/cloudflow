@@ -169,10 +169,20 @@ var load_objects = (function() {
             indices.push(index);
         }
 
+        var edge_indices = [];
+        var edge_index_count = ob.edge_indices.length;
+        for (var i = 0; i < edge_index_count; ++i) {
+            var loop_index = i;
+            var vertex_index = ob.edge_indices[i];
+            var index = get_vertex(loop_index, vertex_index);
+            edge_indices.push(index);
+        }
+
         ob.vertex_position = new Float32Array(v_position);
         ob.vertex_normal = new Float32Array(v_normal);
         ob.vertex_uv = new Float32Array(v_texcoord);
         ob.face_indices = new Uint32Array(indices);
+        ob.edge_indices = new Uint32Array(edge_indices);
     }
 
     function calculate_tangents(indices, position, normal, texcoord) {
