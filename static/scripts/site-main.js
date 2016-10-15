@@ -1,5 +1,12 @@
 $(function() {
 
+    // http://stackoverflow.com/questions/7731778/get-query-string-parameters-with-jquery
+    function get_url_param(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
     // iframe events
     window.onmessage = function(e) {
         var o = (e.origin || e.originalEvent.origin);
@@ -20,7 +27,10 @@ $(function() {
     hide_all();
 
     var copy_table = null;
-    var language = $(window.frameElement).attr('lang') || 'en';
+    var language = (
+        get_url_param('lang') ||
+        $(window.frameElement).attr('lang') ||
+        'en');
 
     var pages = [ page1, page2, page3, page4, page5 ];
     var page_index = -1;
