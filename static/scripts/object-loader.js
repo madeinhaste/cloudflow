@@ -2,13 +2,13 @@ var load_objects = (function() {
 
     function load_objects(url) {
         return fetch(url)
-            .then(res => res.arrayBuffer())
-            .then(data => {
+            .then(function(res) { return res.arrayBuffer() })
+            .then(function(data) {
                 var msg = msgpack.decode(new Uint8Array(data));
 
-                var obs = msg.objects.map(ob => create_object(ob));
+                var obs = msg.objects.map(function(ob) { return create_object(ob) });
                 var obmap = {};
-                obs.forEach(ob => {
+                obs.forEach(function(ob) {
                     obmap[ob.name] = ob;
                 });
                 return obmap;
@@ -94,7 +94,7 @@ var load_objects = (function() {
             }
         }
 
-        var index_count = _.reduce(parts, (c, p) => c + p.length, 0);
+        var index_count = _.reduce(parts, function(c, p) { return c + p.length}, 0);
         var indices = new Uint32Array(index_count);
         var ranges = [];
 

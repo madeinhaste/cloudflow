@@ -55,7 +55,7 @@ function cloudflow_main(canvas) {
         return null;
 
         var ob = null;
-        load_objects('data/sphere.msgpack').then(obs => {
+        load_objects('data/sphere.msgpack').then(function(obs) {
             ob = obs.Icosphere;
         });
 
@@ -64,7 +64,7 @@ function cloudflow_main(canvas) {
             draw: draw
         };
 
-        webgl.load_texture_ktx('data/nike/nike_ENVMAP_skybox.ktx').then(tex => {
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_skybox.ktx').then(function(tex) {
             envmap.texture = tex;
         });
 
@@ -116,7 +116,7 @@ function cloudflow_main(canvas) {
         return null;
 
         var ob = null;
-        load_objects('data/sphere.msgpack').then(obs => {
+        load_objects('data/sphere.msgpack').then(function(obs) {
             ob = obs.Icosphere;
         });
 
@@ -178,7 +178,7 @@ function cloudflow_main(canvas) {
             gl.enable(gl.CULL_FACE);
             gl.cullFace(gl.BACK);
 
-            prims.forEach(tfm => {
+            prims.forEach(function(tfm) {
                 pgm.uniform4fv('transform', tfm);
                 gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
             });
@@ -275,9 +275,9 @@ function cloudflow_main(canvas) {
             shoe_alpha: webgl.load_texture('data/cloudflow/shoe_alpha.png', {flip: 1})
         };
 
-        webgl.load_texture_ktx('data/nike/nike_ENVMAP_iem.ktx').then(tex => { textures.iem = tex });
-        webgl.load_texture_ktx('data/nike/nike_ENVMAP_pmrem.ktx').then(tex => { textures.rem = tex });
-        webgl.load_texture_ktx('data/nike/nike_ENVMAP2_pmrem.ktx').then(tex => { textures.rem2 = tex });
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_iem.ktx').then(function(tex) { textures.iem = tex });
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_pmrem.ktx').then(function(tex) { textures.rem = tex });
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP2_pmrem.ktx').then(function(tex) { textures.rem2 = tex });
 
         var mat = mat4.create();
         var mvp = mat4.create();
@@ -699,7 +699,7 @@ function cloudflow_main(canvas) {
     }());
 
     // load the geometry
-    load_objects('data/cloudflow/cloudflow.msgpack').then(obs => {
+    load_objects('data/cloudflow/cloudflow.msgpack').then(function(obs) {
         shoe.ob = obs.cloudflow;
         cyc.ob = obs.cove;
     });

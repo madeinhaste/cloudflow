@@ -97,11 +97,40 @@
         var gl_COMPRESSED_RGBA_S3TC_DXT1_EXT = 0x83F1;
         var gl_COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
 
-        if (glType == gl_HALF_FLOAT)
-            glType = webgl.extensions.OES_texture_half_float.HALF_FLOAT_OES;
+        // FIXME FIXME FIXME
+        // this is all very flakey, regarding cubemaps, halfs etc
+
+        var convert_half_to_float = false;
+        if (glType == gl_HALF_FLOAT) {
+            glType = gl.FLOAT;
+            convert_half_to_float = true;
+            //glType = webgl.extensions.OES_texture_half_float.HALF_FLOAT_OES;
+        }
+
+        function decodeFloat16 (binary) {
+            var exponent = (binary & 0x7C00) >> 10;
+                fraction = binary & 0x03FF;
+            return (binary >> 15 ? -1 : 1) * (
+                exponent ?
+                (
+                    exponent === 0x1F ?
+                    fraction ? NaN : Infinity :
+                    Math.pow(2, exponent - 15) * (1 + fraction / 0x400)
+                ) :
+                6.103515625e-5 * (fraction / 0x400)
+            );
+        }
+
+        function convert_half_to_float_array(arr) {
+            var n = arr.length;
+            var out = new Float32Array(n);
+            for (var i = 0; i < n; ++i) {
+                out[i] = decodeFloat16(arr[i]);
+            }
+            return out;
+        }
 
         //console.log(imageSize*6, data.byteLength - sp);
-
         for (var level = 0; level < numberOfMipmapLevels; ++level) {
             var imageSize = read_u32();
             var levelWidth = pixelWidth >> level;
@@ -125,6 +154,9 @@
                 if (glType == 0) {
                     gl.compressedTexImage2D(target, level, glInternalFormat, levelWidth, levelHeight, 0, image); 
                 } else {
+                    if (convert_half_to_float) {
+                        image = convert_half_to_float_array(image);
+                    }
                     gl.texImage2D(target, level, glBaseInternalFormat, levelWidth, levelHeight, 0, glBaseInternalFormat, glType, image);
                 }
 
@@ -153,7 +185,13 @@
                 levelWidth = pixelWidth >> level;
                 levelHeight = pixelHeight >> level;
 
-                var image = new Uint16Array(3 * levelWidth * levelHeight);
+                var image;
+                if (convert_half_to_float)
+                    image = new Float32Array(3 * levelWidth * levelHeight);
+                else {
+                    console.assert(glType == gl_HALF_FLOAT);
+                    image = new Uint16Array(3 * levelWidth * levelHeight);
+                }
 
                 for (var face = 0; face < numberOfFaces; ++face) {
                     var target = targets[face];
@@ -186,8 +224,8 @@
         var label = 'texload: ' + url;
         console.time(label);
         return fetch(url)
-            .then(res => res.arrayBuffer())
-            .then(data => {
+            .then(function(res) { return res.arrayBuffer() })
+            .then(function(data) {
                 console.timeEnd(label);
                 return parse_ktx(data);
             });

@@ -25,7 +25,7 @@ function main() {
     var sphere = (function() {
 
         var ob = null;
-        load_objects('data/sphere.msgpack').then(obs => {
+        load_objects('data/sphere.msgpack').then(function(obs) {
             ob = obs.Icosphere;
         });
         
@@ -35,7 +35,7 @@ function main() {
             cubemap: null
         };
 
-        webgl.load_texture_ktx('data/nike/nike_ENVMAP_pmrem.ktx').then(tex => {
+        webgl.load_texture_ktx('data/nike/nike_ENVMAP_pmrem.ktx').then(function(tex) {
             textures.cubemap = tex;
         });
 
