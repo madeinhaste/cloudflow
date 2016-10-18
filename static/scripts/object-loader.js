@@ -1,5 +1,9 @@
 var load_objects = (function() {
 
+    function dump_stats(ob) {
+        console.log(ob.name, 'verts:', ob.vertex_count, 'tris:', ob.index_count/3);
+    }
+
     function load_objects(url) {
         return fetch(url)
             .then(function(res) { return res.arrayBuffer() })
@@ -8,9 +12,24 @@ var load_objects = (function() {
 
                 var obs = msg.objects.map(function(ob) { return create_object(ob) });
                 var obmap = {};
+
+
+                var v_total = 0;
+                var i_total = 0;
+
                 obs.forEach(function(ob) {
                     obmap[ob.name] = ob;
+                    dump_stats(ob);
+                    v_total += ob.vertex_count;
+                    i_total += ob.index_count;
                 });
+
+                dump_stats({
+                    name: 'TOTAL',
+                    vertex_count: v_total,
+                    index_count: i_total
+                });
+
                 return obmap;
             });
     }
