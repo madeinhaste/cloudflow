@@ -1,16 +1,10 @@
 function cloudflow_init_shoe() {
 
     var params = {
-        part: 0,
-        color: [255, 255, 255],
-        background: false,
-        wire: false,
         gloss: 4.0,
         specular: 0.8,
-        f0: 9,
-        normal: 1,
+        f0: 1/9,
     };
-
 
     var lerp = QWQ.lerp;
 
@@ -104,9 +98,9 @@ function cloudflow_init_shoe() {
         }
 
         pgm.uniform1f('lod', params.gloss);
-        pgm.uniform1f('f0', 1/params.f0);
-        pgm.uniform1f('specular', params.specular * 1.0);
-        pgm.uniform1f('normal_mix', params.normal);
+        pgm.uniform1f('f0', params.f0);
+        pgm.uniform1f('specular', params.specular);
+        pgm.uniform1f('normal_mix', 1.0);
         pgm.uniform1f('ambient', 2.0);
 
         webgl.bind_vertex_buffer(ob.buffers.position);
