@@ -87,7 +87,7 @@ function cloudflow_main(canvas) {
     };
 
     document.addEventListener('mousedown', function(e) {
-        if (shoe.selected_part_id >= 0) {
+        if (shoe.selected_part_index >= 0) {
             shoe.rumble = true;
             shoe.rumble_start_time = canvas.time;
         }
@@ -119,7 +119,7 @@ function cloudflow_main(canvas) {
             last_time = t;
         }
 
-        if (1 && shoe.ob)
+        if (shoe.ready())
             canvas.orbit.distance = lerp(canvas.orbit.distance, target_orbit_distance, 0.003*dt);
 
         requestAnimationFrame(animate);
@@ -128,9 +128,7 @@ function cloudflow_main(canvas) {
             shoe.update(canvas, dt);
             var result = canvas._pick();
             if (result !== undefined) {
-                var id = result;
-                shoe.selected_part_id = id;
-                //$('#debug').text(''+id);
+                shoe.set_picked_id(result);
             }
         }
 
