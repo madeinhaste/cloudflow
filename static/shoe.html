@@ -60,4 +60,34 @@
 <script src="scripts/canvas3d.js"></script>
 <script src="scripts/texture-loader.js"></script>
 <script src="scripts/object-loader.js"></script>
+<script src="scripts/tunnel.js"></script>
+<script src="scripts/main.js"></script>
+
+<script>
+    $(function() {
+
+        var c = $('<canvas>').addClass('cf-webgl');
+        $('#main').prepend(c);
+
+        var cf_api = (function() {
+            cf_api = cloudflow_main(c[0]);
+            cf_api.set_visible(true);
+
+            cf_api.on_experience = function(b) {
+            };
+
+            cf_api.on_hover = function(part) {
+            };
+
+            cf_api.on_rumble = function(v) {
+            };
+
+            return cf_api;
+        }());
+
+    });
+</script>
+
+<!--
 <script src="scripts/shoe-main.js"></script>
+-->
