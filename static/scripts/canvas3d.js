@@ -212,6 +212,7 @@ var Canvas3D = (function() {
         this.on_click = function() {};
         this.freeze_camera = false;
         this.pick_required = false;
+        this.mouse_camera = true;
     }
 
     Canvas3D.prototype.update_mouse = function(e) {
@@ -265,6 +266,9 @@ var Canvas3D = (function() {
         function mousemove(e) {
             self.update_mouse(e);
             self.pick_required = true;
+
+            if (!self.mouse_camera)
+                return;
 
             var mouse = self.mouse;
             var orbit = self.orbit;
