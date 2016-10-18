@@ -19,7 +19,6 @@ function cloudflow_main(canvas) {
             'shaders/default.glsl',
             'shaders/shoe.glsl',
             'shaders/shoe_pick.glsl',
-            'shaders/envmap.glsl',
             'shaders/cyc.glsl',
             'shaders/funworld.glsl',
             'shaders/tunnel.glsl',
@@ -51,67 +50,6 @@ function cloudflow_main(canvas) {
         normal: 1,
     };
 
-    var envmap = (function() {
-        return null;
-
-        var ob = null;
-        load_objects('data/sphere.msgpack').then(function(obs) {
-            ob = obs.Icosphere;
-        });
-
-        var envmap = {
-            texture: null,
-            draw: draw
-        };
-
-        webgl.load_texture_ktx('data/nike/nike_ENVMAP_skybox.ktx').then(function(tex) {
-            envmap.texture = tex;
-        });
-
-        var programs = {
-            envmap: webgl.get_program('envmap'),
-        };
-
-        var mat = mat4.create();
-        var mvp = mat4.create();
-
-        function draw(env) {
-            if (!ob) return;
-            if (!envmap.texture) return;
-
-            mat4.copy(mvp, env.camera.view);
-            mvp[12] = mvp[13] = mvp[14] = 0;
-
-            mat4.multiply(mvp, env.camera.proj, mvp);
-
-            var pgm = programs.envmap.use();
-            pgm.uniformMatrix4fv('mvp', mvp);
-            pgm.uniform4f('color', 0.5, 0.5, 0.5, 0.5);
-            pgm.uniformSamplerCube('t_envmap', envmap.texture);
-
-            webgl.bind_vertex_buffer(ob.buffers.position);
-            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
-
-            webgl.bind_vertex_buffer(ob.buffers.normal);
-            pgm.vertexAttribPointer('normal', 3, gl.FLOAT, false, 0, 0);
-
-            webgl.bind_vertex_buffer(ob.buffers.texcoord);
-            pgm.vertexAttribPointer('texcoord', 2, gl.FLOAT, false, 0, 0);
-
-            webgl.bind_element_buffer(ob.buffers.index);
-
-            gl.disable(gl.DEPTH_TEST);
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(gl.FRONT);
-
-            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
-        }
-
-        return envmap;
-
-    }());
-
-    
     var funworld = (function() {
         return null;
 
