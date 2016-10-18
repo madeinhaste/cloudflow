@@ -1,4 +1,16 @@
-function cloudflow_init_shoe(params) {
+function cloudflow_init_shoe() {
+
+    var params = {
+        part: 0,
+        color: [255, 255, 255],
+        background: false,
+        wire: false,
+        gloss: 4.0,
+        specular: 0.8,
+        f0: 9,
+        normal: 1,
+    };
+
 
     var lerp = QWQ.lerp;
 

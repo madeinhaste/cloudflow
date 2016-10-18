@@ -2,6 +2,8 @@ var USE_TEXLOD_FIX = false;
 
 function cloudflow_main(canvas) {
 
+    var lerp = QWQ.lerp;
+
     var canvas = new Canvas3D({
         el: canvas,
         antialias: true,
@@ -23,29 +25,18 @@ function cloudflow_main(canvas) {
         ]
     });
 
-    var lerp = QWQ.lerp;
 
     canvas.show_grid = false;
+    canvas.time = 0;
+
     canvas.orbit.distance = 500;
-    var target_orbit_distance = 25;
     canvas.camera.fov = 25;
     canvas.camera.far = 800;
     vec4.set(canvas.clear_color, 0, 0, 0, 0);
     vec3.set(canvas.orbit.rotate, 0, 0, 0);
-    canvas.time = 0;
+    var target_orbit_distance = 25;
 
-    var params = {
-        part: 0,
-        color: [255, 255, 255],
-        background: false,
-        wire: false,
-        gloss: 4.0,
-        specular: 0.8,
-        f0: 9,
-        normal: 1,
-    };
-
-    var shoe = cloudflow_init_shoe(params);
+    var shoe = cloudflow_init_shoe();
     var shoe_rot = vec2.create();
     var shoe_trans = vec3.create();
 
@@ -243,17 +234,6 @@ function cloudflow_main(canvas) {
         canvas._draw();
     }
     animate(0);
-
-    0 && (function() {
-        var gui = new dat.GUI();
-        //gui.add(params, 'part', [0, 1, 2]);
-        //gui.add(params, 'background');
-        //gui.add(params, 'wire');
-        gui.add(params, 'gloss', 0, 6);
-        gui.add(params, 'specular', 0, 1);
-        gui.add(params, 'f0', 1, 100);
-        gui.add(params, 'normal', 0, 1);
-    }());
 
     var visible = true;
 
