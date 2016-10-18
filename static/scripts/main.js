@@ -19,7 +19,6 @@ function cloudflow_main(canvas) {
             'shaders/default.glsl',
             'shaders/shoe.glsl',
             'shaders/shoe_pick.glsl',
-            'shaders/funworld.glsl',
             'shaders/tunnel.glsl',
         ]
     });
@@ -48,81 +47,6 @@ function cloudflow_main(canvas) {
         f0: 9,
         normal: 1,
     };
-
-    var funworld = (function() {
-        return null;
-
-        var ob = null;
-        load_objects('data/sphere.msgpack').then(function(obs) {
-            ob = obs.Icosphere;
-        });
-
-        var funworld = {
-            draw: draw
-        };
-
-        var programs = {
-            funworld: webgl.get_program('funworld'),
-            funworld_prim: webgl.get_program('funworld_prim'),
-        };
-
-        var prims = [];
-        for (var i = 0; i < 200; ++i) {
-            var v = vec4.create();
-            var theta = Math.random() * Math.PI * 2;
-            var phi = Math.random() * Math.PI;
-            var r = lerp(20, 300, Math.random());
-
-            v[0] = r * Math.cos(theta);
-            v[2] = r * Math.sin(theta);
-            //v[1] = r * Math.cos(phi);
-
-            v[1] = lerp(0.5, 30, Math.random());
-            //v[2] = lerp(-50, -300, Math.random());
-            v[3] = lerp(1, 2, Math.random());
-            prims.push(v);
-        }
-
-        var mvp = mat4.create();
-
-        function draw(env) {
-            if (!ob) return;
-
-            mat4.copy(mvp, env.camera.view);
-            mvp[12] = mvp[13] = mvp[14] = 0;
-            mat4.multiply(mvp, env.camera.proj, mvp);
-
-            var pgm = programs.funworld.use();
-            pgm.uniformMatrix4fv('mvp', mvp);
-            webgl.bind_vertex_buffer(ob.buffers.position);
-            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
-            webgl.bind_element_buffer(ob.buffers.index);
-
-            gl.disable(gl.DEPTH_TEST);
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(gl.FRONT);
-            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
-
-            // primitives
-            var pgm = programs.funworld_prim.use();
-            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
-
-            webgl.bind_vertex_buffer(ob.buffers.position);
-            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
-            webgl.bind_element_buffer(ob.buffers.index);
-
-            gl.enable(gl.DEPTH_TEST);
-            gl.enable(gl.CULL_FACE);
-            gl.cullFace(gl.BACK);
-
-            prims.forEach(function(tfm) {
-                pgm.uniform4fv('transform', tfm);
-                gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
-            });
-        }
-
-        return funworld;
-    }());
 
     var shoe = (function() {
 
