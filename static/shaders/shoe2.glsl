@@ -27,9 +27,10 @@ uniform sampler2D t_normal;
 
 #ifdef HIGHLIGHT
 uniform sampler2D t_id;
-uniform sampler2D t_alpha;
+//uniform sampler2D t_alpha;
 uniform vec3 highlight_id;
-uniform mat3 highlight_rot;
+uniform mat3 highlight_mat;
+uniform float highlight_alpha;
 #endif
 
 uniform float lod;
@@ -75,10 +76,11 @@ void main() {
     float alpha = 1.0;
 
 #ifdef HIGHLIGHT
-    {
+    if (highlight_id != vec3(0.0)) {
         vec3 id = texture2D(t_id, v_texcoord).rgb;
         if (id != highlight_id) discard;
-        alpha = texture2D(t_alpha, v_texcoord).g;
+        //alpha = texture2D(t_alpha, v_texcoord).g;
+        alpha = highlight_alpha;
     }
 #endif
 
@@ -114,16 +116,21 @@ void main() {
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
 
 #ifdef HIGHLIGHT
-        R = highlight_rot * R;
+        R = highlight_mat * R;
 #endif
 
 #if HAVE_TEXLOD
-        vec3 Cs = textureCubeLodEXT(t_rem, R, lod).rgb;
+        vec3 Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
 #else
-        vec3 Cs = textureCube(t_rem, R).rgb;
+        vec3 Cs = toLinear(textureCube(t_rem, R).rgb);
 #endif
 
-        C += alpha * specular * F * Cs;
+        C += specular * F * Cs;
+
+#ifdef HIGHLIGHT
+        C = Cs;
+#endif
+
     }
 
 #ifdef AMBOCC_MAP
@@ -132,5 +139,5 @@ void main() {
     C *= occ;
 #endif
 
-    gl_FragColor = vec4(filmic(C), 1.0);
+    gl_FragColor = vec4(alpha * filmic(C), alpha);
 }

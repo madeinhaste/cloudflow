@@ -65,10 +65,16 @@ function cloudflow_init_shoe_v2_ren() {
         shoe_no_nor: webgl.get_program('shoe2', {defines: {
             HAVE_TEXLOD: 1
         }}),
+        shoe_highlight: webgl.get_program('shoe2', {defines: {
+            NORMAL_MAP: 1,
+            HIGHLIGHT: 1,
+            HAVE_TEXLOD: 1
+        }}),
         shoe_pick: webgl.get_program('shoe_pick')
     };
 
     var mat_normal = mat3.create();
+    var mat_highlight = mat3.create();
     var mvp = mat4.create();
 
     function setup_matrix(pgm, matrix) {
@@ -79,7 +85,9 @@ function cloudflow_init_shoe_v2_ren() {
 
     function draw_ob(env, ob, obtex) {
         var pgm;
-        if (!obtex.nor) {
+        if (obtex.highlight) {
+            pgm = programs.shoe_highlight;
+        } else if (!obtex.nor) {
             pgm = programs.shoe_no_nor;
         } else if (!obtex.occ) {
             pgm = programs.shoe_no_occ;
@@ -96,10 +104,12 @@ function cloudflow_init_shoe_v2_ren() {
         setup_matrix(pgm, env.mat);
 
         pgm.uniformSamplerCube('t_iem', textures.iem);
-        pgm.uniformSamplerCube('t_rem', textures.pmrem);
+        pgm.uniformSamplerCube('t_rem', obtex.highlight ? textures.pmrem2 : textures.pmrem);
 
         pgm.uniformSampler2D('t_color', obtex.col);
-        pgm.uniformSampler2D('t_normal', obtex.nor);
+
+        if (obtex.nor)
+            pgm.uniformSampler2D('t_normal', obtex.nor);
 
         if (obtex.occ)
             pgm.uniformSampler2D('t_occ', obtex.occ);
@@ -110,6 +120,24 @@ function cloudflow_init_shoe_v2_ren() {
         pgm.uniform1f('normal_mix', 1.0);
         pgm.uniform1f('normal_scale', obtex.nor_scale ? obtex.nor_scale : 1.0);
         pgm.uniform1f('ambient', 1.0);
+
+        if (obtex.highlight) {
+            if (obtex.highlight_index >= 0) {
+                var c = part_ids[obtex.highlight_index];
+                pgm.uniform3f('highlight_id', (c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255);
+            } else {
+                pgm.uniform3f('highlight_id', 0, 0, 0);
+            }
+            pgm.uniformMatrix3fv('highlight_mat', mat_highlight);
+            pgm.uniformSampler2D('t_id', obtex.ids);
+
+            pgm.uniform1f('lod', 0.0);
+            pgm.uniform1f('f0', 0.80);
+            pgm.uniform1f('specular', 5.0);
+            pgm.uniform1f('ambient', 1.0);
+            pgm.uniform1f('normal_mix', 0.5);
+            pgm.uniform1f('highlight_alpha', obtex.highlight_amount);
+        }
 
         webgl.bind_vertex_buffer(ob.buffers.position);
         pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
@@ -173,13 +201,95 @@ function cloudflow_init_shoe_v2_ren() {
         }
     }
 
+    function update_highlight_matrix(time) {
+        mat3.identity(mat_highlight);
+        var rad = 0.0010 * time;
+        var s = Math.sin(rad), c = Math.cos(rad);
+        mat_highlight[0] = c;
+        mat_highlight[2] = s;
+        mat_highlight[5] = c;
+        mat_highlight[7] = -s;
+    }
+
+    function draw_highlight_index(env, idx) {
+        var amount = env.part_select[idx];
+        if (amount < 0.01)
+            return;
+
+        amount = QWQ.clamp(amount, 0.0, 1.0);
+
+        if (idx == 0 || idx == 2) {
+            // mesh or enforcement
+            draw_ob(env, obs.cf_upper, {
+                col: textures.shoe_col,
+                nor: textures.shoe_nor,
+                occ: textures.shoe_occ,
+                ids: textures.shoe_ids,
+                highlight: true,
+                highlight_index: idx,
+                highlight_amount: amount,
+            });
+
+            if (idx == 2) {
+                draw_ob(env, obs.cf_logo_back, {
+                    col: textures.shoe_col,
+                    nor: textures.shoe_nor,
+                    occ: textures.shoe_occ,
+                    ids: textures.shoe_col,
+                    highlight: true,
+                    highlight_index: -1,
+                    highlight_amount: amount
+                });
+            }
+        } else if (idx == 1 || idx == 3) {
+            // sole or midsole
+            draw_ob(env, obs.cf_sole_high, {
+                col: textures.sole_col,
+                nor: textures.sole_nor,
+                occ: textures.sole_occ,
+                ids: textures.sole_ids,
+                highlight: true,
+                highlight_index: idx,
+                highlight_amount: amount
+            });
+        }
+
+    }
+
     function draw_highlight(env) {
-        // TODO
+        var idx = env.selected_part_index;
+        if (idx < 0) return;
+
+        update_highlight_matrix(env.time);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        for (var i = 0; i < 4; ++i) {
+            draw_highlight_index(env, i);
+        }
+        gl.disable(gl.BLEND);
+
+        /*
+        for (var i = 0; i < 4; ++i) {
+            var sel = env.part_select[i];
+            if (sel == 0.0) continue;
+            var s = lerp(0.5, 2.5 + 0.5*Math.sin(0.005*env.time), sel);
+            pgm.uniform1f('specular', s * params.specular);
+            var c = part_ids[i];
+            pgm.uniform3f('highlight_id', (c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255);
+            draw_part(ob, 0);
+        }
+        */
     }
 
     function draw(env) {
         if (!ready()) return;
-        draw_normal(env);
+
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+            draw_normal(env);
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+
         draw_highlight(env);
     }
 

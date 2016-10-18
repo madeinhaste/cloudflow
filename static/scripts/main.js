@@ -35,7 +35,7 @@ function cloudflow_main(canvas) {
     canvas.camera.far = 800;
     vec4.set(canvas.clear_color, 0, 0, 0, 0);
     vec3.set(canvas.orbit.rotate, 0, 0, 0);
-    var target_orbit_distance = 25;
+    var target_orbit_distance = 22;
 
     var shoe = cloudflow_init_shoe();
 
