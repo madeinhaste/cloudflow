@@ -2,6 +2,17 @@
 <meta charset=UTF-8>
 <title>u4ia.1011</title>
 <style>
+    body {
+        margin: 0;
+    }
+    #main {
+        background: url( images/background.jpg ) no-repeat;
+        background-position: center;
+        background-size: cover;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+    }
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     #debug {
         display: block;
@@ -9,8 +20,8 @@
         position: absolute;
         top: 4px;
         left: 6px;
-        color: #fff;
-        font: 300 16px Cousine, monospace;
+        color: #000;
+        font: 300 20px Cousine, monospace;
         text-align: right;
     }
 </style>
@@ -28,7 +39,6 @@
 
 
 <div id="main">
-    <canvas></canvas>
     <div id="debug"></div>
 </div>
 
@@ -50,11 +60,4 @@
 <script src="scripts/canvas3d.js"></script>
 <script src="scripts/texture-loader.js"></script>
 <script src="scripts/object-loader.js"></script>
-<script src="scripts/tunnel.js"></script>
-<script src="scripts/main.js"></script>
-
-<script>
-$(function() {
-    cloudflow_main($('canvas')[0]);
-}());
-</script>
+<script src="scripts/shoe-main.js"></script>
