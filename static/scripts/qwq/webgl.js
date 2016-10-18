@@ -1286,6 +1286,32 @@ var webgl = (function() {
         vec3.set(this.view_dir, -this.inv_view[8], -this.inv_view[9], -this.inv_view[10]);
     };
 
+    Camera.prototype.update_mat = function(mat) {
+        // projection
+        var aspect = this.viewport[2] / this.viewport[3];
+        my_perspective(this.proj, this.fov * QWQ.RAD_PER_DEG, aspect, this.near, this.far);
+
+        // create a view matrix with a look-at
+        //mat4.fromRotationTranslation(this.view, rot, pos);
+        mat4.invert(this.view, mat);
+
+        // billboard
+        var b = this.bill;
+        var v = this.view;
+        b[0] = v[0]; b[1] = v[4]; b[2] = v[8];
+        b[3] = v[1]; b[4] = v[5]; b[5] = v[9];
+        b[6] = v[2]; b[7] = v[6]; b[8] = v[10];
+
+        // combined
+        mat4.multiply(this.mvp, this.proj, this.view);
+        mat4.invert(this.inv_mvp, this.mvp);
+        mat4.invert(this.inv_view, this.view);
+
+        // XXX could be just pos/dir?
+        vec3.transformMat4(this.view_pos, [0, 0, 0], this.inv_view);
+        vec3.set(this.view_dir, -this.inv_view[8], -this.inv_view[9], -this.inv_view[10]);
+    };
+
 
     var tmp4 = vec4.create();
 
