@@ -11,7 +11,7 @@ function cloudflow_init_shoe() {
     var shoe = {
         ob: null,
         mat: mat4.create(),
-        draw: draw2,
+        draw: draw,
         pick: pick,
         update: update,
         selected_part_id: -1,
@@ -146,7 +146,7 @@ function cloudflow_init_shoe() {
 
     var highlight_rot = mat3.create();
 
-    function draw2(env) {
+    function draw(env) {
         if (!shoe.ob) return;
 
         if (!textures.iem) return;
@@ -250,10 +250,9 @@ function cloudflow_init_shoe() {
         draw_part(shoe.ob, 0);
     }
 
-    function update(dt) {
+    function update_part_selection(dt) {
         var delta = dt * 0.0015;
         shoe.selected_part_index = part_ids.indexOf(shoe.selected_part_id);
-        //$('#debug').text(''+selected_part_index);
 
         for (var i = 0; i < 4; ++i) {
             if (i == shoe.selected_part_index)
@@ -261,6 +260,10 @@ function cloudflow_init_shoe() {
             else
                 part_select[i] = Math.max(0, part_select[i] - 3*delta);
         }
+    }
+
+    function update(env, dt) {
+        update_part_selection(dt);
     }
 
     return shoe;

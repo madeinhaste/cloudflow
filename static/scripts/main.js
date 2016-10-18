@@ -222,7 +222,7 @@ function cloudflow_main(canvas) {
         requestAnimationFrame(animate);
 
         if (1) {
-            shoe.update(dt);
+            shoe.update(canvas, dt);
             var result = canvas._pick();
             if (result !== undefined) {
                 var id = result;
