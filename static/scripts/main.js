@@ -88,10 +88,7 @@ function cloudflow_main(canvas) {
     };
 
     document.addEventListener('mousedown', function(e) {
-        if (shoe.selected_part_index >= 0) {
-            shoe.rumble = true;
-            shoe.rumble_start_time = canvas.time;
-        }
+        shoe.start_rumble(canvas);
     }, false);
 
     document.addEventListener('mouseup', function(e) {

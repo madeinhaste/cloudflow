@@ -27,6 +27,9 @@ function cloudflow_init_shoe() {
         rumble: false,
         rumble_amount: 0,
         rumble_start_time: 0,
+        rumble_fly_vec: vec3.create(),
+
+        start_rumble: start_rumble,
 
         rot: vec2.create(),
         trans: vec3.create(),
@@ -73,9 +76,7 @@ function cloudflow_init_shoe() {
             } else if (t > duration) {
                 var u = t - duration;
 
-                shoe.trans[2] += 10.5 * u;
-                shoe.trans[1] += 0.9 * u;
-                shoe.trans[0] -= 2.0 * u;
+                vec3.scaleAndAdd(shoe.trans, shoe.trans, shoe.rumble_fly_vec, u);
 
                 shoe.rumble2[0] += 0.35;
                 shoe.rumble2[1] += 0.12;
@@ -94,7 +95,7 @@ function cloudflow_init_shoe() {
                 shoe.rumble2[0] = amp * fbm(tt, 0.1, 2);
                 shoe.rumble2[1] = amp * fbm(tt, 0.3, 2);
 
-                var amp2 = u * QWQ.RAD_PER_DEG * 15;
+                var amp2 = u * QWQ.RAD_PER_DEG * 2;
                 amp2 *= A;
 
                 shoe.rumble2[0] += amp2 * Math.cos(5 * t);
@@ -164,6 +165,19 @@ function cloudflow_init_shoe() {
         var index = ren.get_index_from_picked_id(id);
         if (index !== shoe.selected_part_index) {
             shoe.selected_part_index = index;
+        }
+    }
+
+    function start_rumble(env) {
+        if (shoe.selected_part_index >= 0) {
+            shoe.rumble = true;
+            shoe.rumble_start_time = env.time;
+
+            // random fly off direction
+            vec3.set(shoe.rumble_fly_vec,
+                lerp(-3, 3, Math.random()),
+                lerp(-2.5, 2.5, Math.random()),
+                10.0);
         }
     }
 
