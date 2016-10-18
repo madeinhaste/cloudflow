@@ -19,7 +19,6 @@ function cloudflow_main(canvas) {
             'shaders/default.glsl',
             'shaders/shoe.glsl',
             'shaders/shoe_pick.glsl',
-            'shaders/cyc.glsl',
             'shaders/funworld.glsl',
             'shaders/tunnel.glsl',
         ]
@@ -123,50 +122,6 @@ function cloudflow_main(canvas) {
         }
 
         return funworld;
-    }());
-
-    var cyc = (function() {
-
-        var cyc = {
-            ob: null,
-            draw: draw
-        };
-
-        var programs = {
-            cyc: webgl.get_program('cyc'),
-        };
-
-        var textures = {
-            color: webgl.load_texture('data/nike/nike_CYC.jpg', {flip: 1, mipmap: 1}),
-        };
-
-        var mat = mat4.create();
-        var mvp = mat4.create();
-        mat4.copy(mvp, [2.6898298263549805, 0, 0, 0, 0, 4.510708332061768, 0, 0, 0, 0, -1.000249981880188, -1, 0, 0, 34.8922004699707, 35.08345413208008]);
-
-        function draw(env) {
-            if (!cyc.ob) return;
-            var ob = cyc.ob;
-
-            var pgm = programs.cyc.use();
-            pgm.uniformMatrix4fv('mvp', mvp);
-            pgm.uniformSampler2D('t_color', textures.color);
-
-            webgl.bind_vertex_buffer(ob.buffers.position);
-            pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
-
-            webgl.bind_vertex_buffer(ob.buffers.texcoord);
-            pgm.vertexAttribPointer('texcoord', 2, gl.FLOAT, false, 0, 0);
-
-            webgl.bind_element_buffer(ob.buffers.index);
-
-            gl.disable(gl.DEPTH_TEST);
-            gl.disable(gl.CULL_FACE);
-            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
-        }
-
-        return cyc;
-
     }());
 
     var shoe = (function() {
@@ -560,7 +515,6 @@ function cloudflow_main(canvas) {
                 set_experience_visible(false);
                 api.on_rumble(vec2.length(rumble));
                 update_shoe(this);
-                //cyc.draw(this);
                 shoe.draw(this);
             }
         }
@@ -639,7 +593,6 @@ function cloudflow_main(canvas) {
     // load the geometry
     load_objects('data/cloudflow/cloudflow.msgpack').then(function(obs) {
         shoe.ob = obs.cloudflow;
-        cyc.ob = obs.cove;
     });
 
     var visible = true;
