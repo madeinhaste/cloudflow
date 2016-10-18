@@ -68,7 +68,7 @@ function cloudflow_init_shoe() {
 
         if (shoe.rumble_amount > 0.0) {
             var t = (env.time - shoe.rumble_start_time)/1000;
-            var duration = 2.0;
+            var duration = 1.0;
             var post_duration = 0.35;
 
             if (t > duration + post_duration) {
