@@ -1,4 +1,4 @@
-// shoe //
+// shoe2 //
 attribute vec3 position;
 attribute vec3 normal;
 attribute vec3 tangent;
@@ -40,7 +40,7 @@ uniform float normal_scale;
 uniform float specular;
 uniform float ambient;
 
-// shoe.vertex //
+// shoe2.vertex //
 void main() {
     vec4 P = model_matrix * vec4(position, 1.0);
     v_normal = normal_matrix * normal;
@@ -50,7 +50,7 @@ void main() {
     gl_Position = mvp * P;
 }
 
-// shoe.fragment //
+// shoe2.fragment //
 #extension GL_EXT_shader_texture_lod : enable
 
 float G1V(float NdotV, float k) {

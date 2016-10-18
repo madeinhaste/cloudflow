@@ -73,16 +73,16 @@ function main() {
 
         var programs = {
             simple: webgl.get_program('simple'),
-            shoe: webgl.get_program('shoe', {defines: {
+            shoe: webgl.get_program('shoe2', {defines: {
                 NORMAL_MAP: 1,
                 AMBOCC_MAP: 1,
                 HAVE_TEXLOD: 1
             }}),
-            shoe_no_occ: webgl.get_program('shoe', {defines: {
+            shoe_no_occ: webgl.get_program('shoe2', {defines: {
                 NORMAL_MAP: 1,
                 HAVE_TEXLOD: 1
             }}),
-            shoe_no_nor: webgl.get_program('shoe', {defines: {
+            shoe_no_nor: webgl.get_program('shoe2', {defines: {
                 HAVE_TEXLOD: 1
             }})
         };

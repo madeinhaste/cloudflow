@@ -123,7 +123,7 @@ function cloudflow_init_shoe() {
         update_shoe(env);
     }
 
-    var ren = cloudflow_init_shoe_v1_ren();
+    var ren = cloudflow_init_shoe_v2_ren();
     var ren_env = {
         camera: null,
         time: 0,
@@ -149,8 +149,22 @@ function cloudflow_init_shoe() {
         return ren.pick(ren_env);
     }
 
+    function show_selected_part_name() {
+        var index = shoe.selected_part_index;
+        $('#debug').text(
+            (index < 0) ? '' : [
+                'MESH',
+                'SOLE',
+                'ENFORCEMENT',
+                'MIDSOLE'
+            ][index]);
+    }
+
     function set_picked_id(id) {
-        shoe.selected_part_index = ren.get_index_from_picked_id(id);
+        var index = ren.get_index_from_picked_id(id);
+        if (index !== shoe.selected_part_index) {
+            shoe.selected_part_index = index;
+        }
     }
 
     return shoe;

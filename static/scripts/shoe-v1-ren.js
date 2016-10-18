@@ -130,81 +130,94 @@ function cloudflow_init_shoe_v1_ren() {
             textures.rem2);
     }
 
+    function selection_dim(env) {
+        var s = Math.max(
+            env.part_select[0],
+            env.part_select[1],
+            env.part_select[2],
+            env.part_select[3]);
+
+        s = Math.min(1.0, s * 2.0);
+        s *= (1.0 - env.rumble_amount);
+        return s;
+    }
+
+    function draw_highlight(env) {
+        if (env.selected_part_index < 0)
+            return;
+
+        var pgm = setup_draw({
+            camera: env.camera,
+            matrix: env.mat,
+            object: ob,
+            highlight: true
+        });
+
+        mat3.identity(highlight_rot);
+        var rad = 0.003 * env.time;
+        var s = Math.sin(rad), c = Math.cos(rad);
+        highlight_rot[0] = c;
+        highlight_rot[2] = s;
+        highlight_rot[5] = c;
+        highlight_rot[7] = -s;
+
+        pgm.uniformSampler2D('t_color', textures.shoe_color);
+        pgm.uniformSampler2D('t_normal', textures.shoe_normal);
+        pgm.uniformMatrix3fv('highlight_rot', highlight_rot);
+
+        pgm.uniformSamplerCube('t_rem', textures.rem2);
+        pgm.uniform1f('lod', 0.0);
+        pgm.uniform1f('f0', 0.80);
+        pgm.uniform1f('ambient', 2.0);
+
+        setup_matrix(pgm, env.mat);
+
+        for (var i = 0; i < 4; ++i) {
+            var sel = env.part_select[i];
+            if (sel == 0.0) continue;
+
+            var s = lerp(0.5, 2.5 + 0.5*Math.sin(0.005*env.time), sel);
+            pgm.uniform1f('specular', s * params.specular);
+            var c = part_ids[i];
+            pgm.uniform3f('highlight_id', (c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255);
+            draw_part(ob, 0);
+        }
+    }
+
+    function draw_normal(env) {
+        var pgm = setup_draw({
+            camera: env.camera,
+            matrix: env.mat,
+            object: ob,
+            highlight: false
+        });
+
+        var dim = selection_dim(env);
+        var ambient = lerp(2.0, 0.5, Math.pow(dim, 0.5));
+        pgm.uniform1f('ambient', ambient);
+
+        var specular = lerp(params.specular, 0.5, dim);
+        pgm.uniform1f('specular', specular);
+
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(1, 1);
+
+        pgm.uniformSampler2D('t_color', textures.shoe_color);
+        pgm.uniformSampler2D('t_normal', textures.shoe_normal);
+
+        draw_part(ob, 0);
+
+        pgm.uniformSampler2D('t_color', textures.tongue_color);
+        pgm.uniformSampler2D('t_normal', textures.tongue_normal);
+        draw_part(ob, 1);
+
+        gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
+
     function draw(env) {
         if (!ready()) return;
-
-        if (1) {
-            var pgm = setup_draw({
-                camera: env.camera,
-                matrix: env.mat,
-                object: ob,
-                highlight: false
-            });
-
-            var s = Math.max(env.part_select[0], env.part_select[1], env.part_select[2], env.part_select[3]);
-            s = Math.min(1.0, s * 2.0);
-            s *= (1.0 - env.rumble_amount);
-
-            var ambient = lerp(2.0, 0.5, Math.pow(s, 0.5));
-            pgm.uniform1f('ambient', ambient);
-
-            var specular = lerp(params.specular, 0.5, s);
-            pgm.uniform1f('specular', specular);
-
-            gl.enable(gl.POLYGON_OFFSET_FILL);
-            gl.polygonOffset(1, 1);
-
-            pgm.uniformSampler2D('t_color', textures.shoe_color);
-            pgm.uniformSampler2D('t_normal', textures.shoe_normal);
-
-            draw_part(ob, 0);
-
-            pgm.uniformSampler2D('t_color', textures.tongue_color);
-            pgm.uniformSampler2D('t_normal', textures.tongue_normal);
-            draw_part(ob, 1);
-
-            gl.disable(gl.POLYGON_OFFSET_FILL);
-        }
-
-        // HIGHLIGHT
-        if (env.selected_part_index >= 0) {
-            var pgm = setup_draw({
-                camera: env.camera,
-                matrix: env.mat,
-                object: ob,
-                highlight: true
-            });
-
-            mat3.identity(highlight_rot);
-            var rad = 0.003 * env.time;
-            var s = Math.sin(rad), c = Math.cos(rad);
-            highlight_rot[0] = c;
-            highlight_rot[2] = s;
-            highlight_rot[5] = c;
-            highlight_rot[7] = -s;
-
-            pgm.uniformSampler2D('t_color', textures.shoe_color);
-            pgm.uniformSampler2D('t_normal', textures.shoe_normal);
-            pgm.uniformMatrix3fv('highlight_rot', highlight_rot);
-
-            pgm.uniformSamplerCube('t_rem', textures.rem2);
-            pgm.uniform1f('lod', 0.0);
-            pgm.uniform1f('f0', 0.80);
-            pgm.uniform1f('ambient', 2.0);
-
-            setup_matrix(pgm, env.mat);
-
-            for (var i = 0; i < 4; ++i) {
-                var sel = env.part_select[i];
-                if (sel == 0.0) continue;
-
-                var s = lerp(0.5, 2.5 + 0.5*Math.sin(0.005*env.time), sel);
-                pgm.uniform1f('specular', s * params.specular);
-                var c = part_ids[i];
-                pgm.uniform3f('highlight_id', (c&255)/255, ((c>>8)&255)/255, ((c>>16)&255)/255);
-                draw_part(ob, 0);
-            }
-        }
+        draw_normal(env);
+        draw_highlight(env);
     }
 
     function pick(env) {

@@ -20,6 +20,7 @@ function cloudflow_main(canvas) {
         sources: [
             'shaders/default.glsl',
             'shaders/shoe.glsl',
+            'shaders/shoe2.glsl',
             'shaders/shoe_pick.glsl',
             'shaders/tunnel.glsl',
         ]
