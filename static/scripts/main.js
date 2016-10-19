@@ -26,6 +26,8 @@ function cloudflow_main(canvas) {
             'shaders/tunnel.glsl',
             'shaders/cloud.glsl',
             'shaders/earth.glsl',
+            'shaders/reflections.glsl',
+            'shaders/arc.glsl',
         ]
     });
 
@@ -46,6 +48,7 @@ function cloudflow_main(canvas) {
 
     var tunnel = new Tunnel;
     var clouds = init_clouds();
+    var reflections = init_reflections();
 
     var experience_visible = 0;
     function set_experience_visible(idx) {
@@ -96,6 +99,9 @@ function cloudflow_main(canvas) {
                 } else if (hover_part == 1) {
                     clouds.update(this);
                     clouds.draw(this);
+                } else if (hover_part == 2) {
+                    reflections.update(this);
+                    reflections.draw(this);
                 }
 
                 // make sure alpha channel is opaque
