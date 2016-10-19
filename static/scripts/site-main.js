@@ -88,8 +88,11 @@ $(function() {
             }
         };
 
-        cf_api.on_rumble = function(v) {
-            // TODO
+        var charger = $('.cf-instructions-charge')[0];
+        cf_api.on_charge = function(amount) {
+            amount = Math.min(1, 1.0 * amount);
+            var w = ~~(amount * 360);
+            charger.style.width = w + 'px';
         };
 
         return cf_api;
@@ -107,7 +110,8 @@ $(function() {
             'experienced-overlay',
             'sticker',
             'loading',
-            'links'
+            'links',
+            'instructions-charge'
         ];
 
         names.forEach(function(name) {
@@ -192,6 +196,7 @@ $(function() {
         configure_links();
         configure_instructions('press');
         configure_part_description(hover_part);
+        $('.cf-instructions-charge').show();
     }
 
     function page5() {

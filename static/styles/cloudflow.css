@@ -199,3 +199,14 @@
     filter: blur(30px);
     opacity: 0.3;
 }
+
+.cf-instructions-charge {
+    position: absolute;
+    left: 50%;
+    /*width: 360px;*/
+    width: 0;
+    height: 38px;
+    transform: translate(-50%, -35px);
+    border-bottom: 2px solid #444;
+    border-top: 2px solid #444;
+}
