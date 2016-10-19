@@ -6,6 +6,7 @@ var Tunnel = (function() {
 
     var camera = new webgl.Camera;
     camera.fov = 60;
+    camera.near = 0.1;
     camera.far = 800;
 
     function Tunnel() {
@@ -54,6 +55,7 @@ var Tunnel = (function() {
         var tex = this.tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, n_rows, 2, 0, gl.RGBA, gl.FLOAT, null);
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -62,7 +64,7 @@ var Tunnel = (function() {
         this.update();
     }
 
-    Tunnel.prototype.draw = function(env) {
+    Tunnel.prototype.draw = function() {
         gl.clearColor(0, 0, 0, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -82,7 +84,6 @@ var Tunnel = (function() {
             pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
 
             webgl.bind_element_buffer(this.buffers.elems);
-
             gl.drawElements(gl.TRIANGLES, this.n_elems, gl.UNSIGNED_INT, 0);
         }
         
@@ -211,9 +212,12 @@ var Tunnel = (function() {
 
         // update texture
         gl.bindTexture(gl.TEXTURE_2D, this.tex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, n_rows, 2, gl.RGBA, gl.FLOAT, P);
 
         if (camera) {
+            vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
+
             T[0] = P[0];
             T[1] = P[1];
             T[2] = P[2] - 0;
@@ -224,7 +228,8 @@ var Tunnel = (function() {
             Q[2] = P[4*n + 2];
             vec3.sub(Q, Q, T);
 
-            camera.update(T, Q);
+            quat.identity(Q);
+            camera.update_quat(T, Q);
         }
 
         time += 1;

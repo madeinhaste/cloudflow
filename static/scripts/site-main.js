@@ -58,6 +58,9 @@ $(function() {
 
     show_page(page_index);
 
+    var hover_parts = ['mesh', 'clouds', 'enforcements', 'speedboard'];
+    var hover_part = hover_parts[0];
+
     var cf_api = (function() {
         cf_api = cloudflow_main($('.cf-webgl')[0]);
         cf_api.set_visible(false);
@@ -71,10 +74,18 @@ $(function() {
         };
 
         cf_api.on_hover = function(part) {
-            if (page_index == 2 && part >= 0)
+            if (part >= 0)
+                hover_part = hover_parts[part];
+
+            if (page_index == 2 && part >= 0) {
                 show_page(3);
-            else if (page_index == 3 && part < 0)
-                show_page(2);
+            }
+            else if (page_index == 3) {
+                if (part < 0)
+                    show_page(2);
+                else
+                    show_page(3);
+            }
         };
 
         cf_api.on_rumble = function(v) {
@@ -180,11 +191,11 @@ $(function() {
         configure_sticker('small', 'shortcut', 'introducing');
         configure_links();
         configure_instructions('press');
-        configure_part_description('mesh');
+        configure_part_description(hover_part);
     }
 
     function page5() {
-        configure_experienced('speedboard');
+        configure_experienced(hover_part);
         $('.cf-webgl').addClass('cf-webgl-blurred');
     }
 
