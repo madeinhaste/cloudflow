@@ -16,6 +16,7 @@ function cloudflow_main(canvas) {
             'OES_standard_derivatives',
             'WEBGL_compressed_texture_s3tc',
             'EXT_shader_texture_lod',
+            'ANGLE_instanced_arrays'
         ],
         sources: [
             'shaders/default.glsl',
@@ -23,6 +24,7 @@ function cloudflow_main(canvas) {
             'shaders/shoe2.glsl',
             'shaders/shoe_pick.glsl',
             'shaders/tunnel.glsl',
+            'shaders/cloud.glsl',
         ]
     });
 
@@ -30,18 +32,19 @@ function cloudflow_main(canvas) {
     canvas.show_grid = false;
     canvas.time = 0;
 
-    canvas.orbit.distance = 500;
     canvas.camera.fov = 25;
     canvas.camera.far = 800;
     vec4.set(canvas.clear_color, 0, 0, 0, 0);
     vec3.set(canvas.orbit.rotate, 0, 0, 0);
     var target_orbit_distance = 22;
+    canvas.orbit.distance = 0;
 
     var shoe = cloudflow_init_shoe();
 
     canvas.draw_funworld = false;
 
     var tunnel = new Tunnel;
+    var clouds = init_clouds();
 
     var experience_visible = false;
     function set_experience_visible(b) {
@@ -70,8 +73,14 @@ function cloudflow_main(canvas) {
         if (1) {
             if (this.draw_funworld && shoe.rumble) {
                 set_experience_visible(true);
-                tunnel.update(this, this.camera);
-                tunnel.draw(this);
+
+                if (hover_part == 0) {
+                    tunnel.update(this, this.camera);
+                    tunnel.draw(this);
+                } else if (hover_part == 1) {
+                    clouds.update(this, this.camera);
+                    clouds.draw(this);
+                }
             } else {
                 set_experience_visible(false);
                 api.on_rumble(vec2.length(shoe.rumble2));
