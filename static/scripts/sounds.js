@@ -94,7 +94,6 @@ var sounds = (function() {
         });
 
         return function(idx) {
-        return;
             rollover_sounds[idx]();
         }
     }());
