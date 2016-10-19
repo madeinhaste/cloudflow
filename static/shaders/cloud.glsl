@@ -11,6 +11,7 @@ uniform mat3 bill;
 //uniform vec4 color;
 uniform sampler2D t_color;
 uniform float aspect;
+uniform bool zpass;
 
 // cloud.vertex //
 void main() {
@@ -29,8 +30,15 @@ void main() {
 // cloud.fragment //
 void main() {
     float s = texture2D(t_color, v_texcoord).r;
-    //gl_FragColor = vec4(1.0, 1.0, 1.0, 0.30 * s);
-    gl_FragColor = v_color;
-    gl_FragColor.a *= s;
-    //vec4(1.0, 1.0, 1.0, 0.30 * s);
+    gl_FragColor = vec4(v_color.rgb, s);
+
+    /*
+    if (zpass) {
+        if (s != 1.0) discard;
+        gl_FragColor = vec4(v_color.rgb, 1.0);
+    } else {
+        if (s == 1.0) discard;
+        gl_FragColor = vec4(v_color.rgb, s);
+    }
+    */
 }

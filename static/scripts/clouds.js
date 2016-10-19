@@ -114,7 +114,11 @@ function init_clouds() {
 
         //ext.drawArraysInstancedANGLE(gl.LINE_LOOP, 0, 4, n_clouds);
 
+        //pgm.uniform1i('zpass', 1);
+        //ext.drawArraysInstancedANGLE(gl.TRIANGLE_STRIP, 0, 4, n_clouds);
+        
         gl.depthMask(false);
+        //pgm.uniform1i('zpass', 0);
         ext.drawArraysInstancedANGLE(gl.TRIANGLE_STRIP, 0, 4, n_clouds);
         gl.depthMask(true);
 
@@ -197,18 +201,31 @@ function init_clouds() {
         // accum
         //vec3.add(player.pos, player.pos, player.vel);
         
-        var x = fract(1 * player.theta)
-        var y = Math.sin(Math.PI * x);
+        var x = fract(1 * player.theta);
+        var y;
+        if (x < 0.5) {
+            y = Math.sin(2*x*Math.PI);
+            y = Math.pow(y, 1.000);
+        } else {
+            y = Math.sin(2*(x-0.5)*Math.PI);
+            y = Math.pow(y, 0.125);
+            y = -y;
+        }
+
+        y = (1 + y)/2;
+
+        //var y = 0.5 + 0.5*Math.sin(2 * Math.PI * x);
         //var y = 1 - Math.pow(2*(x - 0.5), 2);
 
         var height = 1.0 + y * (heights[Math.floor(player.theta) % heights.length]);
         rry = y;
+        rry = 0;
 
         player.pos[0] = 0;
         player.pos[1] = height * Math.cos(player.theta);
         player.pos[2] = height * Math.sin(player.theta);
 
-        player.theta += 0.002;
+        player.theta += 0.005;
 
         
 
