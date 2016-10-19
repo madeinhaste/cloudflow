@@ -328,14 +328,15 @@ function init_clouds() {
 
         gl.clearColor(0, 0.5, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
         draw_earth(env);
         draw_clouds(env);
         //draw_player(env);
 
-        gl.colorMask(false, false, false, true);
-        gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.colorMask(true, true, true, true);
+        //gl.colorMask(false, false, false, true);
+        //gl.clearColor(0, 0, 0, 1);
+        //gl.clear(gl.COLOR_BUFFER_BIT);
+        //gl.colorMask(true, true, true, true);
 
         env.camera = old_camera;
     }

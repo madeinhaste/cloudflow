@@ -90,12 +90,19 @@ function cloudflow_main(canvas) {
                 set_experience_visible(hover_part + 1);
 
                 if (hover_part == 0) {
-                    tunnel.update(this, this.camera);
+                    tunnel.update(this);
                     tunnel.draw(this);
                 } else if (hover_part == 1) {
-                    clouds.update(this, this.camera);
+                    clouds.update(this);
                     clouds.draw(this);
                 }
+
+                // make sure alpha channel is opaque
+                // TODO take another look once we have a real background 
+                gl.colorMask(false, false, false, true);
+                gl.clearColor(0, 0, 0, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.colorMask(true, true, true, true);
             } else {
                 set_experience_visible(0);
                 api.on_rumble(vec2.length(shoe.rumble2));

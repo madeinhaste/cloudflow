@@ -4,6 +4,10 @@ var Tunnel = (function() {
     var n_rows = 128;
     var time = 0.0;
 
+    var camera = new webgl.Camera;
+    camera.fov = 60;
+    camera.far = 800;
+
     function Tunnel() {
         var verts = [];
         var elems = [];
@@ -59,13 +63,16 @@ var Tunnel = (function() {
     }
 
     Tunnel.prototype.draw = function(env) {
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
         gl.cullFace(gl.BACK);
 
         if (1) {
             var pgm = this.programs.outer.use();
-            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+            pgm.uniformMatrix4fv('mvp', camera.mvp);
             pgm.uniform4f('color', 1.0, 0.0, 0.0, 1.0);
             pgm.uniform1f('time', time/n_rows);
             pgm.uniformSampler2D('t_frames', this.tex);
@@ -81,7 +88,7 @@ var Tunnel = (function() {
         
         if (1) {
             var pgm = this.programs.inner.use();
-            pgm.uniformMatrix4fv('mvp', env.camera.mvp);
+            pgm.uniformMatrix4fv('mvp', camera.mvp);
             pgm.uniform4f('color', 1.0, 0.0, 0.0, 1.0);
             pgm.uniform1f('time', time/n_rows);
             pgm.uniformSampler2D('t_frames', this.tex);
@@ -128,7 +135,7 @@ var Tunnel = (function() {
     var mvp = mat4.create();
 
 
-    Tunnel.prototype.update = function(env, camera) {
+    Tunnel.prototype.update = function(env) {
         var P = this.P;
 
         // "cursor"
@@ -143,8 +150,10 @@ var Tunnel = (function() {
         var rz = 0;
 
         if (env) {
-            var cw = window.innerWidth;
-            var ch = window.innerHeight;
+            //var cw = window.innerWidth;
+            //var ch = window.innerHeight;
+            var cw = env.el.width;
+            var ch = env.el.height;
             var a = 0.05;
             rx += ((env.mouse.pos[1] / ch) - 0.5) * a;
             ry += ((env.mouse.pos[0] / cw) - 0.5) * a;
