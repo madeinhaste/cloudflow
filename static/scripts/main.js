@@ -25,6 +25,7 @@ function cloudflow_main(canvas) {
             'shaders/shoe_pick.glsl',
             'shaders/tunnel.glsl',
             'shaders/cloud.glsl',
+            'shaders/earth.glsl',
         ]
     });
 
@@ -46,13 +47,24 @@ function cloudflow_main(canvas) {
     var tunnel = new Tunnel;
     var clouds = init_clouds();
 
-    var experience_visible = false;
-    function set_experience_visible(b) {
-        if (b == experience_visible)
+    var experience_visible = 0;
+    function set_experience_visible(idx) {
+        if (idx == experience_visible)
             return;
 
-        experience_visible = b;
-        api.on_experience(b);
+        // 0: not visible => shoe
+        // 1: mesh/clouds
+        // 2: 
+
+        if (idx) {
+            sounds.enter_experience();
+        } else {
+            sounds.leave_experience();
+        }
+
+        sounds.ambient(idx);
+        experience_visible = idx;
+        api.on_experience(idx !== 0);
     }
 
     var hover_part = -1;
@@ -63,6 +75,9 @@ function cloudflow_main(canvas) {
 
         hover_part = shoe.selected_part_index;
         api.on_hover(hover_part);
+
+        if (hover_part >= 0)
+            sounds.rollover(hover_part);
     }
 
 
@@ -72,7 +87,7 @@ function cloudflow_main(canvas) {
 
         if (1) {
             if (this.draw_funworld && shoe.rumble) {
-                set_experience_visible(true);
+                set_experience_visible(hover_part + 1);
 
                 if (hover_part == 0) {
                     tunnel.update(this, this.camera);
@@ -82,9 +97,16 @@ function cloudflow_main(canvas) {
                     clouds.draw(this);
                 }
             } else {
-                set_experience_visible(false);
+                set_experience_visible(0);
                 api.on_rumble(vec2.length(shoe.rumble2));
                 shoe.draw(this);
+
+                if (shoe.rumble) {
+                    //var charge = Math.max(0, vec2.length(shoe.rumble2) - 0.1);
+                    sounds.charge(1);
+                } else {
+                    sounds.charge(0);
+                }
             }
         }
     };
@@ -142,12 +164,12 @@ function cloudflow_main(canvas) {
         canvas._draw();
     }
     animate(0);
-
     var visible = true;
 
     var api = {
         set_visible: function(v) {
             visible = v;
+            sounds.ambient(0);
         },
 
         reset: function() {

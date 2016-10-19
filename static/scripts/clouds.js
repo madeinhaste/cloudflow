@@ -183,6 +183,8 @@ function init_clouds() {
     var D1 = vec3.create();
     var U1 = vec3.create();
 
+    var heights = [ 1.0, 1.2, 1.4, 1.1, 0.9 ];
+
     function update(env) {
         var old_camera = env.camera;
         env.camera = camera;
@@ -198,9 +200,9 @@ function init_clouds() {
         var x = fract(1 * player.theta)
         var y = Math.sin(Math.PI * x);
         //var y = 1 - Math.pow(2*(x - 0.5), 2);
-        var height = 1.0 + y;
+
+        var height = 1.0 + y * (heights[Math.floor(player.theta) % heights.length]);
         rry = y;
-        //height = 1.0;
 
         player.pos[0] = 0;
         player.pos[1] = height * Math.cos(player.theta);
