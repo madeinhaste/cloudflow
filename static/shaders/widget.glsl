@@ -9,7 +9,7 @@ varying vec2 v_texcoord;
 
 uniform mat4 mvp;
 uniform mat4 model_matrix;
-uniform vec4 color;
+uniform vec3 color;
 uniform vec3 translate;
 uniform sampler2D t_color;
 
@@ -37,5 +37,5 @@ void main() {
     //gl_FragColor = vec4((N + 1.0)/2.0, 1.0);
     //gl_FragColor = vec4(NdotV * color.rgb, 1.0);
     vec3 C = texture2D(t_color, v_texcoord).rgb;
-    gl_FragColor = vec4(C, 1.0);
+    gl_FragColor = vec4(color * C, 1.0);
 }

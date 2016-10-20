@@ -32,6 +32,9 @@ $(function() {
         $(window.frameElement).attr('lang') ||
         'en');
 
+    console.info('cloudflow: url query:', location.search);
+    console.info('cloudflow: language:', language);
+
     var pages = [ page1, page2, page3, page4, page5 ];
     var page_index = -1;
 
@@ -39,6 +42,7 @@ $(function() {
         .then(start)
         .catch(function(err) {
             console.warn('cloudflow: couldn\'t load language', language);
+            console.warn('cloudflow: loading default');
             language = 'en';
             load_language(language).then(start);
         });
@@ -50,9 +54,14 @@ $(function() {
     }
 
     function load_language(code) {
-        return $.getJSON('data/copy/copy-' + code + '.json')
+        return fetch('data/copy/copy-' + code + '.json')
+            .then(function(res) { return res.json() })
             .then(function(data) {
                 copy_table = data;
+            })
+            .catch(function(err) {
+                console.error('couldn\'t load lanuage file:', code, err);
+                throw err;
             });
     }
 

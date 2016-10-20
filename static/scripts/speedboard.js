@@ -6,7 +6,7 @@ function init_speedboard() {
     }
 
     var textures = {
-        widget: webgl.load_texture('images/widget_ao.jpg', {mipmap:1, flip:1})
+        widget: webgl.load_texture('images/widget2_ao.jpg', {mipmap:1, flip:1})
     };
 
     var programs = {
@@ -21,7 +21,7 @@ function init_speedboard() {
     };
 
     var ob = null;
-    load_objects('data/widget.msgpack').then(function(data) {
+    load_objects('data/widget2.msgpack').then(function(data) {
         ob = data.widget;
     });
 
@@ -89,7 +89,7 @@ function init_speedboard() {
     var mvp = mat4.create();
     var mat = mat4.create();
 
-    var sc = 2;
+    var sc = 1;
     var rot0 = mat4.create();
     mat4.rotateY(rot0, rot0, 0.5*Math.PI);
     mat4.scale(rot0, rot0, [sc,sc,sc]);
@@ -121,19 +121,38 @@ function init_speedboard() {
         gl.enable(gl.CULL_FACE);
         gl.cullFace(gl.FRONT);
 
-        for (var i = 0; i < 15; ++i) {
-            var dz = fract(-9.0*time);
-            var z = 10 - 4 * (i - dz);
-            var y = 3.0 - 2.0 * (1.0 + Math.sin(1.0*time + 3.0*i/17));
-            ++ii;
+        var tt = 15 * time;
 
-            pgm.uniform3f('translate', 2, y, z);
+        for (var i = 0; i < 10; ++i) {
+            var ci = (i - Math.floor(tt)) % 5;
+            if (ci < 1)
+                pgm.uniform3f('color', 1, 1, 1);
+            else
+                pgm.uniform3f('color', 0.5, 1, 0.5);
+
+            //var dz = fract(-9.0*time);
+            //var z = 10 - 4 * (i - dz);
+            //var y = 3.0 - 2.0 * (1.0 + Math.sin(1.0*time + 3.0*i/17));
+            //++ii;
+
+            var dz = fract(tt);
+
+
+            var theta = Math.PI * ((i + tt)/4);
+            var dx = 2.0 + 0.5*Math.sin(theta);
+            var z = 9 - 2*(i + dz);
+
+            pgm.uniform3f('translate', dx, 0, z);
             pgm.uniformMatrix4fv('model_matrix', rot0);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
 
-            pgm.uniform3f('translate', -2, y, z);
+            pgm.uniform3f('translate', -dx, 0, z);
             pgm.uniformMatrix4fv('model_matrix', rot1);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+
+            //pgm.uniform3f('translate', -2, y, z);
+            //pgm.uniformMatrix4fv('model_matrix', rot1);
+            //gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
         }
         ii -=16;
     }
@@ -159,7 +178,7 @@ function init_speedboard() {
 
 
     function draw(env) {
-        draw_scape(env);
+        //draw_scape(env);
         draw_widgets(env);
     }
     
@@ -167,12 +186,12 @@ function init_speedboard() {
     var cam_dir = vec3.fromValues(0, 0, -1);
 
     function update(env) {
-        var camera = env.camera;
-        camera.fov = 50;
-        camera.update(cam_pos, cam_dir);
+        //var camera = env.camera;
+        //camera.fov = 50;
+        //camera.update(cam_pos, cam_dir);
 
-        var theta = noise.simplex2(0.25 * time, 0.123);
-        theta += ((env.mouse.pos[0] / env.el.width) - 0.5);
+        //var theta = noise.simplex2(0.25 * time, 0.123);
+        //theta += ((env.mouse.pos[0] / env.el.width) - 0.5);
 
         //cam_dir[2] = -Math.cos(theta);
         //cam_dir[0] = Math.sin(theta);
