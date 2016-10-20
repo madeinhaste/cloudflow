@@ -1,68 +1,33 @@
 var sounds = (function() {
 
-    var sounds = (function() {
-        return {
-            s0_ambient: new Howl({
-                src: ['sounds/0/ambient.ogg'],
-                loop: true
-            }),
-            s0_rollover_1: new Howl({
-                src: ['sounds/0/rollover-1.ogg'],
-                volume: 0.2
-            }),
-            s0_rollover_2: new Howl({
-                src: ['sounds/0/rollover-2.ogg'],
-                volume: 0.2
-            }),
-            s0_rollover_3: new Howl({
-                src: ['sounds/0/rollover-3.ogg'],
-                volume: 0.2
-            }),
-            s0_rollover_4: new Howl({
-                src: ['sounds/0/rollover-4.ogg'],
-                volume: 0.2
-            }),
-            s0_enter: new Howl({
-                src: ['sounds/0/enter.ogg'],
-            }),
-            s0_exit: new Howl({
-                src: ['sounds/0/exit.ogg'],
-            }),
-            s0_charge: new Howl({
-                src: ['sounds/0/charge.ogg'],
-                rate: 2.0
-            }),
+    function get_sound(path, loop) {
+        var base_url = 'sounds/' + path;
+        var exts = ['ogg', 'm4a', 'mp3'];
+        var src = _.map(exts, function(ext) { return base_url + '.' + ext });
+        
+        return new Howl({
+            src: src,
+            loop: loop
+        });
+    }
 
-            // mesh/tunnel
-            s1_ambient: new Howl({
-                src: ['sounds/1/ambient.ogg'],
-            }),
+    var rzo_sounds = {
+        enter: get_sound('rzo/rzo-enter'),
+        leave: get_sound('rzo/rzo-leave'),
+        charge: get_sound('rzo/rzo-charge'),
+    };
 
-            // clouds
-            s2_ambient: new Howl({
-                src: ['sounds/2/ambient.ogg'],
-            }),
-
-            // enforcements/reflections
-            s3_ambient: new Howl({
-                src: ['sounds/3/ambient.ogg'],
-            }),
-
-            // midsole/speedboard
-            s4_ambient: new Howl({
-                src: ['sounds/4/ambient2.ogg'],
-            }),
-        };
-    }());
+    rzo_sounds.charge.rate(2);
 
     var set_ambient_sound_index = (function() {
         var ambient_sounds = [
-            sounds.s0_ambient,
-            sounds.s1_ambient,
-            sounds.s2_ambient,
-            sounds.s3_ambient,
-            sounds.s4_ambient,
+            get_sound('rzo/rzo-loop', true),
+            get_sound('mfl/mfl-loop', true),
+            get_sound('zgf/zgf-loop', true),
+            get_sound('enf/enf-loop', true),
+            get_sound('spd/spd-loop', true),
         ];
+
         var ambient = null;
         var ambient_volume = 1.0;
         return function(idx) {
@@ -87,12 +52,19 @@ var sounds = (function() {
 
     var play_rollover_sound = (function() {
         // idx == hover_part (0..3)
-        var rollover_wait = 500;
-        var rollover_sounds = _.times(4, function(idx) {
-            var sound = sounds['s0_rollover_' + (idx + 1)];
-            return _.throttle(function() { sound.play() }, rollover_wait);
-        });
+        var rollover_wait = 250;
+        var rollover_sounds = [
+            make_rollover_sound('rzo/rzo-hover-mfl'),
+            make_rollover_sound('rzo/rzo-hover-zgf'),
+            make_rollover_sound('rzo/rzo-hover-enf'),
+            make_rollover_sound('rzo/rzo-hover-spd')
+        ];
 
+        function make_rollover_sound(path) {
+            var sound = get_sound(path);
+            return _.throttle(function() { sound.play() }, rollover_wait);
+        }
+            
         return function(idx) {
             rollover_sounds[idx]();
         }
@@ -104,14 +76,14 @@ var sounds = (function() {
         ambient: set_ambient_sound_index,
         rollover: play_rollover_sound,
         enter_experience: function() {
-            sounds.s0_enter.play();
+            rzo_sounds.enter.play();
         },
         leave_experience: function() {
-            sounds.s0_exit.play();
+            rzo_sounds.leave.play();
         },
         charge: function(amount) {
             amount = QWQ.clamp(amount, 0, 1);
-            var sound = sounds.s0_charge;
+            var sound = rzo_sounds.charge;
 
             if (amount == 0) {
                 if (charge != 0) {
