@@ -28,6 +28,8 @@ function cloudflow_main(canvas) {
             'shaders/earth.glsl',
             'shaders/reflections.glsl',
             'shaders/arc.glsl',
+            'shaders/groove.glsl',
+            'shaders/widget.glsl',
         ]
     });
 
@@ -49,6 +51,7 @@ function cloudflow_main(canvas) {
     var tunnel = new Tunnel;
     var clouds = init_clouds();
     var reflections = init_reflections();
+    var speedboard = init_speedboard();
 
     var experience_visible = 0;
     function set_experience_visible(idx) {
@@ -100,8 +103,15 @@ function cloudflow_main(canvas) {
                     clouds.update(this);
                     clouds.draw(this);
                 } else if (hover_part == 2) {
+                    gl.clearColor(0, 0.1, 0.3, 1.0);
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                     reflections.update(this);
                     reflections.draw(this);
+                } else if (hover_part == 3) {
+                    gl.clearColor(0.7, 0.9, 1.0, 1.0);
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                    speedboard.update(this);
+                    speedboard.draw(this);
                 }
 
                 // make sure alpha channel is opaque
@@ -111,6 +121,10 @@ function cloudflow_main(canvas) {
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 gl.colorMask(true, true, true, true);
             } else {
+                this.camera.fov = 25;
+                this.camera.near = 0.1;
+                this.camera.far = 800;
+
                 set_experience_visible(0);
                 var charge = Math.max(0, vec2.length(shoe.rumble2) - 0.1);
                 if (charge !== last_charge) {

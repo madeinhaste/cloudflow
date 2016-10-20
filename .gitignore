@@ -1,3 +1,6 @@
 node_modules
-static/data
 tmp
+
+static/data
+static/images
+static/sounds
