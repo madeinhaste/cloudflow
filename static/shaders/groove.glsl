@@ -2,28 +2,53 @@
 attribute vec2 coord;
 
 varying vec3 v_normal;
-varying vec3 v_view;
+varying vec3 v_position;
 
 uniform mat4 mvp;
 uniform vec4 color;
-uniform sampler2D t_scape;
 uniform float time;
 uniform vec3 view_pos;
+uniform sampler2D t_curve;
 
 // groove.vertex //
 vec3 get_pos(vec2 co) {
-    vec3 P = 2.0 * (vec3(co.x, 0.5, co.y) - 0.5);
-    P.z *= 1.0;
-    P = P * 10.0;
+    vec3 P;
+    P.x = 20.0 * (co.x - 0.5);
+    P.y = 0.5;
+    P.z = 0.0;
 
-    float center = 0.5 + 0.1 * sin(20.0 * time + 9.0 * co.y);
-    float width = 0.1 + 0.05 * sin(1.0 * time + 9.0 * co.y);
-    float h = -smoothstep(0.05 + width, 0.01 + width, abs(co.x - center));
+
+    //P.z = 20.0 * (co.y - 0.5);
+
+    //float center = 0.5 + 0.1 * sin(20.0 * time + 9.0 * co.y);
+    float center = 0.5;
+    //float width = 0.1 + 0.05 * sin(1.0 * time + 9.0 * co.y);
+    float w = 0.1;
+    float width = mix(0.0, 0.1,
+        smoothstep(w + 0.1, w, abs(fract(time + co.y) - 0.5)));
+    float h = -smoothstep(0.08 + width, 0.02 + width, abs(co.x - center));
 
     //float h = texture2D(t_scape, vec2(co.x, co.y + time)).r;
     P.y = h;
+    //P.xy *= mix(1.0, 0.1, co.y);
 
-    P.y -= 2.0 * (1.0 + sin(3.0*time + 3.0 * co.y));
+    if (co.x == 0.0)
+        P.x = -1000.0;
+    else if (co.x == 1.0)
+        P.x = 1000.0;
+
+    {
+        vec3 T = texture2D(t_curve, vec2(co.y, 0.0)).xyz;
+        //vec4 Q = texture2D(t_curve, vec2(co.y, 1.0));
+        //P = transform_quat(P, Q);
+        //P += T;
+        //P.xy += T.xy;
+        //P.z += 100.0*T.z;
+        P += T;
+    }
+
+
+    //P.y -= 2.0 * (1.0 + sin(3.0*time + 3.0 * co.y));
     return P;
 }
 
@@ -35,16 +60,49 @@ void main() {
 
     gl_Position = mvp * vec4(P, 1.0);
     v_normal = N;
-    v_view = normalize(view_pos - P);
+    v_position = P;
 }
 
 // groove.fragment //
+vec3 toLinear(vec3 rgb) {
+    return pow(rgb, vec3(2.2));
+}
+
+vec3 filmic(vec3 c) {
+    vec3 x = vec3(max(0.0, c.x-0.004), max(0.0, c.y-0.004), max(0.0, c.z-0.004));
+    return (x*(6.2*x + 0.5)) / (x*(6.2*x + 1.7) + 0.06);
+}
+
 void main() {
-    // worldspace normal
     vec3 N = normalize(v_normal);
-    vec3 V = -normalize(v_view);
-    float NdotV = max(0.0, dot(N, V));
-    NdotV = mix(NdotV, 1.0, 0.5);
+    vec3 V = normalize(view_pos - v_position);
+    vec3 light_pos = vec3(4, 10, 3);
+    vec3 L = normalize(light_pos - v_position);
+
+    float NdotL = max(0.0, dot(N, L));
     //gl_FragColor = vec4((N + 1.0)/2.0, 1.0);
-    gl_FragColor = vec4(NdotV * color.rgb, 1.0);
+
+    float diffuse = 0.00 + NdotL;
+    vec3 C = diffuse * toLinear(color.rgb);
+    gl_FragColor = vec4(filmic(C), 1.0);
+}
+
+
+
+
+// spd_background //
+attribute vec2 coord;
+varying vec3 v_color;
+uniform vec3 color0;
+uniform vec3 color1;
+
+// spd_background.vertex //
+void main() {
+    gl_Position = vec4(2.0*(coord - 0.5), 0.0, 1.0);
+    v_color = mix(color0, color1, coord.y);
+}
+
+// spd_background.fragment //
+void main() {
+    gl_FragColor = vec4(v_color, 1.0);
 }

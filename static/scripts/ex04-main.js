@@ -34,6 +34,8 @@ function main() {
 
     var speedboard = init_speedboard();
 
+    canvas.camera.far = 1000;
+
     canvas.draw = function() {
         speedboard.update(this, use_player_cam ? this.camera : null);
 

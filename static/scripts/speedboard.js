@@ -6,22 +6,24 @@ function init_speedboard() {
     }
 
     var textures = {
-        widget: webgl.load_texture('images/widget2_ao.jpg', {mipmap:1, flip:1})
+        widget: webgl.load_texture('images/widget3_ao.png', {mipmap:1, flip:1})
     };
 
     var programs = {
         simple: webgl.get_program('simple'),
         groove: webgl.get_program('groove'),
         widget: webgl.get_program('widget'),
+        background: webgl.get_program('spd_background'),
     };
 
     var buffers = {
         verts: null,
-        elems: null
+        elems: null,
+        quad: webgl.new_vertex_buffer(new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]))
     };
 
     var ob = null;
-    load_objects('data/widget2.msgpack').then(function(data) {
+    load_objects('data/widget3.msgpack').then(function(data) {
         ob = data.widget;
     });
 
@@ -89,7 +91,7 @@ function init_speedboard() {
     var mvp = mat4.create();
     var mat = mat4.create();
 
-    var sc = 1;
+    var sc = 4;
     var rot0 = mat4.create();
     mat4.rotateY(rot0, rot0, 0.5*Math.PI);
     mat4.scale(rot0, rot0, [sc,sc,sc]);
@@ -99,6 +101,7 @@ function init_speedboard() {
     mat4.scale(rot1, rot1, [sc,sc,sc]);
 
     var ii = 0;
+    var tmp = vec3.create();
     function draw_widgets(env) {
         if (!ob) return;
         var pgm = programs.widget.use();
@@ -119,40 +122,37 @@ function init_speedboard() {
 
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.FRONT);
+        gl.cullFace(gl.BACK);
 
         var tt = 15 * time;
 
-        for (var i = 0; i < 10; ++i) {
-            var ci = (i - Math.floor(tt)) % 5;
-            if (ci < 1)
+        var C = curve.data;
+
+        var time_mult = 128;
+        var dz = 4*fract(time_mult*time);
+        for (var i = 0; i < 128; ++i) {
+            var ci = (i + Math.floor(time_mult*time)) % 5;
+            if (ci < 3)
                 pgm.uniform3f('color', 1, 1, 1);
             else
                 pgm.uniform3f('color', 0.5, 1, 0.5);
 
-            //var dz = fract(-9.0*time);
-            //var z = 10 - 4 * (i - dz);
-            //var y = 3.0 - 2.0 * (1.0 + Math.sin(1.0*time + 3.0*i/17));
-            //++ii;
+            vec3.set(tmp, 0.0, -0.15, dz);
 
-            var dz = fract(tt);
+            var sp = 8 * i;
+            tmp[0] += C[sp + 0];
+            tmp[1] += C[sp + 1];
+            tmp[2] += C[sp + 2];
 
-
-            var theta = Math.PI * ((i + tt)/4);
-            var dx = 2.0 + 0.5*Math.sin(theta);
-            var z = 9 - 2*(i + dz);
-
-            pgm.uniform3f('translate', dx, 0, z);
+            var dx = 4;
+            var z = i;
+            pgm.uniform3f('translate', tmp[0] + dx, tmp[1], tmp[2]);
             pgm.uniformMatrix4fv('model_matrix', rot0);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
 
-            pgm.uniform3f('translate', -dx, 0, z);
+            pgm.uniform3f('translate', tmp[0] - dx, tmp[1], tmp[2]);
             pgm.uniformMatrix4fv('model_matrix', rot1);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
-
-            //pgm.uniform3f('translate', -2, y, z);
-            //pgm.uniformMatrix4fv('model_matrix', rot1);
-            //gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
         }
         ii -=16;
     }
@@ -163,7 +163,7 @@ function init_speedboard() {
         var pgm = programs.groove.use();
         pgm.uniformMatrix4fv('mvp', mvp);
         pgm.uniform4f('color', 0.9, 1.0, 0.3, 1.0);
-        pgm.uniformSampler2D('t_scape', textures.scape);
+        pgm.uniformSampler2D('t_curve', curve.tex);
         pgm.uniform1f('time', time);
         pgm.uniform3fv('view_pos', camera.view_pos);
 
@@ -171,13 +171,16 @@ function init_speedboard() {
         pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
 
         gl.enable(gl.DEPTH_TEST);
-        gl.cullFace(gl.BACK);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT);
+
         webgl.bind_element_buffer(buffers.elems);
         gl.drawElements(gl.TRIANGLES, n_elems, gl.UNSIGNED_INT, 0);
     }
 
 
     function draw(env) {
+        draw_background(env);
         draw_scape(env);
         draw_widgets(env);
     }
@@ -196,8 +199,144 @@ function init_speedboard() {
         //cam_dir[2] = -Math.cos(theta);
         //cam_dir[0] = Math.sin(theta);
 
-        time -= 0.005;
+        time += 0.005;
+        curve.update(env);
     }
+
+    function draw_background() {
+        gl.disable(gl.DEPTH_TEST);
+        var pgm = programs.background.use();
+        pgm.uniform3f('color1', 0.7, 0.9, 1.0);
+        //pgm.uniform3f('color1', 0.3, 0.1, 0.8);
+        pgm.uniform3f('color0', 1, 1, 1);
+        webgl.bind_vertex_buffer(buffers.quad);
+        pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    var curve = (function() {
+
+        var n_rows = 256;
+        var curve = new Float32Array(8 * n_rows);
+
+        var curve_tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, curve_tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, n_rows, 2, 0, gl.RGBA, gl.FLOAT, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        var T0 = vec3.create();
+        var Q0 = quat.create();
+        var T = vec3.create();
+        var F = vec3.create();
+
+        var Q = quat.create();
+        var dQ = quat.create();
+
+        var tt = 0;
+
+        function update_curve(env) {
+            var P = curve;
+
+            vec3.set(T, 0, 0, 0);
+            vec3.set(F, 0, 0, -500/(n_rows-1));
+
+            // "rotate"
+            var rx = 0;
+            var ry = 0;
+            var rz = 0;
+
+            if (0 && env) {
+                var cw = env.el.width;
+                var ch = env.el.height;
+                var a = 0.03;
+                rx += ((env.mouse.pos[1] / ch) - 0.5) * a;
+                ry += ((env.mouse.pos[0] / cw) - 0.5) * a;
+            }
+
+            if (1) {
+                //var tt = 0.05 * time;
+                var tt = time;
+                var a = 0.0040;
+                rx += a * noise.simplex2(tt, 0.123);
+                ry += a * noise.simplex2(tt, 0.983);
+                rz += 0.05 * noise.simplex2(0.5*tt, 0.348);
+            }
+
+            // dQ is the incremental rotate
+            quat.identity(dQ);
+            quat.rotateX(dQ, dQ, rx);
+            quat.rotateY(dQ, dQ, ry);
+            quat.rotateZ(dQ, dQ, rz);
+
+            // Q is the accumulated rotate
+            quat.identity(Q);
+
+            // make the curve
+            var vp = 0;
+            var qp = 4 * n_rows;
+            for (var i = 0; i < n_rows; ++i) {
+                var u = i / (n_rows - 1);
+                P[vp + 0] = T[0];
+                P[vp + 1] = T[1];
+                P[vp + 2] = T[2];
+                P[vp + 3] = 0;  // unused
+
+                P[qp + 0] = Q[0];
+                P[qp + 1] = Q[1];
+                P[qp + 2] = Q[2];
+                P[qp + 3] = Q[3];
+
+                // advance cursor
+                quat.multiply(Q, Q, dQ);
+                quat.normalize(Q, Q);
+
+                vec3.transformQuat(F, F, dQ);
+                vec3.add(T, T, F);
+
+                vp += 4;
+                qp += 4;
+            }
+
+            // update texture
+            gl.bindTexture(gl.TEXTURE_2D, curve_tex);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+            gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, n_rows, 2, gl.RGBA, gl.FLOAT, P);
+
+            var camera = env.camera;
+            if (1 && camera) {
+                vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
+
+                T[0] = P[0] + 1.5*noise.simplex2(3*time, 0.358);
+                T[1] = P[1] + 0.5*noise.simplex2(5*time, 0.213);
+                T[2] = P[2] - 0;
+
+                var sp = 8 * 10;
+                var k = 0.5;
+                T[0] = QWQ.lerp(T[0], P[sp + 0], k);
+                T[1] = QWQ.lerp(T[1], P[sp + 1], k);
+                T[2] = QWQ.lerp(T[2], P[sp + 2], k);
+
+                var n = 10;
+                Q[0] = P[4*n + 0];
+                Q[1] = P[4*n + 1];
+                Q[2] = P[4*n + 2];
+                vec3.sub(Q, Q, T);
+
+                quat.identity(Q);
+                camera.update_quat(T, Q);
+            }
+        }
+
+        return {
+            update: update_curve,
+            data: curve,
+            tex: curve_tex,
+        };
+
+    }());
 
     return {
         draw: draw,
