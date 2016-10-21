@@ -103,10 +103,10 @@ function cloudflow_main(canvas) {
                     clouds.update(this);
                     clouds.draw(this);
                 } else if (hover_part == 2) {
-                    gl.clearColor(0, 0.1, 0.3, 1.0);
+                    //gl.clearColor(0, 0.1, 0.3, 1.0);
                     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                     reflections.update(this);
-                    reflections.draw(this);
+                    reflections.draw(this, true);
                 } else if (hover_part == 3) {
                     gl.clearColor(0.7, 0.9, 1.0, 1.0);
                     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

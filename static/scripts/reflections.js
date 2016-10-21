@@ -5,6 +5,12 @@ function init_reflections() {
         return xf;
     }
 
+    var lerp = QWQ.lerp;
+
+    function random(a, b) {
+        return lerp(a, b, Math.random());
+    }
+
     var textures = {
         scape: null
     };
@@ -13,7 +19,8 @@ function init_reflections() {
         arc: webgl.get_program('arc'),
         arc2: webgl.get_program('arc2'),
         simple: webgl.get_program('simple'),
-        landscape: webgl.get_program('landscape')
+        landscape: webgl.get_program('landscape'),
+        background: webgl.get_program('enf_background')
     };
 
     var n_arcs = 25;
@@ -23,11 +30,14 @@ function init_reflections() {
     var n_circle_elems = 0;
 
     _.times(n_arcs, function() {
-        arcs.push(vec4.fromValues(
-                    3 * QWQ.lerp(-1, 1, Math.random()),
+        arcs.push({
+            params: vec4.fromValues(
+                    3 * random(-1, 1),
                     0.2,
-                    QWQ.lerp(100, 1, Math.random()),
-                    QWQ.lerp(0.5, 3, Math.random())));
+                    random(100, 1),
+                    random(0.5, 3)),
+            radius: random(0.01, 0.02)
+        });
     });
 
     // (1) replicate the lines arcs with geom
@@ -42,7 +52,8 @@ function init_reflections() {
         ])),
         arcs: null,
         circle_verts: null,
-        circle_elems: null
+        circle_elems: null,
+        quad: webgl.new_vertex_buffer(new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]))
     };
 
     function make_arcs() {
@@ -65,68 +76,6 @@ function init_reflections() {
         buffers.circle_verts = webgl.new_vertex_buffer(new Float32Array(verts));
         buffers.circle_elems = webgl.new_element_buffer(new Uint16Array(elems));
         n_circle_elems = elems.length;
-
-
-        // arcs
-        var out = new Float32Array(8 * n_arcs * n_arc_verts);
-        var dp = 0;
-
-        var T = vec3.create();
-        var Q = quat.create();
-
-        for (var i = 0; i < n_arcs; ++i) {
-            var arc = arcs[i];
-            var time = -10;
-
-            var dp0 = dp;
-            for (var j = 0; j < n_arc_verts; ++j) {
-                var u = j / (n_arc_verts - 1);
-                var z = arc[2] + 2.0 * time;
-                var x = fract(2.0*u + z);
-                var y = 1.0 - Math.pow(2.0*(x - 0.5), 2.0);
-                y *= arc[3];    // height
-                y += arc[1];    // offset y
-
-                out[dp + 0] = arc[0];
-                out[dp + 1] = y;
-                out[dp + 2] = u*10 + z;
-                out[dp + 3] = 0;
-
-                dp += 8;
-            }
-
-            var dp = dp0;
-            for (var j = 0; j < n_arc_verts; ++j) {
-                T[0] = 0;
-                T[1] = 0;
-                T[2] = 0;
-
-                if (j > 0) {
-                    T[0] += out[dp + 0] - out[dp - 8];
-                    T[1] += out[dp + 1] - out[dp - 7];
-                    T[2] += out[dp + 2] - out[dp - 6];
-                }
-
-                if (j < n_arc_verts-1) {
-                    T[0] += out[dp + 8] - out[dp + 0];
-                    T[1] += out[dp + 9] - out[dp + 1];
-                    T[2] += out[dp + 10] - out[dp + 2];
-                }
-
-                vec3.normalize(T, T);
-                quat.rotationTo(Q, [0,0,1], T);
-                quat.normalize(Q, Q);
-
-                out[dp + 4] = Q[0];
-                out[dp + 5] = Q[1];
-                out[dp + 6] = Q[2];
-                out[dp + 7] = Q[3];
-
-                dp += 8;
-            }
-        }
-
-        buffers.arcs = webgl.new_vertex_buffer(new Float32Array(out));
     }
     make_arcs();
 
@@ -178,7 +127,7 @@ function init_reflections() {
                 var sc = 5;
 
                 //var h = 0.2 + 3 * Math.pow(2*(u-0.5), 2);
-                var h = 6*Math.sin(Math.PI*u) * (0.01 + Math.pow(2*(u-0.5),2));
+                var h = 6*Math.sin(Math.PI*u) * (0.001 + Math.pow(2*(u-0.5),2));
                 
                 var y = h * (1 + noise.simplex2(sc*u, sc*v));
 
@@ -197,7 +146,7 @@ function init_reflections() {
     }
     make_scape_texture();
 
-    var time = 0.0;
+    var time = -3;
     var mvp = mat4.create();
     var mat = mat4.create();
     var tmp = vec3.create();
@@ -228,54 +177,36 @@ function init_reflections() {
         var pgm = programs.arc2.use();
         pgm.uniformMatrix4fv('mvp', mvp);
         pgm.uniform4f('color', 1.0, 1.0, 1.0, 1.0);
+        pgm.uniform1f('time', time);
+        pgm.uniform3fv('view_pos', camera.view_pos);
         light_params.setup(pgm);
 
-        var attrib_index0 = pgm.enableVertexAttribArray('position0');
+        var attrib_index0 = pgm.enableVertexAttribArray('coord');
         ext.vertexAttribDivisorANGLE(attrib_index0, 1);
-        var attrib_index1 = pgm.enableVertexAttribArray('rotation0');
-        ext.vertexAttribDivisorANGLE(attrib_index1, 1);
 
-        var attrib_index2 = pgm.enableVertexAttribArray('position1');
-        ext.vertexAttribDivisorANGLE(attrib_index2, 1);
-        var attrib_index3 = pgm.enableVertexAttribArray('rotation1');
-        ext.vertexAttribDivisorANGLE(attrib_index3, 1);
+        webgl.bind_vertex_buffer(buffers.verts);
+        pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
+
+        //webgl.bind_vertex_buffer(buffers.arcs);
+        //pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
 
         webgl.bind_vertex_buffer(buffers.circle_verts);
-        pgm.vertexAttribPointer('coord', 3, gl.FLOAT, false, 0, 0);
+        pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
         webgl.bind_element_buffer(buffers.circle_elems);
 
         gl.enable(gl.DEPTH_TEST);
         //gl.lineWidth(1);
         webgl.bind_vertex_buffer(buffers.arcs);
         for (var i = 0; i < n_arcs; ++i) {
-            var stride = 8 * 4;
-            var offset = i * n_arc_verts * stride;
-            gl.vertexAttribPointer(attrib_index0, 3, gl.FLOAT, false, stride, offset);
-            gl.vertexAttribPointer(attrib_index1, 4, gl.FLOAT, false, stride, offset + 4*4);
-
-            gl.vertexAttribPointer(attrib_index2, 3, gl.FLOAT, false, stride, offset + 8*4);
-            gl.vertexAttribPointer(attrib_index3, 4, gl.FLOAT, false, stride, offset + 12*4);
-
-            /*
-            ext.drawArraysInstancedANGLE(
-                gl.POINTS,
-                0,
-                2*n_circle_verts,
-                n_arc_verts-1);
-                */
+            var arc = arcs[i];
+            pgm.uniform4fv('arc', arc.params);
+            pgm.uniform1f('radius', arc.radius);
             ext.drawElementsInstancedANGLE(
-                gl.TRIANGLE_STRIP,
-                n_circle_elems,
-                gl.UNSIGNED_SHORT,
-                0,
-                n_arc_verts-1);
+                gl.TRIANGLE_STRIP, n_circle_elems, gl.UNSIGNED_SHORT, 0,
+                n_arc_verts);
         }
-        //gl.lineWidth(1);
 
         ext.vertexAttribDivisorANGLE(attrib_index0, 0);
-        ext.vertexAttribDivisorANGLE(attrib_index1, 0);
-        ext.vertexAttribDivisorANGLE(attrib_index2, 0);
-        ext.vertexAttribDivisorANGLE(attrib_index3, 0);
     }
 
     function draw_scape() {
@@ -389,6 +320,16 @@ function init_reflections() {
         this.np = vec2.fromValues(Math.random(), Math.random());
     }
 
+    Light.prototype.set_target = function(target) {
+        vec3.sub(this.dir, target, this.pos);
+        vec3.normalize(this.dir, this.dir);
+
+        vec3.cross(this.dir2, this.dir, [0,1,0]);
+        vec3.normalize(this.dir2, this.dir2);
+        vec3.cross(this.dir2, this.dir, this.dir2);
+        vec3.normalize(this.dir2, this.dir2);
+    };
+
     Light.prototype.update = function(time) {
         tmp[0] = 10 * noise.simplex2(time, this.np[0]);
         tmp[1] = 0;
@@ -406,22 +347,26 @@ function init_reflections() {
 
     // global
     var l = new Light;
-    vec3.set(l.pos, 1, 1, 20);
-    vec3.set(l.dir, 0, 0, -1);
-    vec3.set(l.color, 1, 1, 1);
-    vec3.scale(l.color, l.color, 0.3);
+    vec3.set(l.pos, 03, 5, 10);
+    l.set_target([1.1, 0, 5]);
+    //vec3.set(l.dir, 0, 0, -1);
+    vec3.set(l.color, 0.7, 1.0, 1.5);
+    vec3.scale(l.color, l.color, 0.2);
     l.fov = 50;
     lights.push(l);
 
     // spots
     var l = new Light;
     vec3.set(l.pos, -6, 3, 8);
-    vec3.set(l.color, 1, 0.2, 0);
+    //vec3.set(l.color, 1, 0.2, 0);
+    vec3.set(l.color, 1, 1.2, 0.3);
+    vec3.scale(l.color, l.color, 2.2);
     lights.push(l);
 
     var l = new Light;
     vec3.set(l.pos, 6, 5, 7);
-    vec3.set(l.color, 0, 0.9, 0.65);
+    vec3.set(l.color, 0.7, 1.0, 1.5);
+    //vec3.set(l.color, 0, 0.9, 0.65);
     lights.push(l);
 
 
@@ -431,24 +376,39 @@ function init_reflections() {
         return mat4.invert(out, out);
     }
 
-    function draw(env) {
-        mat4.copy(mvp, env.camera.mvp);
+    function draw_background() {
+        gl.disable(gl.DEPTH_TEST);
+        var pgm = programs.background.use();
+        //pgm.uniform3f('color0', 1, 0, 0);
+        //pgm.uniform3f('color1', 1, 1, 0);
+        pgm.uniform3f('color0', 0, 0, 0);
+        pgm.uniform3f('color1', 0.3, 0.1, 0.8);
+        webgl.bind_vertex_buffer(buffers.quad);
+        pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    function draw(env, player) {
+        //vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
+        mat4.copy(mvp, player ? camera.mvp : env.camera.mvp);
 
         _.each(lights, function(l, i) {
             i && l.update(time);
         });
         light_params.update(lights);
 
+        draw_background();
         draw_scape();
         draw_arcs2();
 
-        // debug widgetsj
-        get_matrix(mat, cam_pos, cam_dir);
-        draw_axes(mat);
-        _.each(lights, function(l, i) {
-            get_matrix(mat, l.pos, l.dir);
+        if (!player)  {
+            get_matrix(mat, cam_pos, cam_dir);
             draw_axes(mat);
-        });
+            _.each(lights, function(l, i) {
+                get_matrix(mat, l.pos, l.dir);
+                draw_axes(mat);
+            });
+        }
     }
     
     var cam_pos = vec3.fromValues(0, 0.35, 10);
@@ -456,16 +416,12 @@ function init_reflections() {
     var camera = new webgl.Camera;
     camera.fov = 80;
 
-    function update(env, cam) {
+    function update(env) {
         var theta = noise.simplex2(0.25 * time, 0.123);
         theta += ((env.mouse.pos[0] / env.el.width) - 0.5);
         cam_dir[2] = -Math.cos(theta);
         cam_dir[0] = Math.sin(theta);
-
-        //if (!cam) {
-            camera.update(cam_pos, cam_dir);
-        //}
-
+        camera.update(cam_pos, cam_dir);
         time -= 0.005;
     }
 

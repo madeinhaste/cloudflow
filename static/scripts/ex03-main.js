@@ -27,7 +27,7 @@ function main() {
 
     $('#main').prepend(canvas.el);
 
-    var use_player_cam = false;
+    var use_player_cam = true;
     var use_wireframe = false;
     canvas.orbit.distance = 30;
     key('space', function() { use_player_cam = !use_player_cam });
@@ -43,7 +43,7 @@ function main() {
             //this.draw_grid();
         }
 
-        reflections.draw(this);
+        reflections.draw(this, use_player_cam);
     };
 
     canvas.pick = function() {

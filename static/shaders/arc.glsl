@@ -1,5 +1,5 @@
 // arc //
-attribute vec2 coord;
+attribute vec2 coord;   // u coord
 uniform mat4 mvp;
 uniform vec4 color;
 uniform float time;
@@ -28,11 +28,18 @@ void main() {
 
 
 // arc2 //
-attribute vec3 position0;
-attribute vec4 rotation0;
-attribute vec3 position1;
-attribute vec4 rotation1;
-attribute vec3 coord;
+//attribute vec3 position0;
+//attribute vec4 rotation0;
+//attribute vec3 position1;
+//attribute vec4 rotation1;
+
+attribute vec2 coord;   // u coord
+uniform vec4 arc;       // arc params
+uniform float radius;       // arc params
+uniform float time;
+
+// circle coords (x, y, u)
+attribute vec3 position;
 
 varying vec3 v_normal;
 varying vec3 v_position;
@@ -57,16 +64,39 @@ vec3 transform_quat(vec3 v, vec4 q) {
     return v + q.w*t + cross(q.xyz, t);
 }
 
-void main() {
-    float u = coord.z;
-    vec4 Q = mix(rotation0, rotation1, u);
-    vec3 N = transform_quat(vec3(coord.xy, 0.0), Q);
+vec3 evaluate_arc(float u) {
+    float z = arc.z + 2.0 * time;
+    float x = fract(2.0*u + z);
+    float y = 1.0 - pow(2.0*(x - 0.5), 2.0);
+    y *= arc.w;
+    y += arc.y;
+    vec3 P = vec3(arc.x, y, 10.0 * u);
+    P.z += z;
+    return P;
+}
 
-    float radius = 0.1;
-    vec3 P = mix(position0, position1, u) + radius * N;
+void main() {
+    vec3 P;
+    vec3 N;
+
+    {
+        float du = 1.0/256.0;
+        float u = coord.x + du * position.z;
+        vec3 P0 = evaluate_arc(u - du);
+        vec3 P1 = evaluate_arc(u);
+        vec3 P2 = evaluate_arc(u + du);
+        vec3 T = normalize((P1 - P0) + (P2 - P1));
+        vec3 Z = vec3(0, 0, 1);
+        vec4 Q = vec4(cross(Z, T), dot(Z, T));
+
+        //N = transform_quat(vec3(position.xy, 0.0), Q);
+        N = vec3(position.xy, 0.0);
+        float r = mix(radius, 0.0005, coord.x);
+        P = P1 + r * N;
+    }
+
     v_normal = N;
     v_position = P;
-
     gl_Position = mvp * vec4(P, 1.0);
 }
 
@@ -90,7 +120,10 @@ void main() {
         vec3 L = normalize(light_position[i] - P);
         float spot = dot(light_direction[i], -L);
 
-        float a = dot(light_direction2[i], -L);
+        float a = 0.0;
+        if (i > 0) {
+            a = dot(light_direction2[i], -L);
+        }
 
         float fs = light_falloff[i].x;
         float fw = light_falloff[i].y;
