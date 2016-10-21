@@ -27,9 +27,10 @@ function main() {
 
     $('#main').prepend(canvas.el);
 
-    var use_player_cam = true;
+    var use_player_cam = false;
     var use_wireframe = false;
-    //key('space', function() { use_player_cam = !use_player_cam });
+    canvas.orbit.distance = 30;
+    key('space', function() { use_player_cam = !use_player_cam });
 
     var reflections = init_reflections();
 

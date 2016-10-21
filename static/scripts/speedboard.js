@@ -178,7 +178,7 @@ function init_speedboard() {
 
 
     function draw(env) {
-        //draw_scape(env);
+        draw_scape(env);
         draw_widgets(env);
     }
     
