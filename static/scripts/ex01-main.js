@@ -24,6 +24,7 @@ function main() {
     $('#main').prepend(canvas.el);
 
     var tunnel = new Tunnel;
+    var fps = new QWQ.FPS('#debug');
     var use_player_cam = false;
 
     key('space', function() {
@@ -33,6 +34,7 @@ function main() {
     canvas.draw = function() {
         tunnel.update(this, use_player_cam ? this.camera : null);
         tunnel.draw(this);
+        fps.update();
     };
 
     canvas.pick = function() {

@@ -32,6 +32,7 @@ function main() {
     //canvas.camera.fov = 40;
 
     var clouds = init_clouds();
+    var fps = new QWQ.FPS('#debug');
 
     canvas.draw = function() {
         clouds.update(this, use_player_cam ? this.camera : null);
@@ -43,6 +44,7 @@ function main() {
         }
 
         clouds.draw(this);
+        fps.update();
     };
 
     canvas.pick = function() {

@@ -310,6 +310,30 @@ var QWQ = (function() {
         publish: function() { $this.trigger.apply($this, arguments) },
     });
 
+    function FPS(el) {
+        if (typeof el == 'string')
+            el = document.querySelector(el);
+
+        this.t0 = 0;
+        this.el = el;
+        this.elapsed_avg = 0;
+        this.reset();
+    }
+
+    FPS.prototype.reset = function() {
+        this.t0 = performance.now();
+    };
+
+    FPS.prototype.update = function() {
+        var t1 = performance.now();
+        var elapsed = t1 - this.t0;
+        this.elapsed_avg = QWQ.lerp(this.elapsed_avg, elapsed, 0.1);
+        this.t0 = t1;
+        this.el.innerHTML = Math.round(1000/this.elapsed_avg);
+    };
+
+    this.FPS = FPS;
+
     return this;
 
 }).call(QWQ || {});

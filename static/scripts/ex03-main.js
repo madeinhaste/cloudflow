@@ -33,6 +33,7 @@ function main() {
     key('space', function() { use_player_cam = !use_player_cam });
 
     var reflections = init_reflections();
+    var fps = new QWQ.FPS('#debug');
 
     canvas.draw = function() {
         reflections.update(this, use_player_cam ? this.camera : null);
@@ -44,6 +45,7 @@ function main() {
         }
 
         reflections.draw(this, use_player_cam);
+        fps.update();
     };
 
     canvas.pick = function() {

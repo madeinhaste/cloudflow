@@ -36,6 +36,8 @@ function main() {
 
     canvas.camera.far = 1000;
 
+    var fps = new QWQ.FPS('#debug');
+
     canvas.draw = function() {
         speedboard.update(this, use_player_cam ? this.camera : null);
 
@@ -46,6 +48,7 @@ function main() {
         }
 
         speedboard.draw(this);
+        fps.update();
     };
 
     canvas.pick = function() {
