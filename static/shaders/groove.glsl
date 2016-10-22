@@ -17,25 +17,15 @@ vec3 get_pos(vec2 co) {
     P.y = 0.5;
     P.z = 0.0;
 
-
-    //P.z = 20.0 * (co.y - 0.5);
-
-    //float center = 0.5 + 0.1 * sin(20.0 * time + 9.0 * co.y);
     float center = 0.5;
-    //float width = 0.1 + 0.05 * sin(1.0 * time + 9.0 * co.y);
     float w = 0.1;
     float width = mix(0.0, 0.1,
         smoothstep(w + 0.1, w, abs(fract(time + co.y) - 0.5)));
     float h = -smoothstep(0.08 + width, 0.02 + width, abs(co.x - center));
-
-    //float h = texture2D(t_scape, vec2(co.x, co.y + time)).r;
     P.y = h;
-    //P.xy *= mix(1.0, 0.1, co.y);
 
-    if (co.x == 0.0)
-        P.x = -1000.0;
-    else if (co.x == 1.0)
-        P.x = 1000.0;
+    //if (coord.x == 0.0) P.x -= 1000.0;
+    //if (coord.x == 1.0) P.x += 1000.0;
 
     {
         vec3 T = texture2D(t_curve, vec2(co.y, 0.0)).xyz;
@@ -47,8 +37,6 @@ vec3 get_pos(vec2 co) {
         P += T;
     }
 
-
-    //P.y -= 2.0 * (1.0 + sin(3.0*time + 3.0 * co.y));
     return P;
 }
 
@@ -85,6 +73,8 @@ void main() {
     float diffuse = 0.00 + NdotL;
     vec3 C = diffuse * toLinear(color.rgb);
     gl_FragColor = vec4(filmic(C), 1.0);
+    //gl_FragColor = vec4(0.5*(N + 1.0), 1.0);
+    //gl_FragColor = vec4(1, 0,0, 1);
 }
 
 

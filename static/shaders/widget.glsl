@@ -8,23 +8,28 @@ attribute vec2 texcoord;
 varying vec2 v_texcoord;
 
 uniform mat4 mvp;
-uniform mat4 model_matrix;
 uniform vec3 color;
 uniform vec3 translate;
+uniform vec4 rotate;
+uniform float scale;
 uniform sampler2D t_color;
 
 uniform float time;
 //uniform vec3 view_pos;
 
 // widget.vertex //
+vec3 transform_quat(vec3 v, vec4 q) {
+    vec3 t = 2.0 * cross(q.xyz, v);
+    return v + q.w*t + cross(q.xyz, t);
+}
+
 void main() {
-    vec4 P = vec4(position, 1.0);
-    P = model_matrix * P;
+    vec3 P = position;
+    P = transform_quat(P, rotate);
+    P *= scale;
     P.xyz += translate;
 
-    gl_Position = mvp * P;
-    //v_normal = N;
-    //v_view = normalize(view_pos - P);
+    gl_Position = mvp * vec4(P, 1.0);
     v_texcoord = texcoord;
 }
 

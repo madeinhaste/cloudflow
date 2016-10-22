@@ -5,8 +5,11 @@ function init_speedboard() {
         return xf;
     }
 
+    var lerp = QWQ.lerp;
+
     var textures = {
-        widget: webgl.load_texture('images/widget3_ao.png', {mipmap:1, flip:1})
+        //widget: webgl.load_texture('images/widget2_ao.jpg', {mipmap:1, flip:1})
+        widget: webgl.load_texture('images/cloud_ao.jpg', {mipmap:1, flip:1})
     };
 
     var programs = {
@@ -23,8 +26,8 @@ function init_speedboard() {
     };
 
     var ob = null;
-    load_objects('data/widget3.msgpack').then(function(data) {
-        ob = data.widget;
+    load_objects('data/cloud.msgpack').then(function(data) {
+        ob = data.cloud_s1;
     });
 
     var n_verts = 0;
@@ -52,7 +55,7 @@ function init_speedboard() {
         n_verts = verts.length/2;
         n_elems = elems.length;
         buffers.verts = webgl.new_vertex_buffer(new Float32Array(verts));
-        buffers.elems = webgl.new_element_buffer(new Uint32Array(elems));
+        buffers.elems = webgl.new_element_buffer(new Uint16Array(elems));
     }
     make_grid();
 
@@ -91,17 +94,17 @@ function init_speedboard() {
     var mvp = mat4.create();
     var mat = mat4.create();
 
-    var sc = 4;
-    var rot0 = mat4.create();
-    mat4.rotateY(rot0, rot0, 0.5*Math.PI);
-    mat4.scale(rot0, rot0, [sc,sc,sc]);
+    //var rot0 = mat3.create();
+    //mat4.rotateY(rot0, rot0, 0.5*Math.PI);
+    //var rot1 = mat3.create();
+    //mat4.rotateY(rot1, rot1, -0.5*Math.PI);
+    //
+    var rot0 = quat.create();
+    var rot1 = quat.create();
 
-    var rot1 = mat4.create();
-    mat4.rotateY(rot1, rot1, -0.5*Math.PI);
-    mat4.scale(rot1, rot1, [sc,sc,sc]);
-
-    var ii = 0;
     var tmp = vec3.create();
+    var qtmp = quat.create();
+
     function draw_widgets(env) {
         if (!ob) return;
         var pgm = programs.widget.use();
@@ -109,8 +112,7 @@ function init_speedboard() {
 
         pgm.uniformMatrix4fv('mvp', camera.mvp);
         pgm.uniformSampler2D('t_color', textures.widget);
-        //pgm.uniform1f('time', time);
-        //pgm.uniform3fv('view_pos', camera.view_pos);
+        pgm.uniform1f('scale', 16);
 
         webgl.bind_vertex_buffer(ob.buffers.position);
         pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
@@ -125,36 +127,56 @@ function init_speedboard() {
         gl.cullFace(gl.BACK);
 
         var tt = 15 * time;
-
         var C = curve.data;
 
-        var time_mult = 128;
-        var dz = 4*fract(time_mult*time);
-        for (var i = 0; i < 128; ++i) {
+        var time_mult = 128/8;
+
+        var dt = fract(time_mult*time);
+        var dz = 8*4*dt;
+
+        var qstart = 4 * 256;
+
+        for (var i = 0; i < 16; ++i) {
+            var ii = 8 * i;
+
             var ci = (i + Math.floor(time_mult*time)) % 5;
             if (ci < 3)
                 pgm.uniform3f('color', 1, 1, 1);
             else
                 pgm.uniform3f('color', 0.5, 1, 0.5);
 
-            vec3.set(tmp, 0.0, -0.15, dz);
+            vec3.set(tmp, 0.0, 0.0, 0);
 
-            var sp = 8 * i;
-            tmp[0] += C[sp + 0];
-            tmp[1] += C[sp + 1];
-            tmp[2] += C[sp + 2];
+            var sp2 = 8 * ii;
+            var sp = 8 * (ii + 8);
+            tmp[0] += lerp(C[sp + 0], C[sp2 + 0], dt);
+            tmp[1] += lerp(C[sp + 1], C[sp2 + 1], dt);
+            tmp[2] += lerp(C[sp + 2], C[sp2 + 2], dt);
 
-            var dx = 4;
-            var z = i;
-            pgm.uniform3f('translate', tmp[0] + dx, tmp[1], tmp[2]);
-            pgm.uniformMatrix4fv('model_matrix', rot0);
+            var sp2 = qstart + 8 * ii;
+            var sp = qstart + 8 * (ii + 8);
+            quat.identity(qtmp);
+            qtmp[0] = lerp(C[sp + 0], C[sp2 + 0], dt);
+            qtmp[1] = lerp(C[sp + 1], C[sp2 + 1], dt);
+            qtmp[2] = lerp(C[sp + 2], C[sp2 + 2], dt);
+            qtmp[3] = lerp(C[sp + 3], C[sp2 + 3], dt);
+            quat.normalize(qtmp, tmp);
+
+            var dx = 24;
+            var dy = 16.0;
+            pgm.uniform3f('translate', tmp[0] - dx, tmp[1] + dy, tmp[2]);
+            quat.identity(rot0);
+            //quat.rotateY(rot0, rot0, 0.5*Math.PI);
+            quat.multiply(rot0, rot0, qtmp);
+            pgm.uniform4fv('rotate', qtmp);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
 
-            pgm.uniform3f('translate', tmp[0] - dx, tmp[1], tmp[2]);
-            pgm.uniformMatrix4fv('model_matrix', rot1);
+            pgm.uniform3f('translate', tmp[0] + dx, tmp[1] + dy, tmp[2]);
+            quat.identity(rot1);
+            quat.rotateY(rot1, qtmp, Math.PI);
+            pgm.uniform4fv('rotate', rot1);
             gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
         }
-        ii -=16;
     }
 
     function draw_scape(env) {
@@ -175,14 +197,14 @@ function init_speedboard() {
         gl.cullFace(gl.FRONT);
 
         webgl.bind_element_buffer(buffers.elems);
-        gl.drawElements(gl.TRIANGLES, n_elems, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, n_elems-2048, gl.UNSIGNED_SHORT, 0);
     }
 
 
     function draw(env) {
         draw_background(env);
-        draw_scape(env);
         draw_widgets(env);
+        draw_scape(env);
     }
     
     var cam_pos = vec3.fromValues(0, 1.50, 12);
@@ -200,11 +222,14 @@ function init_speedboard() {
         //cam_dir[0] = Math.sin(theta);
 
         time += 0.005;
+        //time += 0.001;
         curve.update(env);
     }
 
     function draw_background() {
         gl.disable(gl.DEPTH_TEST);
+        gl.disable(gl.CULL_FACE);
+
         var pgm = programs.background.use();
         pgm.uniform3f('color1', 0.7, 0.9, 1.0);
         //pgm.uniform3f('color1', 0.3, 0.1, 0.8);
@@ -260,9 +285,13 @@ function init_speedboard() {
                 //var tt = 0.05 * time;
                 var tt = time;
                 var a = 0.0040;
+                //var a = 0.0100;
                 rx += a * noise.simplex2(tt, 0.123);
                 ry += a * noise.simplex2(tt, 0.983);
-                rz += 0.05 * noise.simplex2(0.5*tt, 0.348);
+                //rz += 0.05 * noise.simplex2(0.5*tt, 0.348);
+
+                //ry = 0.01;
+                //kkkrx = 0.00;
             }
 
             // dQ is the incremental rotate
@@ -309,15 +338,15 @@ function init_speedboard() {
             if (1 && camera) {
                 vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
 
-                T[0] = P[0] + 1.5*noise.simplex2(3*time, 0.358);
-                T[1] = P[1] + 0.5*noise.simplex2(5*time, 0.213);
+                T[0] = P[0] + 1.8*noise.simplex2(3*time, 0.358);
+                T[1] = P[1] + 1.0  + 1.0*noise.simplex2(5*time, 0.213);
                 T[2] = P[2] - 0;
 
                 var sp = 8 * 10;
                 var k = 0.5;
-                T[0] = QWQ.lerp(T[0], P[sp + 0], k);
-                T[1] = QWQ.lerp(T[1], P[sp + 1], k);
-                T[2] = QWQ.lerp(T[2], P[sp + 2], k);
+                T[0] = lerp(T[0], P[sp + 0], k);
+                T[1] = lerp(T[1], P[sp + 1], k);
+                T[2] = lerp(T[2], P[sp + 2], k);
 
                 var n = 10;
                 Q[0] = P[4*n + 0];
