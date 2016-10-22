@@ -17,8 +17,6 @@ var sounds = (function() {
         charge: get_sound('rzo/rzo-charge'),
     };
 
-    rzo_sounds.charge.rate(2);
-
     var set_ambient_sound_index = (function() {
         var ambient_sounds = [
             get_sound('rzo/rzo-loop', true),
@@ -99,7 +97,8 @@ var sounds = (function() {
                 }
                 charge = amount;
             }
-        }
+        },
+        get: get_sound
     };
 
 }());

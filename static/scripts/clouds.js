@@ -1,5 +1,13 @@
 function init_clouds() {
 
+    var sfx = [
+        sounds.get('zgf/zgf-fx1'),
+        sounds.get('zgf/zgf-fx2'),
+        sounds.get('zgf/zgf-fx3'),
+        sounds.get('zgf/zgf-fx4'),
+        sounds.get('zgf/zgf-fx5'),
+    ];
+
     var ob = null;
     load_objects('data/earth.msgpack').then(function(obs) {
         ob = obs.Sphere;
@@ -189,6 +197,9 @@ function init_clouds() {
 
     var heights = [ 1.0, 1.2, 1.4, 1.1, 0.9 ];
 
+    var last_x = 1;
+    var bounce_at_x = 0.65;
+
     function update(env) {
         var old_camera = env.camera;
         env.camera = camera;
@@ -202,6 +213,16 @@ function init_clouds() {
         //vec3.add(player.pos, player.pos, player.vel);
         
         var x = fract(1 * player.theta);
+
+        if (last_x < bounce_at_x && x > bounce_at_x) {
+            // sound effect on bounce
+            _.sample(sfx).play();
+            //bounce_at_x = QWQ.lerp(0.6, 0.8, Math.random());
+        }
+        last_x = x;
+
+
+
         var y;
         if (x < 0.5) {
             y = Math.sin(2*x*Math.PI);
