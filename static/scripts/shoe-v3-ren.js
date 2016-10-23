@@ -75,58 +75,9 @@ function decompress_object(ob) {
 
 function cloudflow_init_shoe_v3_ren() {
 
-    /*
-    load_objects('data/cf_1022/cf_1022.msgpack').then(function(data) {
-        obs = data;
-        export_objects(obs, 'cf_1022_s0_ready.msgpack');
-    });
-    return;
-    */
-
     var obs = null;
-    fetch('data/models/rzo/cf_1022_s0_ready.msgpack.br')
-    //fetch('data/test.msgpack.br')
-        .then(function(res) { return res.arrayBuffer() })
-        .then(function(br) { return brotli_decompress2(br) })
-        .then(function(data) {
-            data = msgpack.decode(new Uint8Array(data));
-
-            obs = {};
-            _.each(data, function(ob) {
-                //ob = decompress_object(ob);
-
-                var name = ob.name;
-                console.log('ob:', name, ob.data.index.length/3);
-
-                var buffers = {
-                    position: webgl.new_vertex_buffer(ob.data.position),
-                    normal: webgl.new_vertex_buffer(ob.data.normal),
-                    tangent: webgl.new_vertex_buffer(ob.data.tangent),
-                    texcoord: webgl.new_vertex_buffer(ob.data.texcoord),
-                    index: webgl.new_element_buffer(ob.data.index),
-                    edge_index: webgl.new_element_buffer(ob.data.edge_index)
-                };
-                obs[name] = {
-                    name: name,
-                    buffers: buffers,
-                    index_count: ob.data.index.length
-                };
-            });
-        });
-
-    function export_objects(obs, filename) {
-        var data = {};
-        _.each(obs, function(ob) {
-            data[ob.name] = {
-                name: ob.name,
-                data: ob.arrays
-            };
-            console.log('export:', ob.name);
-        });
-
-        var msg = msgpack.encode(data);
-        fetch(`/save/${filename}`, {method: 'POST', body: msg});
-    }
+    load_models_msgpack('data/models/rzo/cf_1022_s0_ready.msgpack.br')
+        .then(function(data) { obs = data });
 
     function load_texture(name, opts) {
         var ext;

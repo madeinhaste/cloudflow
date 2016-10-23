@@ -25,9 +25,8 @@ function init_speedboard() {
     };
 
     var ob = null;
-    load_objects('data/models/spd/cloud.msgpack').then(function(data) {
-        ob = data.cloud_s1;
-    });
+    load_models_msgpack('data/models/spd/cloud_ready.msgpack.br')
+        .then(function(obs) { ob = obs.cloud_s1 });
 
     var n_verts = 0;
     var n_elems = 0;

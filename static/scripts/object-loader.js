@@ -293,6 +293,21 @@ var load_objects = (function() {
         return tangent;
     }
 
+    function export_objects(obs, filename) {
+        var data = {};
+        _.each(obs, function(ob) {
+            data[ob.name] = {
+                name: ob.name,
+                data: ob.arrays
+            };
+            console.log('export:', ob.name);
+        });
+
+        var msg = msgpack.encode(data);
+        fetch(`/save/${filename}`, {method: 'POST', body: msg});
+    }
+    load_objects.export_objects = export_objects;
+
     return load_objects;
 
 }());

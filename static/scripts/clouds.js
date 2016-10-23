@@ -9,9 +9,8 @@ function init_clouds() {
     ];
 
     var ob = null;
-    load_objects('data/models/zgf/earth.msgpack').then(function(obs) {
-        ob = obs.Sphere;
-    });
+    load_models_msgpack('data/models/zgf/earth_ready.msgpack.br')
+        .then(function(data) { ob = data.Sphere });
 
     // FIXME textures
     var textures = {
@@ -364,6 +363,7 @@ function init_clouds() {
 
         var old_camera = env.camera;
         env.camera = camera;
+        vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
 
         gl.clearColor(0, 0.5, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
