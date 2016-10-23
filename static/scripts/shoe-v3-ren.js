@@ -1,17 +1,17 @@
 function cloudflow_init_shoe_v3_ren() {
 
     var obs = null;
-    cloudflow_loader.models('data/models/rzo/cf_1022_s0_ready.msgpack.br')
+    cloudflow_loader.models('rzo.cf_1022_s0_ready')
         .then(function(data) { obs = data });
 
     function load_texture(name, opts) {
-        var url_base = 'data/textures/rzo/cf_1022/';
-        return cloudflow_loader.texture(url_base + name, opts);
+        var base = 'rzo.cf_1022.';
+        return cloudflow_loader.texture(base + name, opts);
     }
 
     function load_envmap(name) {
-        var url_base = 'data/textures/rzo/envmaps/';
-        return cloudflow_loader.texture(url_base + name, {
+        var base = 'rzo.envmaps.';
+        return cloudflow_loader.texture(base + name, {
             target: gl.TEXTURE_CUBE_MAP,
             uncompressed: true
         });

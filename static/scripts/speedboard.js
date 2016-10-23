@@ -8,7 +8,7 @@ function init_speedboard() {
     var lerp = QWQ.lerp;
 
     var textures = {
-        widget: webgl.load_texture_ktx2(gl.TEXTURE_2D, 'data/textures/spd/cloud_ao')
+        widget: cloudflow_loader.texture('spd.cloud_ao')
     };
 
     var programs = {
@@ -25,7 +25,7 @@ function init_speedboard() {
     };
 
     var ob = null;
-    load_models_msgpack('data/models/spd/cloud_ready.msgpack.br')
+    cloudflow_loader.models('spd.cloud_ready')
         .then(function(obs) { ob = obs.cloud_s1 });
 
     var n_verts = 0;

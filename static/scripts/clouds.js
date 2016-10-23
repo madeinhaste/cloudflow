@@ -9,13 +9,13 @@ function init_clouds() {
     ];
 
     var ob = null;
-    load_models_msgpack('data/models/zgf/earth_ready.msgpack.br')
+    cloudflow_loader.models('zgf.earth_ready')
         .then(function(data) { ob = data.Sphere });
 
     // FIXME textures
     var textures = {
-        cloud: webgl.load_texture_ktx2(gl.TEXTURE_2D, 'data/textures/zgf/cloud'),
-        earth_nor: webgl.load_texture_ktx2(gl.TEXTURE_2D, 'data/textures/zgf/earth_nor', {wrap: gl.REPEAT})
+        cloud: cloudflow_loader.texture('zgf.cloud'),
+        earth_nor: cloudflow_loader.texture('zgf.earth_nor', {wrap: gl.REPEAT})
     };
 
     var rry = 0;

@@ -234,7 +234,7 @@ function cloudflow_main(canvas) {
     };
 
     // loader hookup
-    var n_resources = 15;
+    var n_resources = 20;
     cloudflow_loader.on_progress = function(done) {
         api.on_loading(done / n_resources);
     };
