@@ -12,7 +12,7 @@ function load_models_msgpack(url) {
             obs = {};
             _.each(data, function(ob) {
                 var name = ob.name;
-                console.log('ob:', name, ob.data.index.length/3);
+                //console.log('ob:', name, ob.data.index.length/3);
                 var buffers = {
                     position: webgl.new_vertex_buffer(ob.data.position),
                     normal: webgl.new_vertex_buffer(ob.data.normal),

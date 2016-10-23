@@ -9,7 +9,7 @@
 
     worker.onmessage = function(e) {
         var token = e.data.token;
-        console.log('recv token:', token);
+        //console.log('recv token:', token);
         var output = e.data.data;
         var resolve = token_resolves[token];
         console.assert(resolve);
@@ -21,7 +21,7 @@
         return new Promise(function(resolve) {
             var token = next_token++;
             token_resolves[token] = resolve;
-            console.log('send token:', token);
+            //console.log('send token:', token);
             worker.postMessage({
                 token: token,
                 data: src

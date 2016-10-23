@@ -210,7 +210,7 @@ function cloudflow_main(canvas) {
         }
 
         canvas._draw();
-        fps.update();
+        //fps.update();
     }
     animate(0);
     var visible = true;
@@ -229,7 +229,17 @@ function cloudflow_main(canvas) {
 
         on_hover: function(part) {},
         on_experience: function(b) {},
-        on_charge: function(v) {}
+        on_charge: function(v) {},
+        on_loading: function(fraction) {}
+    };
+
+    // loader hookup
+    var n_resources = 15;
+    cloudflow_loader.on_progress = function(done) {
+        api.on_loading(done / n_resources);
+    };
+    cloudflow_loader.on_complete = function() {
+        api.on_loading(1.0);
     };
 
     return api;

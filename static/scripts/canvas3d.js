@@ -215,9 +215,9 @@ var Canvas3D = (function() {
         this.pick_required = false;
         this.mouse_camera = true;
 
-        this.retina = false;
+        this.retina = true;
         this.dpr = window.devicePixelRatio;
-        this.dpr = 1.5;
+        //this.dpr = 1.5;
     }
 
     Canvas3D.prototype.update_mouse = function(e) {

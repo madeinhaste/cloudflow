@@ -252,10 +252,10 @@
         return texture;
     }
 
-    function load_texture_ktx(target, url) {
+    function load_texture_ktx(target, url, callback) {
         var texture = new_texture(target);
         var label = 'texload: ' + url;
-        console.time(label);
+        //console.time(label);
         fetch(url)
             .then(function(res) { return res.arrayBuffer() })
             .then(function(data) {
@@ -267,12 +267,13 @@
             .then(function(data) {
                 gl.bindTexture(target, texture);
                 parse_ktx(data);
-                console.timeEnd(label);
+                //console.timeEnd(label);
+                callback && callback();
             });
         return texture;
     }
 
-    function load_texture_ktx2(target, path, opts) {
+    function load_texture_ktx2(target, path, opts, callback) {
         var ext;
         if (opts && opts.uncompressed)
             ext = '.ktx.br';
@@ -283,7 +284,7 @@
 
         // FIXME: etc, atsc etc
 
-        var texture = webgl.load_texture_ktx(target, path + ext);
+        var texture = webgl.load_texture_ktx(target, path + ext, callback);
 
         if (opts && opts.wrap) {
             gl.bindTexture(target, texture);

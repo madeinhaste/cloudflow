@@ -104,6 +104,16 @@ $(function() {
             charger.style.width = w + 'px';
         };
 
+        cf_api.on_loading = function(frac) {
+            if (page_index == 0 && frac > 0.5)
+                show_page(1);
+
+            configure_loading(Math.round(100 * frac));
+
+            if (frac >= 1.0)
+                show_page(2);
+        };
+
         return cf_api;
     }());
 
