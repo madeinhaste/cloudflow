@@ -440,6 +440,9 @@ var webgl = (function() {
     };
 
     RenderTexture.prototype.resize = function(width, height) {
+        if (this.width == width && this.height == height)
+            return;
+
         this.width = width;
         this.height = height;
 
@@ -508,7 +511,7 @@ var webgl = (function() {
                 var extensions = this.extensions = {};
                 _.each(options.extensions, function(name) {
                     extensions[name] = gl.getExtension(name);
-                    //console.log(name, extensions[name]);
+                    console.log(name, extensions[name]);
                 });
 
                 window.gl = gl;

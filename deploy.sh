@@ -1,1 +1,1 @@
-rsync -avL static/ madeinhaste:projects/u4ia/
+rsync -avL static/ droplet:cloudflow/

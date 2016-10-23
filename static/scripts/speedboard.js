@@ -8,7 +8,6 @@ function init_speedboard() {
     var lerp = QWQ.lerp;
 
     var textures = {
-        //widget: webgl.load_texture('images/widget2_ao.jpg', {mipmap:1, flip:1})
         widget: webgl.load_texture('images/cloud_ao.jpg', {mipmap:1, flip:1})
     };
 
@@ -26,7 +25,7 @@ function init_speedboard() {
     };
 
     var ob = null;
-    load_objects('data/cloud.msgpack').then(function(data) {
+    load_objects('data/models/spd/cloud.msgpack').then(function(data) {
         ob = data.cloud_s1;
     });
 

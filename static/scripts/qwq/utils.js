@@ -317,6 +317,8 @@ var QWQ = (function() {
         this.t0 = 0;
         this.el = el;
         this.elapsed_avg = 0;
+        this.dpr = 1.0;
+        this.fxaa = true;
         this.reset();
     }
 
@@ -329,7 +331,15 @@ var QWQ = (function() {
         var elapsed = t1 - this.t0;
         this.elapsed_avg = QWQ.lerp(this.elapsed_avg, elapsed, 0.1);
         this.t0 = t1;
-        this.el.innerHTML = Math.round(1000/this.elapsed_avg);
+
+        var text = Math.round(1000/this.elapsed_avg);
+        if (this.dpr != 1.0)
+            text += ' x'+this.dpr;
+
+        if (this.fxaa)
+            text += ' fxaa';
+
+        this.el.innerHTML = text;
     };
 
     this.FPS = FPS;

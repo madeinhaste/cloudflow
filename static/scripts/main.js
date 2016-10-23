@@ -15,14 +15,15 @@ function cloudflow_main(canvas) {
             'OES_texture_float_linear',
             'OES_standard_derivatives',
             'WEBGL_compressed_texture_s3tc',
+            'WEBKIT_WEBGL_compressed_texture_pvrtc',
             'EXT_shader_texture_lod',
             'ANGLE_instanced_arrays'
         ],
         sources: [
             'shaders/default.glsl',
-            'shaders/shoe.glsl',
             'shaders/shoe2.glsl',
-            'shaders/shoe_pick.glsl',
+            'shaders/shoe_pick2.glsl',
+            'shaders/fxaa.glsl',
             'shaders/tunnel.glsl',
             'shaders/cloud.glsl',
             'shaders/earth.glsl',
@@ -30,9 +31,22 @@ function cloudflow_main(canvas) {
             'shaders/arc.glsl',
             'shaders/groove.glsl',
             'shaders/widget.glsl',
+            'shaders/cube.glsl',
         ]
     });
 
+    var debug = document.querySelector('.debug');
+    var fps = new QWQ.FPS(debug);
+
+    key('r', function() {
+        if (canvas.dpr == 1) return;
+        canvas.retina = !canvas.retina;
+        fps.dpr = (canvas.retina ? canvas.dpr : 1);
+    });
+
+    key('f', function() {
+        fps.fxaa = shoe.toggle_fxaa();
+    });
 
     canvas.show_grid = false;
     canvas.time = 0;
@@ -66,6 +80,8 @@ function cloudflow_main(canvas) {
             sounds.enter_experience();
         } else {
             sounds.leave_experience();
+            // flip shoe color
+            shoe.red = !shoe.red;
         }
 
         sounds.ambient(idx);
@@ -144,7 +160,7 @@ function cloudflow_main(canvas) {
     };
 
     canvas.pick = function() {
-        if (!this.draw_funworld) {
+        if (visible && !this.draw_funworld) {
             shoe.pick(this);
             set_hover_part();
         }
@@ -194,6 +210,7 @@ function cloudflow_main(canvas) {
         }
 
         canvas._draw();
+        fps.update();
     }
     animate(0);
     var visible = true;

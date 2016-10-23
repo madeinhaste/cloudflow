@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css?family=Cousine');
+
+.debug {
+    z-index: 1000;
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    font: 20px Cousine;
+    color: black;
+}

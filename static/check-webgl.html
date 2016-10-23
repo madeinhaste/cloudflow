@@ -1,0 +1,39 @@
+<!doctype html>
+<script>
+    // example usage
+    document.write(cloudflow_check_webgl() ? 'INTERACTIVE' : 'FALLBACK');
+
+    function cloudflow_check_webgl() {
+        var ok = false;
+        var c, ctx, ext;
+
+        try {
+            c = document.createElement('canvas');
+            ctx = c.getContext('webgl') || c.getContext('experimental-webgl');
+
+            if (ctx) {
+                function check_extensions() {
+                    for (var i = 0; i < arguments.length; ++i)
+                        if (!ctx.getExtension(arguments[i]))
+                            return false;
+                    return true;
+                }
+
+                // required extensions
+                ok = check_extensions(
+                    'OES_element_index_uint', 'ANGLE_instanced_arrays',
+                    'OES_texture_half_float', 'OES_texture_half_float_linear',
+                    'OES_texture_float', 'OES_texture_float_linear',
+                    'OES_standard_derivatives', 'EXT_shader_texture_lod');
+                
+                // compressed texture formats
+                ok = ok && (
+                    check_extensions('WEBGL_compressed_texture_s3tc') ||
+                    check_extensions('WEBKIT_WEBGL_compressed_texture_pvrtc'));
+            }
+        } catch (e) {}
+
+        c = ctx = ext = null;
+        return ok;
+    }
+</script>

@@ -55,18 +55,28 @@ var load_objects = (function() {
             mesh.vertex_uv
         );
 
+        var arrays = {
+            position: mesh.vertex_position,
+            normal: mesh.vertex_normal,
+            tangent: mesh.vertex_tangents,
+            texcoord: mesh.vertex_uv,
+            edge_index: mesh.edge_indices,
+            index: faces.index
+        };
+
         var buffers = {
-            position: webgl.new_vertex_buffer(mesh.vertex_position),
-            normal: webgl.new_vertex_buffer(mesh.vertex_normal),
-            tangent: webgl.new_vertex_buffer(mesh.vertex_tangents),
-            texcoord: webgl.new_vertex_buffer(mesh.vertex_uv),
-            edge_index: webgl.new_element_buffer(mesh.edge_indices),
-            index: webgl.new_element_buffer(faces.index)
+            position: webgl.new_vertex_buffer(arrays.position),
+            normal: webgl.new_vertex_buffer(arrays.normal),
+            tangent: webgl.new_vertex_buffer(arrays.tangent),
+            texcoord: webgl.new_vertex_buffer(arrays.texcoord),
+            edge_index: webgl.new_element_buffer(arrays.edge_index),
+            index: webgl.new_element_buffer(arrays.index)
         };
 
         return {
             name: data.name,
             matrix: data.transform.matrix_world,
+            arrays: arrays,
             buffers: buffers,
             vertex_count: mesh.vertex_position.length/3,
             edge_index_count: mesh.edge_indices.length,

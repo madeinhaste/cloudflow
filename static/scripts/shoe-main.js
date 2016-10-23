@@ -12,12 +12,15 @@ function main() {
             'OES_texture_float_linear',
             'OES_standard_derivatives',
             'WEBGL_compressed_texture_s3tc',
+            'WEBKIT_WEBGL_compressed_texture_pvrtc',
             'EXT_shader_texture_lod',
             'ANGLE_instanced_arrays'
         ],
         sources: [
             'shaders/default.glsl',
             'shaders/shoe2.glsl',
+            'shaders/shoe_pick2.glsl',
+            'shaders/fxaa.glsl',
         ]
     });
 

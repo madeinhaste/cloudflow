@@ -1,0 +1,30 @@
+<!doctype html>
+
+<link href="https://fonts.googleapis.com/css?family=Cousine" rel="stylesheet">
+<style>
+    h1 {
+        margin: 0;
+        font: 250px Cousine;
+        transform: translate(-50%, -50%);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+    }
+</style>
+
+<script>
+    function get_pixel_ratios(ctx) {
+        var dpr = window.devicePixelRatio || 1;
+        var c = document.createElement('canvas');
+        var ctx = c.getContext('2d');
+        var bspr = (
+            ctx.webkitBackingStorePixelRatio ||
+            ctx.mozBackingStorePixelRatio ||
+            ctx.msBackingStorePixelRatio ||
+            ctx.oBackingStorePixelRatio ||
+            ctx.backingStorePixelRatio || 1);
+        return `${dpr}:${bspr}`;
+    }
+
+    document.write(`<h1>${get_pixel_ratios()}</h1>`);
+</script>

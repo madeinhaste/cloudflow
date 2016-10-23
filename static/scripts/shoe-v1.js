@@ -34,7 +34,13 @@ function cloudflow_init_shoe() {
         rot: vec2.create(),
         trans: vec3.create(),
         rumble2: vec2.create(),
-        part_select: new Float32Array(4)
+        part_select: new Float32Array(4),
+        
+        red: false,
+        
+        toggle_fxaa: function() {
+            return (ren_env.enable_fxaa = !ren_env.enable_fxaa);
+        }
     };
 
     function update_part_selection(dt) {
@@ -48,12 +54,11 @@ function cloudflow_init_shoe() {
     }
 
     function update_shoe(env) {
-        var cw = env.el.width;
-        var ch = env.el.height;
-
-        var Q = 3;
-        var rx = ((env.mouse.pos[1] / ch) - 0.5) * Q;
-        var ry = ((env.mouse.pos[0] / cw) - 0.5) * Q;
+        var Q = 1.5;
+        //var rx = ((env.mouse.pos[1] / ch) - 0.5) * Q;
+        //var ry = ((env.mouse.pos[0] / cw) - 0.5) * Q;
+        var rx = Q * env.mouse.pos_nd[1];
+        var ry = Q * env.mouse.pos_nd[0];
         var k = 0.1;
         shoe.rot[0] = lerp(shoe.rot[0], rx, k);
         shoe.rot[1] = lerp(shoe.rot[1], ry, k);
@@ -124,17 +129,24 @@ function cloudflow_init_shoe() {
         update_shoe(env);
     }
 
-    var ren = cloudflow_init_shoe_v2_ren();
+    var ren = cloudflow_init_shoe_v3_ren();
     var ren_env = {
         camera: null,
+        cw: 128,
+        ch: 128,
         time: 0,
         mat: mat4.create(),
         rumble_amount: 0,
         selected_part_index: 0,
-        part_select: shoe.part_select
+        part_select: shoe.part_select,
+        enable_fxaa: true,
+        red: false
     };
 
     function draw(env) {
+        ren_env.cw = env.el.width;
+        ren_env.ch = env.el.height;
+        ren_env.red = shoe.red;
         ren_env.camera = env.camera;
         ren_env.time = env.time;
         ren_env.rumble_amount = shoe.rumble_amount;

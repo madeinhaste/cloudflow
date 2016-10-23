@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <meta charset=UTF-8>
 <title></title>
+
+<link href="styles/debug.css" rel="stylesheet">
+<div class="debug"></div>
+
 <style>
     body {
         margin: 0;
@@ -13,16 +17,9 @@
         width: 100%;
         position: absolute;
     }
-    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    #debug {
-        display: block;
-        white-space: pre-line;
+    canvas {
         position: absolute;
-        top: 4px;
-        left: 6px;
-        color: #000;
-        font: 300 20px Cousine, monospace;
-        text-align: right;
+        top: 0; left: 0; width: 100%; height: 100%;
     }
 </style>
 
@@ -39,7 +36,7 @@
 
 
 <div id="main">
-    <div id="debug"></div>
+    <div class="debug"></div>
 </div>
 
 <div class="glsl-error"></div>
@@ -54,12 +51,15 @@
 <script src="scripts/vendor/noise.js"></script>
 <script src="scripts/vendor/howler.min.js"></script>
 
+<script src="scripts/vendor/brotli-dec.js"></script>
+<script src="scripts/brotli.js"></script>
+
 <script src="scripts/polyfills/fetch.js"></script>
 
 <script src="scripts/qwq/utils.js"></script>
 <script src="scripts/qwq/webgl.js"></script>
 <script src="scripts/canvas3d.js"></script>
-<script src="scripts/texture-loader.js"></script>
+<script src="scripts/texture-loader2.js"></script>
 <script src="scripts/object-loader.js"></script>
 <script src="scripts/tunnel.js"></script>
 <script src="scripts/clouds.js"></script>
@@ -67,7 +67,7 @@
 <script src="scripts/speedboard.js"></script>
 <script src="scripts/shoe-v1.js"></script>
 <script src="scripts/shoe-v1-ren.js"></script>
-<script src="scripts/shoe-v2-ren.js"></script>
+<script src="scripts/shoe-v3-ren.js"></script>
 <script src="scripts/sounds.js"></script>
 <script src="scripts/main.js"></script>
 

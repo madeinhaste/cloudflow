@@ -204,6 +204,7 @@ var Canvas3D = (function() {
 
         this.mouse = {
             pos: vec2.create(),
+            pos_nd: vec2.create(),
             delta: vec2.create(),
             button: -1
         };
@@ -213,17 +214,24 @@ var Canvas3D = (function() {
         this.freeze_camera = false;
         this.pick_required = false;
         this.mouse_camera = true;
+
+        this.retina = false;
+        this.dpr = window.devicePixelRatio;
+        this.dpr = 1.5;
     }
 
     Canvas3D.prototype.update_mouse = function(e) {
         var curr_pos = temps.vec3[0];
         QWQ.get_event_offset(curr_pos, e);    // FIXME
+        //debug.innerHTML = vec2.str(curr_pos);
 
         var mouse = this.mouse;
         vec2.sub(mouse.delta, curr_pos, mouse.pos);
         vec2.copy(mouse.pos, curr_pos);
 
-        //this.update_pick_ray();
+        var dpr = this.retina ? this.dpr : 1;
+        mouse.pos_nd[0] = 2 * (dpr * curr_pos[0] / this.el.width - 0.5);
+        mouse.pos_nd[1] = 2 * (dpr * curr_pos[1] / this.el.height - 0.5);
     };
 
     Canvas3D.prototype.init_input = function() {
@@ -335,10 +343,17 @@ var Canvas3D = (function() {
         var canvas = this.el;
         var camera = this.camera;
 
-        if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-            gl.viewport(0, 0, canvas.width, canvas.height);
+        // change this to window.devicePixelRatio
+        var dpr = this.retina ? this.dpr : 1;
+        var target_width = Math.floor(dpr * canvas.clientWidth);
+        var target_height = Math.floor(dpr * canvas.clientHeight);
+
+        if (canvas.width !== target_width ||
+            canvas.height !== target_height)
+        {
+            canvas.width = target_width;
+            canvas.height = target_height;
+            gl.viewport(0, 0, target_width, target_height);
             vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
         }
     };
@@ -418,11 +433,16 @@ var Canvas3D = (function() {
         var dx = pick_size;
         var dy = pick_size;
 
-        var mx = this.mouse.pos[0];
-        var my = this.mouse.pos[1];
+        var dpr = this.retina ? this.dpr : 1;
+        var mx = dpr * this.mouse.pos[0];
+        var my = dpr * this.mouse.pos[1];
 
         mat4.identity(mvp);
-        mat4.translate(mvp, mvp, [ (vp[2] - 2*(mx - vp[0])) / dx, -(vp[3] - 2*(my - vp[1])) / dy, 0]);
+        mat4.translate(mvp, mvp, [
+             (vp[2] - 2*(mx - vp[0])) / dx,
+            -(vp[3] - 2*(my - vp[1])) / dy,
+            0]);
+
         mat4.scale(mvp, mvp, [vp[2]/dx, vp[3]/dy, 1]);
         mat4.multiply(mvp, mvp, camera_mvp);
 

@@ -7,8 +7,15 @@
   "dependencies": {
     "express": "^4.14.0",
     "express-livereload": "^0.0.24",
+    "file-size": "^1.0.0",
+    "human-size": "^1.1.0",
+    "jpeg-js": "^0.2.0",
     "morgan": "^1.7.0",
+    "msgpack-lite": "^0.1.26",
+    "msgpack5": "^3.4.1",
+    "pngjs": "^3.0.0",
     "rollup": "^0.36.3",
-    "serve-static": "^1.11.1"
+    "serve-static": "^1.11.1",
+    "yargs": "^6.3.0"
   }
 }
