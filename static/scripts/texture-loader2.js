@@ -274,10 +274,13 @@
 
     function load_texture_ktx2(target, path, opts) {
         var ext;
-        if (webgl.extensions.WEBKIT_WEBGL_compressed_texture_pvrtc)
+        if (opts && opts.uncompressed)
+            ext = '.ktx.br';
+        else if (webgl.extensions.WEBKIT_WEBGL_compressed_texture_pvrtc)
             ext = '.pvr.ktx.br';
         else if (webgl.extensions.WEBGL_compressed_texture_s3tc)
             ext = '.s3.ktx.br';
+
         // FIXME: etc, atsc etc
 
         var texture = webgl.load_texture_ktx(target, path + ext);

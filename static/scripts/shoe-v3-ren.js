@@ -1,19 +1,20 @@
 function cloudflow_init_shoe_v3_ren() {
 
     var obs = null;
-    load_models_msgpack('data/models/rzo/cf_1022_s0_ready.msgpack.br')
+    cloudflow_loader.models('data/models/rzo/cf_1022_s0_ready.msgpack.br')
         .then(function(data) { obs = data });
 
     function load_texture(name, opts) {
         var url_base = 'data/textures/rzo/cf_1022/';
-        return webgl.load_texture_ktx2(gl.TEXTURE_2D, url_base + name, opts);
+        return cloudflow_loader.texture(url_base + name, opts);
     }
 
     function load_envmap(name) {
-        var ext = '.ktx.br';
-        var filename = name + ext;
         var url_base = 'data/textures/rzo/envmaps/';
-        return webgl.load_texture_ktx(gl.TEXTURE_CUBE_MAP, url_base + filename);
+        return cloudflow_loader.texture(url_base + name, {
+            target: gl.TEXTURE_CUBE_MAP,
+            uncompressed: true
+        });
     }
 
     var textures = {
