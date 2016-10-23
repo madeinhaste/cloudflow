@@ -8,7 +8,7 @@ function init_speedboard() {
     var lerp = QWQ.lerp;
 
     var textures = {
-        widget: webgl.load_texture('images/cloud_ao.jpg', {mipmap:1, flip:1})
+        widget: webgl.load_texture_ktx2(gl.TEXTURE_2D, 'data/textures/spd/cloud_ao')
     };
 
     var programs = {

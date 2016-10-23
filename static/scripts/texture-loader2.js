@@ -133,10 +133,14 @@
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
 
         //console.log(imageSize*6, data.byteLength - sp);
+        function mip_size(size, level) {
+            return (size >> level) || 1;
+        }
+
         for (var level = 0; level < numberOfMipmapLevels; ++level) {
             var imageSize = read_u32();
-            var levelWidth = pixelWidth >> level;
-            var levelHeight = pixelHeight >> level;
+            var levelWidth = mip_size(pixelWidth, level);
+            var levelHeight = mip_size(pixelHeight, level);
 
             for (var face_idx = 0; face_idx < numberOfFaces; ++face_idx) {
                 var image;
@@ -175,8 +179,8 @@
             // need to pad missing mipmaps
         if (numberOfMipmapLevels > 1) {
             var level = numberOfMipmapLevels - 1;
-            var levelWidth = pixelWidth >> level;
-            var levelHeight = pixelHeight >> level;
+            var levelWidth = mip_size(pixelWidth, level);
+            var levelHeight = mip_size(pixelHeight, level);
 
             while (true) {
                 if (levelWidth == 1 && levelHeight == 1)
@@ -268,6 +272,26 @@
         return texture;
     }
 
-    webgl.load_texture_ktx = load_texture_ktx;
+    function load_texture_ktx2(target, path, opts) {
+        var ext;
+        if (webgl.extensions.WEBKIT_WEBGL_compressed_texture_pvrtc)
+            ext = '.pvr.ktx.br';
+        else if (webgl.extensions.WEBGL_compressed_texture_s3tc)
+            ext = '.s3.ktx.br';
+        // FIXME: etc, atsc etc
 
+        var texture = webgl.load_texture_ktx(target, path + ext);
+
+        if (opts && opts.wrap) {
+            gl.bindTexture(target, texture);
+            gl.texParameteri(target, gl.TEXTURE_WRAP_S, opts.wrap);
+            gl.texParameteri(target, gl.TEXTURE_WRAP_T, opts.wrap);
+        }
+
+        return texture;
+    }
+
+    webgl.load_texture_ktx = load_texture_ktx;
+    webgl.load_texture_ktx2 = load_texture_ktx2;
+    
 }());

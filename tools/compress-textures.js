@@ -5,6 +5,11 @@ var path = require('path');
 var execSync = require('child_process').execSync;
 var fileSize = require('file-size');
 
+// i: input path
+// s3: DXT
+// pvr: PVR
+// rgb: force rgb
+
 var src_path = args.i;
 if (!Array.isArray(src_path))
     src_path = [src_path];
@@ -25,7 +30,7 @@ function encode_texture(src_path, enc) {
         execSync(cmd);
     }
     else if (enc == 'pvr') {
-        var fmt = args.rgba ? 'PVRTC1_4' : 'PVRTC1_4_RGB';
+        var fmt = args.rgb ? 'PVRTC1_4_RGB' : 'PVRTC1_4';
         console.log('format:', fmt);
         var cmd = `./PVRTexToolCLI -shh -q pvrtcbest -f ${fmt} -m -i ${src_path} -o ${dst_path}`;
         execSync(cmd);

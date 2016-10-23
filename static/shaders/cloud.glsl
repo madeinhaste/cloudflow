@@ -23,7 +23,7 @@ void main() {
     P = position.xyz + scale * P;
     gl_Position = mvp * vec4(P, 1.0);
     gl_PointSize = scale;
-    v_texcoord = coord;
+    v_texcoord = vec2(coord.x, 1.0-coord.y);
     v_color = color;
 }
 

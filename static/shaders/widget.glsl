@@ -30,7 +30,7 @@ void main() {
     P.xyz += translate;
 
     gl_Position = mvp * vec4(P, 1.0);
-    v_texcoord = texcoord;
+    v_texcoord = vec2(texcoord.x, 1.0-texcoord.y);
 }
 
 // widget.fragment //

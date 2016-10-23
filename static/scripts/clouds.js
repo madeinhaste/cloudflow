@@ -14,8 +14,8 @@ function init_clouds() {
 
     // FIXME textures
     var textures = {
-        cloud: webgl.load_texture('images/cloud.jpg', {mipmap: 1, flip: 1}),
-        earth_nor: webgl.load_texture('images/earth_nor.png', {mipmap: 1, flip: 1, wrap: gl.REPEAT})
+        cloud: webgl.load_texture_ktx2(gl.TEXTURE_2D, 'data/textures/zgf/cloud'),
+        earth_nor: webgl.load_texture_ktx2(gl.TEXTURE_2D, 'data/textures/zgf/earth_nor', {wrap: gl.REPEAT})
     };
 
     var rry = 0;
