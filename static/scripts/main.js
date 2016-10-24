@@ -24,7 +24,7 @@ function cloudflow_main(canvas) {
             'shaders/shoe2.glsl',
             'shaders/shoe_pick2.glsl',
             'shaders/fxaa.glsl',
-            'shaders/tunnel.glsl',
+            'shaders/meshflow.glsl',
             'shaders/cloud.glsl',
             'shaders/earth.glsl',
             'shaders/reflections.glsl',
@@ -62,7 +62,7 @@ function cloudflow_main(canvas) {
 
     canvas.draw_funworld = false;
 
-    var tunnel = new Tunnel;
+    var meshflow = init_meshflow();
     var clouds = init_clouds();
     var reflections = init_reflections();
     var speedboard = init_speedboard();
@@ -78,10 +78,16 @@ function cloudflow_main(canvas) {
 
         if (idx) {
             sounds.enter_experience();
+
+            // for sounds
+            if (idx == 1) meshflow.enter(shoe.red);
         } else {
             sounds.leave_experience();
             // flip shoe color
             shoe.red = !shoe.red;
+
+            // for sounds
+            if (experience_visible == 1) meshflow.leave();
         }
 
         sounds.ambient(idx);
@@ -109,12 +115,12 @@ function cloudflow_main(canvas) {
             return;
 
         if (1) {
-            if (this.draw_funworld && shoe.rumble) {
+            if (this.draw_funworld && shoe.rumble && hover_part >= 0) {
                 set_experience_visible(hover_part + 1);
 
                 if (hover_part == 0) {
-                    tunnel.update(this);
-                    tunnel.draw(this);
+                    meshflow.update(this);
+                    meshflow.draw(this, true);
                 } else if (hover_part == 1) {
                     clouds.update(this);
                     clouds.draw(this);

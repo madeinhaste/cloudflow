@@ -1,4 +1,17 @@
 function init_meshflow() {
+
+    var palette = 'blue';
+
+    var loops = [
+        sounds.get('mfl/mfl-loop0', true),
+        sounds.get('mfl/mfl-loop1', true),
+        sounds.get('mfl/mfl-loop2', true),
+    ];
+
+    loops[0].volume(0).play();
+    loops[1].volume(0).play();
+    loops[2].volume(0).play();
+
     function fract(x) {
         var xi = Math.floor(x);
         var xf = x - xi;
@@ -38,11 +51,19 @@ function init_meshflow() {
         return vec3.fromValues(r, g, b);
     }
 
-    var colors = {
-        mesh0: hex_color('29adeb'),
-        mesh1: hex_color('0280be'),
-        back0: hex_color('caf94b'),
-        back1: hex_color('8ab609'),
+    var palettes = {
+        blue: {
+            mesh0: hex_color('29adeb'),
+            mesh1: hex_color('0280be'),
+            back0: hex_color('caf94b'),
+            back1: hex_color('8ab609'),
+        },
+        red: {
+            mesh0: hex_color('e73541'),
+            mesh1: hex_color('ac1921'),
+            back0: hex_color('e67816'),
+            back1: hex_color('9f5500'),
+        }
     };
 
     var n_verts = 0;
@@ -78,8 +99,7 @@ function init_meshflow() {
     var mvp = mat4.create();
 
     function draw_mesh_layer(env, idx) {
-        var camera = env.camera;
-        mat4.copy(mvp, camera.mvp);
+        var colors = palettes[palette];
 
         var pgm;
         if (idx == 0) {
@@ -144,15 +164,18 @@ function init_meshflow() {
     var bank_amount = QWQ.RAD_PER_DEG * 1;
     var qbank = quat.create();
 
+    var loop_volume = [0, 0, 0];
+    var camera = new webgl.Camera;
+    camera.far = 1000;
+    camera.near = 0.01;
+    camera.fov = 70;
+
     function update(env) {
         time += 0.005;
 
-        var camera = env.camera;
-        if (1 && camera) {
-            vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
-            camera.fov = 70;
-
+        if (camera) {
             var h = (1 + env.mouse.pos_nd[1])/2;
+            h = QWQ.clamp(h, 0.0, 1.0);
             time += 0.005*h;
 
             h = lerp(-0.95, 2.0, h);
@@ -168,13 +191,36 @@ function init_meshflow() {
             vec3.set(cam_up, 0, 1, 0);
             vec3.transformQuat(cam_up, cam_up, qbank);
 
+            vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
             camera.update(cam_pos, cam_dir, cam_up);
+            mat4.copy(mvp, camera.mvp);
+        }
+
+        for (var i = 0; i < 3; ++i) {
+            var x = 0.0;
+            var y = cam_pos[1];
+            if (i == 0 && y < 0) x = 1.0;
+            if (i == 1 && 0 <= y && y < 1) x = 1.0;
+            if (i == 2 && 1 <= y) x = 1.0;
+
+            var v = loop_volume[i];
+            if (v !== x) {
+                v = loop_volume[i] = lerp(v, x, 0.1);
+                loops[i].volume(v);
+            }
         }
     }
 
     return {
         draw: draw,
-        update: update
+        update: update,
+        enter: function(red) {
+            loops.forEach(function(l) { l.volume(0).play() });
+            palette = red ? 'red' : 'blue';
+        },
+        leave: function() {
+            loops.forEach(function(l) { l.stop() });
+        }
     };
 
 }

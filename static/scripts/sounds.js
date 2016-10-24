@@ -20,7 +20,8 @@ var sounds = (function() {
     var set_ambient_sound_index = (function() {
         var ambient_sounds = [
             get_sound('rzo/rzo-loop', true),
-            get_sound('mfl/mfl-loop', true),
+            //get_sound('mfl/mfl-loop0', true),
+            null,
             get_sound('zgf/zgf-loop', true),
             get_sound('enf/enf-loop', true),
             get_sound('spd/spd-loop', true),
@@ -28,16 +29,25 @@ var sounds = (function() {
 
         var ambient = null;
         var ambient_volume = 1.0;
+        var startup = true;
         return function(idx) {
             var s = ambient_sounds[idx];
             if (s !== ambient) {
                 ambient && ambient.stop();
 
-                if (!ambient) {
+                if (!s) {
+                    // meshflow
+                    ambient = null;
+                    return;
+                }
+
+                if (!ambient && startup) {
                     // start-up fade in
+                    console.log('STARTUP');
                     s.volume(0);
                     s.play();
                     s.fade(0.0, ambient_volume, 10000);
+                    startup = false;
                 } else {
                     s.volume(ambient_volume);
                 }
