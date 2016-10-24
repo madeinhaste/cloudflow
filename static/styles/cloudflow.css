@@ -9,6 +9,7 @@
 
     transition: opacity 2s ease;
     opacity: 0;
+    overflow: hidden;
 }
 
 .cf-visible {
@@ -140,7 +141,7 @@
 .cf-part-description {
     text-align: center;
     vertical-align: middle;
-    font: 300 38px nf-text-book;
+    font: 38px neutraface;
     color: #333;
 }
 
@@ -152,7 +153,6 @@
     width: 100%;
     height: 100%;
     /* filter: blur(50px); */
-    left: 150px;
 
     display: flex;
     align-items: center;
@@ -179,7 +179,7 @@
 }
 
 .cf-experienced {
-    font: 38px nf-text-book;
+    font: 38px neutraface;
     color: #3c3c3c;
     line-height: 125%;
     text-align: center;
