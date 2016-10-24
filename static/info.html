@@ -1,0 +1,61 @@
+<!doctype html>
+
+<style>
+    @import url(https://fonts.googleapis.com/css?family=Cousine);
+
+    pre {
+        margin: 0;
+        font: 20px Cousine;
+        transform: translate(-50%, -50%);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+    }
+</style>
+
+<script src="scripts/retina-detect.js"></script>
+<script>
+    function get_pixel_ratios(ctx) {
+        var dpr = window.devicePixelRatio || 1;
+        var c = document.createElement('canvas');
+        var ctx = c.getContext('2d');
+        var bspr = (
+            ctx.webkitBackingStorePixelRatio ||
+            ctx.mozBackingStorePixelRatio ||
+            ctx.msBackingStorePixelRatio ||
+            ctx.oBackingStorePixelRatio ||
+            ctx.backingStorePixelRatio || 1);
+        return `${dpr}:${bspr}`;
+    }
+
+    function get_info() {
+        var info = {};
+        info.dpr_bspr = get_pixel_ratios();
+
+        var c = document.createElement('canvas');
+        var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+        if (gl) {
+            var gl_info = {
+                version: gl.getParameter(gl.VERSION),
+                slang_version: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+                vendor: gl.getParameter(gl.VENDOR),
+                renderer: gl.getParameter(gl.RENDERER)
+            };
+
+            Object.assign(info, gl_info);
+
+            var exts = gl.getSupportedExtensions();
+            info['extensions'] = exts;
+            info['use_retina'] = retina_detect(gl);
+        }
+
+        gl = null;
+        c = null;
+
+        return JSON.stringify(info, null, 4);
+    }
+
+    get_info();
+
+    document.write(`<pre>${get_info()}</pre>`);
+</script>
