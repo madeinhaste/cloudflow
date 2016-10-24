@@ -418,7 +418,7 @@ function init_reflections() {
 
     function update(env) {
         var theta = noise.simplex2(0.25 * time, 0.123);
-        theta += ((env.mouse.pos[0] / env.el.width) - 0.5);
+        theta += 0.5 * env.mouse.pos_nd[0];
         cam_dir[2] = -Math.cos(theta);
         cam_dir[0] = Math.sin(theta);
         camera.update(cam_pos, cam_dir);
