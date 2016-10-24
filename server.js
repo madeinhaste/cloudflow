@@ -7,7 +7,7 @@ var raw_body_parser = require('raw-body-parser');
 var fs = require('fs');
 var argv = require('yargs').argv;
 
-var assets_dirpath = __dirname + (argv.dev ? '/static/' : '/build');
+var assets_dirpath = __dirname + (argv.build ? '/build' : '/static');
 var app = express();
 
 app.use(morgan('dev'));
