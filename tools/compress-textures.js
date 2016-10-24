@@ -32,7 +32,7 @@ function encode_texture(src_path, enc) {
     else if (enc == 'pvr') {
         var fmt = args.rgb ? 'PVRTC1_4_RGB' : 'PVRTC1_4';
         console.log('format:', fmt);
-        var cmd = `./PVRTexToolCLI -shh -q pvrtcbest -f ${fmt} -m -i ${src_path} -o ${dst_path}`;
+        var cmd = `PVRTexToolCLI -shh -q pvrtcbest -f ${fmt} -m -i ${src_path} -o ${dst_path}`;
         execSync(cmd);
     }
 
