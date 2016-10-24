@@ -1,5 +1,7 @@
 function cloudflow_init_shoe_v3_ren() {
 
+    var HAVE_TEXLOD = webgl.extensions.EXT_shader_texture_lod ? 1 : undefined;
+
     var obs = null;
     cloudflow_loader.models('rzo.cf_1022_s0_ready')
         .then(function(data) { obs = data });
@@ -48,22 +50,24 @@ function cloudflow_init_shoe_v3_ren() {
         shoe: webgl.get_program('shoe2', {defines: {
             NORMAL_MAP: 1,
             //AMBOCC_MAP: 1,
-            HAVE_TEXLOD: 1
+            HAVE_TEXLOD: HAVE_TEXLOD
         }}),
         shoe_no_occ: webgl.get_program('shoe2', {defines: {
             NORMAL_MAP: 1,
-            HAVE_TEXLOD: 1
+            HAVE_TEXLOD: HAVE_TEXLOD
         }}),
         shoe_no_nor: webgl.get_program('shoe2', {defines: {
-            HAVE_TEXLOD: 1
+            HAVE_TEXLOD: HAVE_TEXLOD
         }}),
         shoe_highlight: webgl.get_program('shoe2', {defines: {
             NORMAL_MAP: 1,
             HIGHLIGHT: 1,
-            HAVE_TEXLOD: 1
+            HAVE_TEXLOD: HAVE_TEXLOD
         }}),
         shoe_pick: webgl.get_program('shoe_pick2'),
-        cube: webgl.get_program('cube'),
+        cube: webgl.get_program('cube', {defines: {
+            HAVE_TEXLOD: HAVE_TEXLOD
+        }})
     };
 
     var mat_normal = mat3.create();

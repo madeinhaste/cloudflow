@@ -326,7 +326,8 @@ var webgl = (function() {
             var defines = '';
             if (options.defines) {
                 _.each(options.defines, function(dv, dk) {
-                    defines += '#define '+dk+' '+dv+'\n';
+                    if (typeof dv !== 'undefined')
+                        defines += '#define '+dk+' '+dv+'\n';
                 });
             }
 

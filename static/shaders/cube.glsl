@@ -49,7 +49,13 @@ void main() {
         float NdotV = max(0.0, dot(N, V));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
         float lod = 5.0;
+
+#ifdef HAVE_TEXLOD
         vec3 Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
+#else
+        vec3 Cs = toLinear(textureCube(t_rem, R, 0.9).rgb);
+#endif
+
         //C += vec3(0.35) * F;
         //C += vec3(0.001) * F;
         C += 0.8 * F * Cs;
