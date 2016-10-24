@@ -11,7 +11,7 @@
     opacity: 0;
 }
 
-.cf-container-visible {
+.cf-visible {
     opacity: 1;
 }
 
@@ -36,42 +36,23 @@
 }
 
 .cf-sticker-transform-large {
-    left: 50%;
-    top: 40%;
-    transform: translate(-50%, -50%) skewY(-7deg) scale(2);
+    left: 40.7%;
+    top: 50.3%;
+    transform: translate(-50%, -50%) scale(1.42);
 }
 
 .cf-sticker-transform-small {
-    left: 100px;
-    top: 60px;
-    transform: skewY(-7deg);
-}
-
-.cf-sticker-swiss-flag {
-    position: relative;
-    top: 4px;
-    height: 17px;
-    margin-right: 4px;
-}
-
-.cf-sticker-subheading {
-    font: 400 13px 'Open Sans';
-    margin-bottom: 2px;
-}
-
-.cf-sticker-heading {
-    font: 700 37px 'Roboto Slab';
-    text-transform: uppercase;
-    line-height: 100%;
-    white-space: pre-line;
+    left: 3.00%;
+    top: -0.90%;
+    transform: scale(0.50);
 }
 
 /* links */
 
 .cf-links {
     position: absolute;
-    top: 40px;
-    right: 60px;
+    top: 4.62%;
+    right: 6.60%;
     color: #3c3c3c;
 }
 
@@ -83,7 +64,8 @@
     list-style: none;
     display: inline-block;
 
-    font: 400 16px 'Roboto Slab';
+    //font: 400 16px 'Roboto Slab';
+    font: 400 21px helvneue;
     padding: 0 20px;
 }
 
@@ -93,7 +75,7 @@
 
 .cf-links a {
     color: #444;
-    text-transform: uppercase;
+    //text-transform: uppercase;
     text-decoration: none;
 }
 
@@ -103,43 +85,65 @@
 
 /* instructions */
 
-.cf-instructions {
+.cf-instructions-container {
     position: absolute;
-    left: 0;
-    bottom: 50px;
-    width: 100%;
-    text-align: center;
+    width: 40%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    bottom: 5.50%;
+    //background-color: rgba(255,0,0, 0.1);
+
+    display: flex:
+    flex-direction: column;
     pointer-events: none;
 }
 
-.cf-instructions-hr {
-    display: inline-block;
-    background-color: #23c;
-    height: 1px;
-    margin: 0;
-    text-align: center;
-    width: 10px;
-}
-
 .cf-instructions-text {
-    font: 400 23px 'Roboto Slab';
+    text-align: center;
+    font: 400 21px helvneue;
     color: #444;
     text-transform: uppercase;
     white-space: pre-line;
-    margin: 0;
+    margin-bottom: 2.0%;
+}
+
+.cf-part-charge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 0;
+    height: 100%;
+    transform: translate(-50%, 0);
+    border-bottom: 1px solid #0051a0;
+    border-top: 1px solid #0051a0;
+}
+
+.cf-part-description-container {
+    position: relative;
+
+    text-align: center;
+    height: 186px;
+    //padding: 6.5%;
+    //background-color: rgba(0,0,255, 0.1);
+    color: #333;
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0;
+    transition: opacity 2s ease;
 }
 
 .cf-part-description {
-    position: absolute;
-    left: 0;
-    bottom: 140px;
-
     text-align: center;
-    width: 100%;
-
-    font: 300 23px 'Roboto Slab';
-    color: #444;
+    vertical-align: middle;
+    font: 300 38px nf-text-book;
+    color: #333;
 }
+
 
 /* experienced */
 
@@ -148,6 +152,7 @@
     width: 100%;
     height: 100%;
     /* filter: blur(50px); */
+    left: 150px;
 
     display: flex;
     align-items: center;
@@ -155,29 +160,43 @@
 }
 
 .cf-experienced-container {
-    width: 650px;
+    //background-color: rgba(255,0,0, 0.2);
+    width: 90%;
+    max-width: 750px;
 }
 
 .cf-experienced {
-    transform: skewY(-7deg);
     color: #3c3c3c;
 }
 
-.cf-experienced {
-    font: 600 37px 'Roboto Slab';
-    color: #3c3c3c;
+.cf-experienced-headline {
+    text-align: center;
+    font: 22px helvneue;
     text-transform: uppercase;
-    line-height: 110%;
-    margin-bottom: 15px;
+    color: #3c3c3c;
+    margin-bottom: 25px;
+    //background-color: rgba(0,0,255, 0.2);
+}
+
+.cf-experienced {
+    font: 38px nf-text-book;
+    color: #3c3c3c;
+    line-height: 125%;
+    text-align: center;
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
+    padding: 30px 0;
 }
 
 .cf-experienced-close-bar {
-    padding-top: 50px;
+    position: relative;
+    top: 70px;
     text-align: center;
+    //background-color: rgba(0,0,255, 0.2);
 }
 
 .cf-experienced-close-icon {
-    height: 25px;
+    height: 30px;
 }
 
 /* loading */
@@ -185,10 +204,10 @@
 .cf-loading {
     position: absolute;
     left: 50%;
-    bottom: 100px;
+    bottom: 108px;
     transform: translate(-50%, 0);
 
-    font: 300 20px 'Roboto Slab';
+    font: 300 21px helvneue;
     color: #3c3c3c;
     text-transform: uppercase;
 
@@ -198,15 +217,4 @@
 .cf-webgl-blurred {
     filter: blur(30px);
     opacity: 0.3;
-}
-
-.cf-instructions-charge {
-    position: absolute;
-    left: 50%;
-    /*width: 360px;*/
-    width: 0;
-    height: 38px;
-    transform: translate(-50%, -35px);
-    border-bottom: 2px solid #444;
-    border-top: 2px solid #444;
 }

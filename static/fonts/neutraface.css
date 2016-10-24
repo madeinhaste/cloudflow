@@ -1,0 +1,64 @@
+@font-face {
+    font-family: neutraface;
+    font-weight: 400;
+    src: url( neutraface/NeutrafaceSlabText-Book.otf );
+}
+
+/* NeutraFaceSlabDisplay */
+
+/*
+@font-face {
+    font-family: nf-display-bold;
+    src: url( neutraface/NeutrafaceSlabDisplay-Bold.otf );
+}
+
+@font-face {
+    font-family: nf-display-light;
+    src: url( neutraface/NeutrafaceSlabDisplay-Light.otf );
+}
+
+@font-face {
+    font-family: nf-display-medium;
+    src: url( neutraface/NeutrafaceSlabDisplay-Medium.otf );
+}
+
+@font-face {
+    font-family: nf-display-stencil;
+    src: url( neutraface/NeutrafaceSlabDisplay-Stencil.otf );
+}
+
+@font-face {
+    font-family: nf-display-thin;
+    src: url( neutraface/NeutrafaceSlabDisplay-Thin.otf );
+}
+
+@font-face {
+    font-family: nf-display-titling;
+    src: url( neutraface/NeutrafaceSlabDisplay-Titling.otf );
+}
+*/
+
+
+/* NeutraFaceSlabText */
+
+/*
+@font-face {
+    font-family: nf-text-bold;
+    src: url( neutraface/NeutrafaceSlabText-Bold.otf );
+}
+
+@font-face {
+    font-family: nf-text-book;
+    src: url( neutraface/NeutrafaceSlabText-Book.otf );
+}
+
+@font-face {
+    font-family: nf-text-demi;
+    src: url( neutraface/NeutrafaceSlabText-Demi.otf );
+}
+
+@font-face {
+    font-family: nf-text-light;
+    src: url( neutraface/NeutrafaceSlabText-Light.otf );
+}
+*/

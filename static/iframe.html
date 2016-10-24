@@ -6,20 +6,21 @@
 <link href="styles/debug.css" rel="stylesheet">
 <div class="debug"></div>
 
+<!--
+<div class="home-container">
+-->
+
 <div class="cf-container">
     <canvas class="cf-webgl"></canvas>
 
     <div class="cf-sticker">
-        <img class="cf-sticker-swiss-flag" src="images/swiss-flag.png">
-        <span class="cf-sticker-subheading"></span>
-        <div class="cf-sticker-heading"></div>
+        <img class="cf-sticker-img" src="images/introducing.svg">
     </div>
 
     <div class="cf-links">
         <ul>
-            <li><a data-text="shop_mens" href="#"></a>
-            <li><a data-text="shop_womens" href="#"></a>
-            <li><a data-text="find_a_dealer" href="#"></a>
+            <li><a data-copy="ui.shop_men" href="#"></a>
+            <li><a data-copy="ui.shop_women" href="#"></a>
         </ul>
     </div>
 
@@ -27,17 +28,25 @@
         0% LOADING
     </div>
 
-    <div class="cf-instructions">
-        <div class="cf-instructions-text"></div>
-        <div class="cf-instructions-charge"></div>
-    </div>
+    <div class="cf-instructions-container">
+        <div class="cf-instructions">
+            <div class="cf-instructions-text"></div>
+        </div>
 
-    <div class="cf-part-description">
-        Engineered mesh blends breathability with support
+        <div class="cf-part-description-container">
+            <div class="cf-part-description">
+                Engineered mesh blends breathability with support
+            </div>
+            <div class="cf-part-charge"></div>
+        </div>
     </div>
 
     <div class="cf-experienced-overlay">
         <div class="cf-experienced-container">
+            <div class="cf-experienced-headline">
+                Speedboard
+            </div>
+
             <div class="cf-experienced">
                 Speedboard with responsive flex and rocker promotes flow-motion.
                 The cloudflow speedboard is all about a responsive ride.
@@ -51,6 +60,11 @@
         </div>
     </div>
 </div>
+
+<!--
+<div class="home-template"></div>
+</div>
+-->
 
 <!-- build:js scripts/bundle.js -->
 <script src="scripts/polyfills/fetch.js"></script>
@@ -66,6 +80,7 @@
 
 <script src="scripts/qwq/utils.js"></script>
 <script src="scripts/qwq/webgl.js"></script>
+<script src="scripts/retina-detect.js"></script>
 <script src="scripts/canvas3d.js"></script>
 
 <script src="scripts/texture-loader2.js"></script>
@@ -82,3 +97,13 @@
 <script src="scripts/main.js"></script>
 <script src="scripts/site-main.js"></script>
 <!-- endbuild -->
+
+<script>
+    (function() {
+        var script = document.createElement('script');
+        script.src = `${location.protocol}//${location.hostname}:35729/livereload.js`;
+        script.async = true;
+        document.querySelector('head').appendChild(script);
+    }());
+</script>
+

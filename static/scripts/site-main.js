@@ -50,11 +50,11 @@ $(function() {
     function start() {
         show_page(0);
         $('.cf-container')
-            .addClass('cf-container-visible');
+            .addClass('cf-visible');
     }
 
     function load_language(code) {
-        return fetch('data/copy/copy-' + code + '.json')
+        return fetch('data/copies/copies.' + code + '.json')
             .then(function(res) { return res.json() })
             .then(function(data) {
                 copy_table = data;
@@ -67,8 +67,9 @@ $(function() {
 
     show_page(page_index);
 
-    var hover_parts = ['mesh', 'clouds', 'enforcements', 'speedboard'];
-    var hover_part = hover_parts[0];
+    // part names for copies
+    var hover_parts = [ 'mesh', 'outsole', 'enforcement', 'speedboard' ];
+    var hover_part = hover_parts[3];
 
     var cf_api = (function() {
         cf_api = cloudflow_main($('.cf-webgl')[0]);
@@ -97,11 +98,11 @@ $(function() {
             }
         };
 
-        var charger = $('.cf-instructions-charge')[0];
+        var charger = $('.cf-part-charge')[0];
         cf_api.on_charge = function(amount) {
             amount = Math.min(1, 1.0 * amount);
-            var w = ~~(amount * 360);
-            charger.style.width = w + 'px';
+            var w = ~~(amount * 100);
+            charger.style.width = w + '%';
         };
 
         cf_api.on_loading = function(frac) {
@@ -124,8 +125,7 @@ $(function() {
 
     function hide_all() {
         var names = [
-            'instructions',
-            'part-description',
+            'instructions-container',
             'experienced-overlay',
             'sticker',
             'loading',
@@ -142,26 +142,24 @@ $(function() {
 
     function get_copy(id) {
         // lang selection etc..
-        return _.get(copy_table, id);
+        //return _.get(copy_table, id);
+        return copy_table[id] || 'nocopy';
     }
 
-    function configure_sticker(size, heading, subheading) {
+    function configure_sticker(size, name) {
         $('.cf-sticker')
             .show()
             .removeClass('cf-sticker-transform-large cf-sticker-transform-small')
             .addClass('cf-sticker-transform-' + size);
 
-        $('.cf-sticker-heading')
-            .text(get_copy('sticker.heading.' + heading));
-
-        $('.cf-sticker-subheading')
-            .text(get_copy('sticker.subheading.' + subheading));
+        $('.cf-sticker-img')
+            .attr('src', 'images/' + name + '.svg');
     }
 
     function configure_loading(percent) {
         $('.cf-loading')
             .show()
-            .html(percent + get_copy('loading.percent_loading'));
+            .html(percent + '% loading');
     }
 
     function configure_links() {
@@ -169,51 +167,58 @@ $(function() {
         $('.cf-links')
             .find('a')
             .each(function(index, el) {
-                $(el).text(get_copy('links.' + el.dataset.text));
+                $(el)
+                    .text(get_copy(el.dataset.copy))
+                    .attr('href', 'https://www.on-running.com/');
             });
     }
 
     function configure_instructions(text) {
-        $('.cf-instructions').show();
+        $('.cf-instructions-container').show();
         $('.cf-instructions-text')
-            .text(get_copy('instructions.' + text));
+            .text(get_copy(text));
     }
 
-    function configure_part_description(text) {
-        $('.cf-part-description')
-            .show()
-            .text(get_copy('part_description.' + text));
+    function configure_part_description(part) {
+        $('.cf-part-description-container')
+            .css({ opacity: part ? 1 : 0 });
+
+        if (part) {
+            $('.cf-part-description')
+                .text(get_copy(part+'.rollover'));
+        }
     }
 
-    function configure_experienced(text) {
+    function configure_experienced(part) {
         $('.cf-experienced-overlay').show();
+        $('.cf-experienced-headline')
+            .text(get_copy(part+'.headline'));
         $('.cf-experienced')
-            .text(get_copy('experienced.' + text));
+            .text(get_copy(part+'.copy'));
     }
 
     function page1() {
-        configure_sticker('large', 'shortcut', 'swiss_engineering');
-        configure_loading(16);
+        configure_sticker('large', 'introducing');
         cf_api.set_visible(false);
     }
 
     function page2() {
-        configure_sticker('large', 'introducing', 'swiss_engineering');
-        configure_loading(68);
+        configure_sticker('large', 'shortcut');
         cf_api.set_visible(false);
     }
 
     function page3() {
         configure_sticker('small', 'shortcut', 'introducing');
         configure_links();
-        configure_instructions('hover');
+        configure_instructions('ui.click_and_hold');
+        configure_part_description(null);
         cf_api.set_visible(true);
     }
 
     function page4() {
         configure_sticker('small', 'shortcut', 'introducing');
         configure_links();
-        configure_instructions('press');
+        configure_instructions('ui.click_and_hold');
         configure_part_description(hover_part);
         $('.cf-instructions-charge').show();
     }
@@ -239,6 +244,12 @@ $(function() {
         hide_all();
         page_index = index;
         pages[index]();
+
+        /*
+        $('.home-template').css({
+            backgroundImage: 'url(../images/home-' + (page_index+1) + '.jpg)'
+        });
+        */
     }
 
     function show_next_page() {
@@ -249,15 +260,20 @@ $(function() {
         show_page(page_index - 1);
     }
 
+    /*
     $('.cf-webgl').on('click', function() {
         if (page_index < 2)
             show_next_page();
     });
+    */
 
+   /*
     $('.cf-links a').on('click', function(e) {
         e.preventDefault();
     });
+    */
 
+    //Howler.mute(true);
     //key('left', show_prev_page);
     //key('right', show_next_page);
 
