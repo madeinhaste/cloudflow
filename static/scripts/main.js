@@ -96,13 +96,19 @@ function cloudflow_main(canvas) {
     }
 
     var hover_part = -1;
+
+    var api_update_on_hover = _.throttle(function() {
+        api.on_hover(hover_part);
+    }, 250);
+    
     function set_hover_part() {
         var part = shoe.selected_part_index;
         if (part == hover_part)
             return;
 
         hover_part = shoe.selected_part_index;
-        api.on_hover(hover_part);
+        //api.on_hover(hover_part);
+        api_update_on_hover();
 
         if (hover_part >= 0)
             sounds.rollover(hover_part);
