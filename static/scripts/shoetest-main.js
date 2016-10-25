@@ -45,12 +45,22 @@ function main() {
         rumble_amount: 0,
         selected_part_index: 0,
         part_select: new Float32Array(4),
-        enable_fxaa: false,
-        use_normal2: true
+        enable_fxaa: true,
+        use_normal2: true,
+        red: false,
+        grid: true
     };
 
-    key('space', function() {
-        ren_env.use_normal2 = !ren_env.use_normal2;
+    key('f', function() {
+        ren_env.enable_fxaa = !ren_env.enable_fxaa;
+    });
+
+    key('c', function() {
+        ren_env.red = !ren_env.red;
+    });
+
+    key('g', function() {
+        ren_env.grid = !ren_env.grid;
     });
 
     $('#fxaa').on('click', function() {

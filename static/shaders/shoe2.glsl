@@ -69,19 +69,42 @@ vec3 filmic(vec3 c) {
     return (x*(6.2*x + 0.5)) / (x*(6.2*x + 1.7) + 0.06);
 }
 
-float grid(vec2 coord, float size, float width) {
+float edgeFactor(vec2 co){
+    vec2 d = fwidth(co);
+    vec2 a3 = smoothstep(vec2(0.0), d*1.5, co);
+    return min(a3.x, a3.y);
+}
+
+float grid(vec2 coord, float gsize, float gwidth) {
     // http://www.gamedev.net/topic/529926-terrain-contour-lines-using-pixel-shader/
     // http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
-    float gsize = 128.0;
-    float gwidth = 0.5;
     vec2 P = coord;
     vec2 f = abs(fract(P * gsize)-0.5);
-    vec2 df = fwidth(P * gsize);
+    vec2 df = gsize * fwidth(P);
     float mi = max(0.0, gwidth-1.0);
     float ma = max(1.0, gwidth); //should be uniforms
     vec2 g = clamp((f - df*mi) / (df * (ma-mi)), max(0.0, 1.0-gwidth), 1.0); // max(0.0,1.0-gwidth) should also be sent as uniform
-    return 2.0 * ((1.0 - g.x) + (1.0 - g.y));
+    float result = 2.0 * ((1.0 - g.x) + (1.0 - g.y));
+    return result;
 }
+
+float rgb_to_luminance(vec3 rgb) {
+    const vec3 Y = vec3(0.2126, 0.7152, 0.0722);
+    return dot(rgb, Y);
+}
+
+float saturate(float x) { return clamp(x, 0.0, 1.0); }
+vec3 saturate(vec3 x) { return clamp(x, 0.0, 1.0); }
+
+float specular_occlusion(vec3 dNormalW, vec3 dViewDirW, float dAo) {
+    float material_occludeSpecularIntensity = 1.0;
+    float dGlossiness = 0.8;
+    float specPow = exp2(dGlossiness * 11.0);
+    float specOcc = saturate(pow(dot(dNormalW, dViewDirW) + dAo, 0.01*specPow) - 1.0 + dAo);
+    specOcc = mix(1.0, specOcc, material_occludeSpecularIntensity);
+    return specOcc;
+}
+
 
 void main() {
     float alpha = 1.0;
@@ -124,11 +147,12 @@ void main() {
 
     {
         vec4 Cd_tex = toLinear(texture2D(t_color, v_texcoord));
+        //Cd_tex.rgb = vec3(rgb_to_luminance(Cd_tex.rgb));
 
         //vec2 grid_co = vec2(v_texcoord.x+time, v_texcoord.y);
         vec2 grid_co = v_texcoord;
 
-        vec3 Cd_grid = mix(vec3(0.3), vec3(1.0), grid(grid_co, 128.0, 0.5));
+        vec3 Cd_grid = mix(vec3(0.3), vec3(0.50), grid(grid_co, 80.0, 0.80));
 
         float grid_blend = 0.0;
 
@@ -157,22 +181,30 @@ void main() {
     }
 
     vec3 Ambient = (textureCube(t_iem, -N).rgb) * ambient;
-    C += Ambient * occ * Cd;
+    Ambient = vec3(rgb_to_luminance(Ambient));
+    
+    Cd = occ * Ambient * Cd;
 
+    vec3 Cs;
     if (true) {
         float F0 = f0;
         float NdotV = max(0.0, dot(N, V));
-        float NdotL = max(0.0, dot(N, R));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
 
 #ifdef HAVE_TEXLOD
-        vec3 Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
+        Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
 #else
-        vec3 Cs = toLinear(textureCube(t_rem, R, 0.9).rgb);
+        Cs = toLinear(textureCube(t_rem, R, 0.9).rgb);
 #endif
 
-        C += occ * specular * F * Cs;
+        Cs = vec3(rgb_to_luminance(Cs));
+
+        float spec_occ = specular_occlusion(N, V, occ);
+        Cs = F * spec_occ * Cs;
     }
+
+    C =  mix(Cd, Cs, specular);
+    //C = Cd + specular * Cs;
 
     gl_FragColor = vec4(alpha * filmic(C), alpha);
     //gl_FragColor = vec4(vec3(id), alpha);

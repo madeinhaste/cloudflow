@@ -34,6 +34,11 @@ vec3 toLinear(vec3 rgb) {
     return pow(rgb, vec3(2.2));
 }
 
+float rgb_to_luminance(vec3 rgb) {
+    const vec3 Y = vec3(0.2126, 0.7152, 0.0722);
+    return dot(rgb, Y);
+}
+
 void main() {
     vec3 V = normalize(viewpos - v_position);
     vec3 N = normalize(v_normal);
@@ -42,6 +47,7 @@ void main() {
     vec3 C = vec3(0.0);
     vec3 Cd = vec3(0.50);
     vec3 Ambient = textureCube(t_iem, -N).rgb;
+    Ambient = vec3(rgb_to_luminance(Ambient));
     C += Ambient * Cd;
 
     if (true) {
@@ -55,6 +61,8 @@ void main() {
 #else
         vec3 Cs = toLinear(textureCube(t_rem, R, 0.9).rgb);
 #endif
+
+        Cs = vec3(rgb_to_luminance(Cs));
 
         //C += vec3(0.35) * F;
         //C += vec3(0.001) * F;

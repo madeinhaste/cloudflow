@@ -131,6 +131,9 @@ function cloudflow_init_shoe_v3_ren() {
         var id0 = obtex.id0 || 0;
         var id1 = obtex.id1 || 0;
         var id2 = obtex.id2 || 0;
+
+        if (env.grid) id0 = 1;
+
         pgm.uniform3f('id_blend', id0, id1, id2);
 
         webgl.bind_vertex_buffer(ob.buffers.position);
