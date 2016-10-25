@@ -31,7 +31,8 @@ function cloudflow_init_shoe() {
 
         start_rumble: start_rumble,
 
-        rot: vec2.create(),
+        rot: vec3.create(),
+        rot_neutral: vec3.create(),
         trans: vec3.create(),
         rumble2: vec2.create(),
         part_select: new Float32Array(4),
@@ -54,12 +55,17 @@ function cloudflow_init_shoe() {
     }
 
     function update_shoe(env) {
-        var Q = 1.5;
-        //var rx = ((env.mouse.pos[1] / ch) - 0.5) * Q;
-        //var ry = ((env.mouse.pos[0] / cw) - 0.5) * Q;
-        var rx = Q * env.mouse.pos_nd[1];
-        var ry = Q * env.mouse.pos_nd[0];
+        var rx = env.mouse.pos_nd[1];
+        var ry = 1.5 * env.mouse.pos_nd[0];
+
+        if (rx > -0.2) {
+            var k = Math.min(1, (rx + 0.2) / 0.3);
+            rx += QWQ.RAD_PER_DEG * k * 90;
+        }
+
+        //rx = ry = 0;
         var k = 0.1;
+
         shoe.rot[0] = lerp(shoe.rot[0], rx, k);
         shoe.rot[1] = lerp(shoe.rot[1], ry, k);
 
@@ -120,11 +126,18 @@ function cloudflow_init_shoe() {
 
         mat4.identity(shoe.mat);
         mat4.translate(shoe.mat, shoe.mat, shoe.trans);
-        mat4.rotateX(shoe.mat, shoe.mat, shoe.rumble2[0] - shoe.rot[0]);
-        mat4.rotateY(shoe.mat, shoe.mat, shoe.rumble2[1] - shoe.rot[1]);
+
+        var rx = shoe.rumble2[0] - shoe.rot[0] + shoe.rot_neutral[0];
+        var ry = shoe.rumble2[1] - shoe.rot[1] + shoe.rot_neutral[1];
+        var rz = shoe.rot_neutral[2];
+
+        mat4.rotateX(shoe.mat, shoe.mat, rx);
+        mat4.rotateY(shoe.mat, shoe.mat, ry);
+        mat4.rotateZ(shoe.mat, shoe.mat, rz);
     }
 
     function update(env, dt) {
+        update_params();
         update_part_selection(dt);
         update_shoe(env);
     }
@@ -192,6 +205,25 @@ function cloudflow_init_shoe() {
                 10.0);
         }
     }
+
+    var params = {
+        rx: 30,
+        ry: 0,
+        rz: 0
+    };
+
+    function update_params() {
+        vec3.set(shoe.rot_neutral, params.rx, params.ry, params.rz);
+        vec3.scale(shoe.rot_neutral, shoe.rot_neutral, QWQ.RAD_PER_DEG);
+    }
+    
+    1 && (function() {
+        var gui = new dat.GUI();
+        dat.GUI.toggleHide();
+        gui.add(params, 'rx', -180, 180);
+        gui.add(params, 'ry', -180, 180);
+        gui.add(params, 'rz', -180, 180);
+    }());
 
     return shoe;
 
