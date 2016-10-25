@@ -44,6 +44,10 @@ function cloudflow_main(canvas) {
         fps.dpr = (canvas.retina ? canvas.dpr : 1);
     });
 
+    key('c', function() {
+        shoe.red = !shoe.red;
+    });
+
     key('f', function() {
         fps.fxaa = shoe.toggle_fxaa();
     });

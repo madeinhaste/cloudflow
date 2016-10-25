@@ -33,7 +33,7 @@ function main() {
     key('space', function() { use_player_cam = !use_player_cam });
 
     var meshflow = init_meshflow();
-    meshflow.enter(true);
+    meshflow.enter(false);
 
     canvas.camera.far = 1000;
     canvas.camera.near = 0.01;

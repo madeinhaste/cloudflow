@@ -36,7 +36,7 @@ function cloudflow_init_shoe() {
         rumble2: vec2.create(),
         part_select: new Float32Array(4),
         
-        red: false,
+        red: true,
         
         toggle_fxaa: function() {
             return (ren_env.enable_fxaa = !ren_env.enable_fxaa);

@@ -22,7 +22,8 @@ function init_meshflow() {
 
     var textures = {
         //fabric: cloudflow_loader.texture('mfl.fabric', {wrap:gl.REPEAT, aniso:8})
-        fabric: cloudflow_loader.texture('mfl.fabric', {wrap:gl.REPEAT, aniso:8})
+        //fabric: cloudflow_loader.texture('mfl.fabric', {wrap:gl.REPEAT, aniso:8})
+        fabric: cloudflow_loader.texture('mfl.nrm_lum_knit', {wrap:gl.REPEAT, aniso:8})
     };
 
     var programs = {
@@ -97,6 +98,7 @@ function init_meshflow() {
 
     var time = 0.0;
     var mvp = mat4.create();
+    var light_pos = vec3.fromValues(3, 10, 5);
 
     function draw_mesh_layer(env, idx) {
         var colors = palettes[palette];
@@ -123,6 +125,8 @@ function init_meshflow() {
         }
 
         pgm.uniformMatrix4fv('mvp', mvp);
+        pgm.uniform3fv('view_pos', env.camera.view_pos);
+        pgm.uniform3fv('light_pos', light_pos);
         pgm.uniform3f('translate', 0, (idx - 1), 0);
         pgm.uniform1f('time', time);
         pgm.uniform1f('drift', drift);
@@ -171,6 +175,9 @@ function init_meshflow() {
     camera.fov = 70;
 
     function update(env) {
+        //time += 0.0001;
+        //mat4.copy(mvp, env.camera.mvp);
+        //return;
         time += 0.005;
 
         if (camera) {

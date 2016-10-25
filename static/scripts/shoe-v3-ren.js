@@ -113,8 +113,8 @@ function cloudflow_init_shoe_v3_ren() {
             pgm.uniformSampler2D('t_occ', obtex.occ);
 
         pgm.uniform1f('lod', 5.0);
-        pgm.uniform1f('f0', 0.05);
-        pgm.uniform1f('specular', 0.2);
+        pgm.uniform1f('f0', obtex.f0 || 0.05);
+        pgm.uniform1f('specular', obtex.specular || 0.2);
         pgm.uniform1f('normal_mix', 1.0);
         pgm.uniform1f('normal_scale', obtex.nor_scale ? obtex.nor_scale : 1.0);
         pgm.uniform1i('use_normal2', env.use_normal2);
@@ -266,7 +266,9 @@ function cloudflow_init_shoe_v3_ren() {
         1&&draw_ob(env, obs.cf_laces, {
             col: laces_col,
             nor: textures.laces_nor,
-            nor_scale: 50
+            nor_scale: 50,
+            specular: 0.05,
+            f0: 0.08
         });
 
         // little parts
