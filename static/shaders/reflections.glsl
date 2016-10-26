@@ -5,20 +5,11 @@ varying vec3 v_normal;
 varying vec3 v_view;
 varying vec3 v_position;
 
+// landscape.vertex //
 uniform mat4 mvp;
-uniform vec4 color;
 uniform sampler2D t_scape;
 uniform float time;
-uniform vec3 view_pos;
 
-#define N_LIGHTS 3
-uniform vec3 light_position[N_LIGHTS];
-uniform vec3 light_direction[N_LIGHTS];
-uniform vec3 light_direction2[N_LIGHTS];
-uniform vec3 light_color[N_LIGHTS];
-uniform vec2 light_falloff[N_LIGHTS];
-
-// landscape.vertex //
 vec3 get_pos(vec2 co) {
     vec3 P = 2.0 * (vec3(co.x, 0.5, co.y) - 0.5);
     //P.z *= 2.0;
@@ -41,6 +32,16 @@ void main() {
 }
 
 // landscape.fragment //
+uniform vec4 color;
+uniform vec3 view_pos;
+
+#define N_LIGHTS 3
+uniform vec3 light_position[N_LIGHTS];
+uniform vec3 light_direction[N_LIGHTS];
+uniform vec3 light_direction2[N_LIGHTS];
+uniform vec3 light_color[N_LIGHTS];
+uniform vec2 light_falloff[N_LIGHTS];
+
 vec3 toLinear(vec3 rgb) {
     return pow(rgb, vec3(2.2));
 }
@@ -106,10 +107,11 @@ void main() {
 // enf_background //
 attribute vec2 coord;
 varying vec3 v_color;
+
+// enf_background.vertex //
 uniform vec3 color0;
 uniform vec3 color1;
 
-// enf_background.vertex //
 void main() {
     gl_Position = vec4(2.0*(coord - 0.5), 0.0, 1.0);
     v_color = mix(color0, color1, coord.y);

@@ -1,8 +1,9 @@
 // particles //
 attribute vec4 position;
-uniform mat4 mvp;
 
 // particles.vertex //
+uniform mat4 mvp;
+
 void main() {
     vec3 P = position.xyz;
     gl_Position = mvp * vec4(P, 1.0);

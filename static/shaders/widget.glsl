@@ -1,23 +1,14 @@
 // widget //
 attribute vec3 position;
 attribute vec2 texcoord;
-
-//attribute vec3 normal;
-//varying vec3 v_normal;
-//varying vec3 v_view;
 varying vec2 v_texcoord;
 
+// widget.vertex //
 uniform mat4 mvp;
-uniform vec3 color;
 uniform vec3 translate;
 uniform vec4 rotate;
 uniform float scale;
-uniform sampler2D t_color;
 
-uniform float time;
-//uniform vec3 view_pos;
-
-// widget.vertex //
 vec3 transform_quat(vec3 v, vec4 q) {
     vec3 t = 2.0 * cross(q.xyz, v);
     return v + q.w*t + cross(q.xyz, t);
@@ -34,13 +25,10 @@ void main() {
 }
 
 // widget.fragment //
+uniform sampler2D t_color;
+uniform vec3 color;
+
 void main() {
-    // worldspace normal
-    //vec3 N = normalize(v_normal);
-    //vec3 V = -normalize(v_view);
-    //float NdotV = max(0.0, dot(N, V));
-    //gl_FragColor = vec4((N + 1.0)/2.0, 1.0);
-    //gl_FragColor = vec4(NdotV * color.rgb, 1.0);
     vec3 C = texture2D(t_color, v_texcoord).rgb;
     gl_FragColor = vec4(color * C, 1.0);
 }

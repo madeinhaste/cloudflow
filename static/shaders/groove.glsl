@@ -1,16 +1,13 @@
 // groove //
 attribute vec2 coord;
-
 varying vec3 v_normal;
 varying vec3 v_position;
 
+// groove.vertex //
 uniform mat4 mvp;
-uniform vec4 color;
 uniform float time;
-uniform vec3 view_pos;
 uniform sampler2D t_curve;
 
-// groove.vertex //
 vec3 get_pos(vec2 co) {
     vec3 P;
     P.x = 20.0 * (co.x - 0.5);
@@ -52,6 +49,9 @@ void main() {
 }
 
 // groove.fragment //
+uniform vec4 color;
+uniform vec3 view_pos;
+
 vec3 toLinear(vec3 rgb) {
     return pow(rgb, vec3(2.2));
 }
@@ -83,10 +83,11 @@ void main() {
 // spd_background //
 attribute vec2 coord;
 varying vec3 v_color;
+
+// spd_background.vertex //
 uniform vec3 color0;
 uniform vec3 color1;
 
-// spd_background.vertex //
 void main() {
     gl_Position = vec4(2.0*(coord - 0.5), 0.0, 1.0);
     v_color = mix(color0, color1, coord.y);

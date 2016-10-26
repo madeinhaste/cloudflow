@@ -25,8 +25,10 @@ function init_speedboard() {
     };
 
     var ob = null;
-    cloudflow_loader.models('spd.cloud_ready')
-        .then(function(obs) { ob = obs.cloud_s1 });
+    cloudflow_loader.models('spd.cloud_v2')
+        .then(function(obs) {
+            ob = obs.cloud_s1;
+        });
 
     var n_verts = 0;
     var n_elems = 0;
@@ -167,13 +169,13 @@ function init_speedboard() {
             //quat.rotateY(rot0, rot0, 0.5*Math.PI);
             quat.multiply(rot0, rot0, qtmp);
             pgm.uniform4fv('rotate', qtmp);
-            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_SHORT, 0);
 
             pgm.uniform3f('translate', tmp[0] + dx, tmp[1] + dy, tmp[2]);
             quat.identity(rot1);
             quat.rotateY(rot1, qtmp, Math.PI);
             pgm.uniform4fv('rotate', rot1);
-            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_SHORT, 0);
         }
     }
 

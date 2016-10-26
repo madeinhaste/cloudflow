@@ -9,15 +9,11 @@ varying vec3 v_tangent;
 varying vec3 v_position;
 varying vec2 v_texcoord;
 
+// earth.vertex //
 uniform mat4 mvp;
 uniform mat4 model_matrix;
 uniform mat3 normal_matrix;
-uniform vec3 color;
-uniform vec3 viewpos;
-uniform sampler2D t_normal;
-uniform float normal_scale;
 
-// earth.vertex //
 void main() {
     vec4 P = model_matrix * vec4(position, 1.0);
     v_normal = normal_matrix * normal;
@@ -29,6 +25,11 @@ void main() {
 
 // earth.fragment //
 #extension GL_EXT_shader_texture_lod : enable
+
+uniform vec3 color;
+uniform vec3 viewpos;
+uniform sampler2D t_normal;
+uniform float normal_scale;
 
 float G1V(float NdotV, float k) { return 1.0 / (NdotV*(1.0 - k) + k); }
 vec3 toLinear(vec3 rgb) { return pow(rgb, vec3(2.2)); }

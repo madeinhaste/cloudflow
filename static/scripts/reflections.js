@@ -16,7 +16,6 @@ function init_reflections() {
     };
 
     var programs = {
-        arc: webgl.get_program('arc'),
         arc2: webgl.get_program('arc2'),
         simple: webgl.get_program('simple'),
         landscape: webgl.get_program('landscape'),
@@ -104,7 +103,7 @@ function init_reflections() {
         n_verts = verts.length/2;
         n_elems = elems.length;
         buffers.verts = webgl.new_vertex_buffer(new Float32Array(verts));
-        buffers.elems = webgl.new_element_buffer(new Uint32Array(elems));
+        buffers.elems = webgl.new_element_buffer(new Uint16Array(elems));
     }
     make_grid();
 
@@ -151,26 +150,6 @@ function init_reflections() {
     var mat = mat4.create();
     var tmp = vec3.create();
 
-
-    function draw_arcs() {
-        var pgm = programs.arc.use();
-        pgm.uniformMatrix4fv('mvp', mvp);
-        pgm.uniform4f('color', 1.0, 1.0, 1.0, 1.0);
-        pgm.uniform1f('time', time);
-
-        webgl.bind_vertex_buffer(buffers.verts);
-        pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
-
-        gl.enable(gl.DEPTH_TEST);
-        gl.lineWidth(4);
-
-        _.each(arcs, function(pos) {
-            pgm.uniform4fv('pos', pos);
-            gl.drawArrays(gl.LINE_STRIP, 0, 256);
-        });
-
-        gl.lineWidth(1);
-    }
 
     var ext = webgl.extensions.ANGLE_instanced_arrays;
     function draw_arcs2() {
@@ -223,7 +202,7 @@ function init_reflections() {
         pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
         gl.enable(gl.DEPTH_TEST);
         webgl.bind_element_buffer(buffers.elems);
-        gl.drawElements(gl.TRIANGLES, n_elems, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, n_elems, gl.UNSIGNED_SHORT, 0);
     }
 
     var light_params = (function() {

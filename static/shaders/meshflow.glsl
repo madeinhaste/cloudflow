@@ -5,20 +5,11 @@ varying vec3 v_position;
 varying vec3 v_normal;
 varying vec3 v_tangent;
 varying vec3 v_bitangent;
-uniform mat4 mvp;
-
-uniform sampler2D t_fabric;
-
-uniform float time;
-uniform float drift;
-uniform vec3 translate;
-
-uniform vec3 color0;
-uniform vec3 color1;
-uniform vec3 light_pos;
-uniform vec3 view_pos;
 
 // meshflow.vertex //
+uniform mat4 mvp;
+uniform vec3 translate;
+
 vec3 get_pos(vec2 co) {
     vec3 P = vec3(
         4.0 * (co.x - 0.5),
@@ -50,6 +41,14 @@ void main() {
 }
 
 // meshflow.fragment //
+uniform float time;
+uniform float drift;
+uniform sampler2D t_fabric;
+uniform vec3 color0;
+uniform vec3 color1;
+uniform vec3 light_pos;
+uniform vec3 view_pos;
+
 float hole(vec2 co, float size) {
     const float PI = 3.141592653589793;
     float s2 = 0.5 + (sin(2.0 * PI * 2.0 * co.y) * 0.5);

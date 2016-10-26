@@ -50,8 +50,10 @@ function init_clouds() {
     ];
 
     var ob = null;
-    cloudflow_loader.models('zgf.earth_ready')
-        .then(function(data) { ob = data.Sphere });
+    cloudflow_loader.models('zgf.earth_v2')
+        .then(function(data) {
+            ob = data.Sphere;
+        });
 
     // FIXME textures
     var textures = {
@@ -262,8 +264,7 @@ function init_clouds() {
         gl.cullFace(gl.BACK);
 
         webgl.bind_element_buffer(ob.buffers.index);
-        gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
-        //gl.drawElements(gl.LINES, ob.edge_index_count, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_SHORT, 0);
     }
 
     var player = {
@@ -409,55 +410,6 @@ function init_clouds() {
         env.camera = old_camera;
     }
 
-    function draw_player(env) {
-        var mat = player.mat;
-        var mvp = player.mvp;
-        mat4.identity(mat);
-        mat4.translate(mat, mat, player.pos);
-
-        var sc = player.scale;
-        mat4.scale(mat, mat, [sc, sc, sc]);
-        mat4.multiply(mvp, env.camera.mvp, mat);
-
-        var pgm = programs.simple.use();
-        pgm.uniformMatrix4fv('mvp', mvp);
-        pgm.uniform4f('color', 0.0, 1.0, 0.0, 1.0);
-
-        webgl.bind_vertex_buffer(ob.buffers.position);
-        pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
-        webgl.bind_element_buffer(ob.buffers.edge_index);
-
-        gl.disable(gl.DEPTH_TEST);
-        gl.disable(gl.CULL_FACE);
-        gl.disable(gl.BLEND);
-        gl.drawElements(gl.LINES, ob.edge_index_count, gl.UNSIGNED_INT, 0);
-
-        // axes
-        webgl.bind_vertex_buffer(buffers.axes);
-        pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
-
-        mat4.identity(mat);
-        mat4.translate(mat, mat, player.pos);
-        var v = vec3.create();
-        vec3.add(v, player.pos, player.dir);
-        mat4.lookAt(mat, player.pos, v, player.up);
-        mat4.invert(mat, mat);
-
-        var sc = 0.25;
-        mat4.scale(mat, mat, [sc, sc, sc]);
-        mat4.multiply(mvp, env.camera.mvp, mat);
-        pgm.uniformMatrix4fv('mvp', mvp);
-
-        gl.lineWidth(3);
-        pgm.uniform4f('color', 1, 0, 0, 1);
-        gl.drawArrays(gl.LINES, 0, 2);
-        pgm.uniform4f('color', 0, 1, 0, 1);
-        gl.drawArrays(gl.LINES, 2, 2);
-        pgm.uniform4f('color', 0, 0.5, 1, 1);
-        gl.drawArrays(gl.LINES, 4, 2);
-        gl.lineWidth(1);
-    }
-
     var camera = new webgl.Camera;
     camera.fov = 60;
     camera.far = 800;
@@ -477,12 +429,6 @@ function init_clouds() {
         draw_earth(env);
         draw_clouds(env);
         draw_particles(env);
-        //draw_player(env);
-
-        //gl.colorMask(false, false, false, true);
-        //gl.clearColor(0, 0, 0, 1);
-        //gl.clear(gl.COLOR_BUFFER_BIT);
-        //gl.colorMask(true, true, true, true);
 
         env.camera = old_camera;
     }

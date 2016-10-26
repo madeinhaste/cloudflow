@@ -1,64 +1,15 @@
-// arc //
-attribute vec2 coord;   // u coord
-uniform mat4 mvp;
-uniform vec4 color;
-uniform float time;
-uniform vec4 pos;
-
-// arc.vertex //
-void main() {
-    float z = pos.z + 2.0 * time;
-
-    float x = fract(2.0*coord.x + z);
-    float y = 1.0 - pow(2.0*(x - 0.5), 2.0);
-    y *= pos.w;
-    y += pos.y;
-    vec3 P = vec3(pos.x, y, 10.0 * coord.x);
-    P.z += z;
-    gl_Position = mvp * vec4(P, 1.0);
-}
-
-// arc.fragment //
-void main() {
-    gl_FragColor = color;
-}
-
-
-
-
-
 // arc2 //
-//attribute vec3 position0;
-//attribute vec4 rotation0;
-//attribute vec3 position1;
-//attribute vec4 rotation1;
-
 attribute vec2 coord;   // u coord
+attribute vec3 position; // circle coords (x, y, u)
+varying vec3 v_normal;
+varying vec3 v_position;
+
+// arc2.vertex //
+uniform mat4 mvp;
 uniform vec4 arc;       // arc params
 uniform float radius;       // arc params
 uniform float time;
 
-// circle coords (x, y, u)
-attribute vec3 position;
-
-varying vec3 v_normal;
-varying vec3 v_position;
-
-uniform mat4 mvp;
-uniform vec4 color;
-uniform vec3 view_pos;
-
-
-
-#define N_LIGHTS 3
-uniform vec3 light_position[N_LIGHTS];
-uniform vec3 light_direction[N_LIGHTS];
-uniform vec3 light_direction2[N_LIGHTS];
-uniform vec3 light_color[N_LIGHTS];
-uniform vec2 light_falloff[N_LIGHTS];
-
-
-// arc2.vertex //
 vec3 transform_quat(vec3 v, vec4 q) {
     vec3 t = 2.0 * cross(q.xyz, v);
     return v + q.w*t + cross(q.xyz, t);
@@ -101,6 +52,15 @@ void main() {
 }
 
 // arc2.fragment //
+#define N_LIGHTS 3
+uniform vec3 light_position[N_LIGHTS];
+uniform vec3 light_direction[N_LIGHTS];
+uniform vec3 light_direction2[N_LIGHTS];
+uniform vec3 light_color[N_LIGHTS];
+uniform vec2 light_falloff[N_LIGHTS];
+
+uniform vec3 view_pos;
+
 vec3 toLinear(vec3 rgb) {
     return pow(rgb, vec3(2.2));
 }

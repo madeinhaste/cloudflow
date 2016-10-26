@@ -100,11 +100,14 @@
         // FIXME FIXME FIXME
         // this is all very flakey, regarding cubemaps, halfs etc
 
-        var convert_half_to_float = false;
-        if (glType == gl_HALF_FLOAT) {
+        var convert_half_to_float = true;
+        if (1 && glType == gl_HALF_FLOAT) {
             glType = gl.FLOAT;
             convert_half_to_float = true;
             //glType = webgl.extensions.OES_texture_half_float.HALF_FLOAT_OES;
+        } else {
+            if (glType == gl_HALF_FLOAT)
+                glType = webgl.extensions.OES_texture_half_float.HALF_FLOAT_OES;
         }
 
         function decodeFloat16 (binary) {
@@ -194,7 +197,7 @@
                 if (convert_half_to_float)
                     image = new Float32Array(3 * levelWidth * levelHeight);
                 else {
-                    console.assert(glType == gl_HALF_FLOAT);
+                    console.assert(glType == webgl.extensions.OES_texture_half_float.HALF_FLOAT_OES);
                     image = new Uint16Array(3 * levelWidth * levelHeight);
                 }
 

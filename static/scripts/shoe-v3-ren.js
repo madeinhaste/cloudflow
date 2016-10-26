@@ -3,8 +3,10 @@ function cloudflow_init_shoe_v3_ren() {
     var HAVE_TEXLOD = webgl.extensions.EXT_shader_texture_lod ? 1 : undefined;
 
     var obs = null;
-    cloudflow_loader.models('rzo.cf_1022_s0_ready')
-        .then(function(data) { obs = data });
+    cloudflow_loader.models('rzo.cf_1022_v2')
+        .then(function(data) {
+            obs = data;
+        });
 
     function load_texture(name, opts) {
         var base = 'rzo.cf_1022.';
@@ -152,7 +154,7 @@ function cloudflow_init_shoe_v3_ren() {
         gl.disable(gl.CULL_FACE);
 
         webgl.bind_element_buffer(ob.buffers.index);
-        gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_SHORT, 0);
     }
 
     function Cube() {
@@ -228,7 +230,7 @@ function cloudflow_init_shoe_v3_ren() {
             cube.update();
             setup_matrix(pgm, cube.mat);
             pgm.uniform1f('scale', cube.scale);
-            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+            gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_SHORT, 0);
         });
 
         gl.clear(gl.DEPTH_BUFFER_BIT);
@@ -337,7 +339,7 @@ function cloudflow_init_shoe_v3_ren() {
         pgm.vertexAttribPointer('texcoord', 2, gl.FLOAT, false, 0, 0);
 
         webgl.bind_element_buffer(ob.buffers.index);
-        gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_INT, 0);
+        gl.drawElements(gl.TRIANGLES, ob.index_count, gl.UNSIGNED_SHORT, 0);
     }
 
     var pick_colors = {
@@ -402,5 +404,4 @@ function cloudflow_init_shoe_v3_ren() {
         },
         ready: ready
     };
-
 }

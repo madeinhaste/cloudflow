@@ -6,16 +6,13 @@ attribute vec2 coord;
 varying vec2 v_texcoord;
 varying vec4 v_color;
 
+// cloud.vertex //
 uniform mat4 mvp;
 uniform mat3 bill;
-//uniform vec4 color;
-uniform sampler2D t_color;
-uniform sampler2D t_gradient;
 uniform float gradient_index;
+uniform sampler2D t_gradient;
 uniform float aspect;
-uniform bool zpass;
 
-// cloud.vertex //
 void main() {
     vec3 P = vec3(coord, 0.0);
     P.x *= aspect;
@@ -31,6 +28,9 @@ void main() {
 }
 
 // cloud.fragment //
+uniform sampler2D t_color;
+uniform bool zpass;
+
 void main() {
     float s = texture2D(t_color, v_texcoord).r;
     gl_FragColor = vec4(s*v_color.rgb, s);

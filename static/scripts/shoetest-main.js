@@ -48,7 +48,7 @@ function main() {
         enable_fxaa: true,
         use_normal2: true,
         red: false,
-        grid: true
+        grid: false
     };
 
     key('f', function() {

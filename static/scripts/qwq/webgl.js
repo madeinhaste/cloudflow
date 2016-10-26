@@ -252,8 +252,8 @@ var webgl = (function() {
     }
 
     function createProgram(options) {
-        //var FRAGMENT_HEADER = 'precision mediump float;\n';
-        var FRAGMENT_HEADER = 'precision highp float;\n';
+        var FRAGMENT_HEADER = 'precision mediump float;\n';
+        ////var FRAGMENT_HEADER = 'precision highp float;\n';
         var program = gl.createProgram();
         gl.attachShader(program, createShader(gl.VERTEX_SHADER, options.vertexSource, options.name));
         gl.attachShader(program, createShader(gl.FRAGMENT_SHADER, FRAGMENT_HEADER + options.fragmentSource, options.name));
