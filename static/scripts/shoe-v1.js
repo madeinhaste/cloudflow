@@ -217,7 +217,7 @@ function cloudflow_init_shoe() {
         vec3.scale(shoe.rot_neutral, shoe.rot_neutral, QWQ.RAD_PER_DEG);
     }
     
-    1 && (function() {
+    1 && window.dat && (function() {
         var gui = new dat.GUI();
         dat.GUI.toggleHide();
         gui.add(params, 'rx', -180, 180);
