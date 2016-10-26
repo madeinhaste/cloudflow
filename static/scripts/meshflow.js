@@ -40,16 +40,8 @@ function init_meshflow() {
     };
 
     function hex_color(s) {
-        if (s[0] == '#')
-            s = s.substr(1);
-        function parse_byte(idx) {
-            var b = s.substr(2*idx, 2);
-            return parseInt(b, 16)/255;
-        }
-        var r = parse_byte(0);
-        var g = parse_byte(1);
-        var b = parse_byte(2);
-        return vec3.fromValues(r, g, b);
+        var c = vec3.create();
+        return QWQ.color.hex_to_rgb(c, s);
     }
 
     var palettes = {

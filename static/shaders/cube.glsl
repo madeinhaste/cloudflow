@@ -5,16 +5,12 @@ attribute vec3 normal;
 varying vec3 v_normal;
 varying vec3 v_position;
 
+// cube.vertex //
 uniform mat4 mvp;
 uniform mat4 model_matrix;
 uniform mat3 normal_matrix;
-uniform vec3 color;
-uniform samplerCube t_iem;
-uniform samplerCube t_rem;
-uniform vec3 viewpos;
 uniform float scale;
 
-// cube.vertex //
 void main() {
     vec4 P = model_matrix * vec4(scale * position, 1.0);
     v_normal = normal_matrix * normal;
@@ -24,6 +20,10 @@ void main() {
 
 // cube.fragment //
 #extension GL_EXT_shader_texture_lod : enable
+
+uniform samplerCube t_iem;
+uniform samplerCube t_rem;
+uniform vec3 viewpos;
 
 vec3 filmic(vec3 c) {
     vec3 x = vec3(max(0.0, c.x-0.004), max(0.0, c.y-0.004), max(0.0, c.z-0.004));

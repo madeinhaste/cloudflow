@@ -3,7 +3,7 @@ var USE_TEXLOD_FIX = false;
 function main() {
 
     var canvas = new Canvas3D({
-        antialias: true,
+        antialias: false,
         extensions: [
             'OES_element_index_uint',
             'OES_texture_half_float',
@@ -20,6 +20,7 @@ function main() {
             'shaders/textest.glsl',
             'shaders/cloud.glsl',
             'shaders/earth.glsl',
+            'shaders/particles.glsl',
         ]
     });
 

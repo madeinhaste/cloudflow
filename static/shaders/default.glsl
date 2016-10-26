@@ -1,14 +1,16 @@
 // grid //
 attribute vec2 position;
-uniform mat4 mvp;
-uniform vec4 color;
 
 // grid.vertex //
+uniform mat4 mvp;
+
 void main() {
     gl_Position = mvp * vec4(position.x, 0, position.y, 1);
 }
 
 // grid.fragment //
+uniform vec4 color;
+
 void main() {
     gl_FragColor = color;
 }
@@ -16,16 +18,18 @@ void main() {
 
 // simple //
 attribute vec3 position;
-uniform mat4 mvp;
-uniform vec4 color;
 
 // simple.vertex //
+uniform mat4 mvp;
+
 void main() {
     gl_Position = mvp * vec4(position, 1.0);
     gl_PointSize = 3.0;
 }
 
 // simple.fragment //
+uniform vec4 color;
+
 void main() {
     gl_FragColor = color;
 }

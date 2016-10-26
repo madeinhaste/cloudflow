@@ -40,6 +40,7 @@ vec3 filmic(vec3 c) {
 
 void main() {
     vec3 N = normalize(v_normal);
+    
     {
         vec3 T = normalize(v_tangent);
         vec3 B = cross(N, T);
@@ -52,6 +53,6 @@ void main() {
 
     vec3 V = normalize(viewpos - v_position);
     float NdotV = max(0.0, dot(N, V));
-    vec3 C = NdotV * color;
+    vec3 C = mix(0.7, 0.4, NdotV) * color;
     gl_FragColor = vec4(C, 1.0);
 }

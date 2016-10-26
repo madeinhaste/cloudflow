@@ -17,6 +17,7 @@ if (!Array.isArray(src_path))
 src_path.forEach(src => {
     args.s3 && encode_texture(src, 's3');
     args.pvr && encode_texture(src, 'pvr');
+    args.etc && encode_texture(src, 'etc');
 });
 
 function encode_texture(src_path, enc) {
@@ -33,6 +34,12 @@ function encode_texture(src_path, enc) {
         var fmt = args.rgb ? 'PVRTC1_4_RGB' : 'PVRTC1_4';
         console.log('format:', fmt);
         var cmd = `PVRTexToolCLI -shh -q pvrtcbest -f ${fmt} -m -i ${src_path} -o ${dst_path}`;
+        execSync(cmd);
+    }
+    else if (enc == 'etc') {
+        var fmt = 'ETC1';
+        console.log('format:', fmt);
+        var cmd = `PVRTexToolCLI -shh -q etcslow -f ${fmt} -m -i ${src_path} -o ${dst_path}`;
         execSync(cmd);
     }
 

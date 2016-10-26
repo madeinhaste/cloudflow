@@ -9,15 +9,28 @@ varying vec3 v_tangent;
 varying vec3 v_position;
 varying vec2 v_texcoord;
 
+// shoe2.vertex //
 uniform mat4 mvp;
 uniform mat4 model_matrix;
 uniform mat3 normal_matrix;
-uniform vec3 color;
 
+void main() {
+    vec4 P = model_matrix * vec4(position, 1.0);
+    v_normal = normal_matrix * normal;
+    v_tangent = normal_matrix * tangent;
+    v_position = P.xyz;
+    v_texcoord = vec2(texcoord.x, 1.0 - texcoord.y);
+    gl_Position = mvp * P;
+}
+
+// shoe2.fragment //
+#extension GL_EXT_shader_texture_lod : enable
+#extension GL_OES_standard_derivatives : enable
+
+uniform vec3 color;
 uniform samplerCube t_iem;
 uniform samplerCube t_rem;
 uniform sampler2D t_color;
-
 uniform sampler2D t_normal;
 
 uniform float lod;
@@ -33,19 +46,6 @@ uniform vec3 id_blend;
 
 uniform float time;
 
-// shoe2.vertex //
-void main() {
-    vec4 P = model_matrix * vec4(position, 1.0);
-    v_normal = normal_matrix * normal;
-    v_tangent = normal_matrix * tangent;
-    v_position = P.xyz;
-    v_texcoord = vec2(texcoord.x, 1.0 - texcoord.y);
-    gl_Position = mvp * P;
-}
-
-// shoe2.fragment //
-#extension GL_EXT_shader_texture_lod : enable
-#extension GL_OES_standard_derivatives : enable
 
 float G1V(float NdotV, float k) {
     return 1.0 / (NdotV*(1.0 - k) + k);

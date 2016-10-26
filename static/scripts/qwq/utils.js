@@ -294,7 +294,26 @@ var QWQ = (function() {
                     out[2] = b;
                     return out;
                 },
-            };
+
+                hex_to_rgb: function(out, s) {
+                    if (s[0] == '#')
+                        s = s.substr(1);
+                    function parse_byte(idx) {
+                        var b = s.substr(2*idx, 2);
+                        return parseInt(b, 16)/255;
+                    }
+
+                    var r = parse_byte(0);
+                    var g = parse_byte(1);
+                    var b = parse_byte(2);
+
+                    out[0] = r;
+                    out[1] = g;
+                    out[2] = b;
+
+                    return out;
+                }
+            }
 
         })(),
 

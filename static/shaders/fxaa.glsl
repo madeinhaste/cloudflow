@@ -1,9 +1,6 @@
 // fxaa //
 attribute vec2 coord;
 varying vec2 v_coord;
-uniform sampler2D s_color;
-uniform bool enable;
-uniform vec2 resolution;
 
 // fxaa.vertex //
 void main() {
@@ -12,6 +9,10 @@ void main() {
 }
 
 // fxaa.fragment //
+uniform bool enable;
+uniform vec2 resolution;
+uniform sampler2D s_color;
+
 void texcoords(
     vec2 fragCoord, vec2 resolution,
     out vec2 v_rgbNW, out vec2 v_rgbNE,

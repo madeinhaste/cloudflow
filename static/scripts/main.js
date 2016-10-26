@@ -27,6 +27,7 @@ function cloudflow_main(canvas) {
             'shaders/meshflow.glsl',
             'shaders/cloud.glsl',
             'shaders/earth.glsl',
+            'shaders/particles.glsl',
             'shaders/reflections.glsl',
             'shaders/arc.glsl',
             'shaders/groove.glsl',
