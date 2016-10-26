@@ -14,6 +14,7 @@
 </style>
 
 <script src="scripts/retina-detect.js"></script>
+<script src="scripts/vendor/lodash.js"></script>
 <script>
     function get_pixel_ratios(ctx) {
         var dpr = window.devicePixelRatio || 1;
@@ -39,13 +40,33 @@
                 version: gl.getParameter(gl.VERSION),
                 slang_version: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
                 vendor: gl.getParameter(gl.VENDOR),
-                renderer: gl.getParameter(gl.RENDERER)
+                renderer: gl.getParameter(gl.RENDERER),
             };
 
             Object.assign(info, gl_info);
 
-            var exts = gl.getSupportedExtensions();
-            info['extensions'] = exts;
+            var ext_names = gl.getSupportedExtensions();
+            info['extensions'] = ext_names;
+
+            var compressed_texture_extensions = [];
+            var compressed_texture_extensions =
+                ext_names
+                    .filter(function(name) { return name.indexOf('compressed_texture') >= 0 })
+                    .map(function(name) { return gl.getExtension(name) });
+
+            function get_compressed_texture_format_name(id) {
+                var name;
+                _.each(compressed_texture_extensions, function(ext) {
+                    var n = _.find(_.keysIn(ext), function(k) { return ext[k] === id });
+                    if (n) {
+                        name = n;
+                        return false;
+                    }
+                });
+                return name;
+            }
+
+            info.compressed_texture_formats = [].slice.apply(gl.getParameter(gl.COMPRESSED_TEXTURE_FORMATS)).map(get_compressed_texture_format_name);
             info['use_retina'] = retina_detect(gl);
         }
 
