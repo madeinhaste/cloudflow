@@ -37,7 +37,7 @@ function cloudflow_init_shoe() {
         rumble2: vec2.create(),
         part_select: new Float32Array(4),
         
-        red: true,
+        color: 0,
         
         toggle_fxaa: function() {
             return (ren_env.enable_fxaa = !ren_env.enable_fxaa);
@@ -153,13 +153,13 @@ function cloudflow_init_shoe() {
         selected_part_index: 0,
         part_select: shoe.part_select,
         enable_fxaa: true,
-        red: false
+        color: 0
     };
 
     function draw(env) {
         ren_env.cw = env.el.width;
         ren_env.ch = env.el.height;
-        ren_env.red = shoe.red;
+        ren_env.color = shoe.color;
         ren_env.camera = env.camera;
         ren_env.time = env.time;
         ren_env.rumble_amount = shoe.rumble_amount;

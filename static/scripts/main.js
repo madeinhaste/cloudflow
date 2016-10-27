@@ -47,7 +47,7 @@ function cloudflow_main(canvas) {
     });
 
     key('c', function() {
-        shoe.red = !shoe.red;
+        ++shoe.color;
     });
 
     key('f', function() {
@@ -86,11 +86,11 @@ function cloudflow_main(canvas) {
             sounds.enter_experience();
 
             // for sounds
-            if (idx == 1) meshflow.enter(shoe.red);
+            if (idx == 1) meshflow.enter(!shoe.color);
         } else {
             sounds.leave_experience();
             // flip shoe color
-            shoe.red = !shoe.red;
+            shoe.color = shoe.color ? 0 : 1;
 
             // for sounds
             if (experience_visible == 1) meshflow.leave();

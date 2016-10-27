@@ -22,23 +22,41 @@ function cloudflow_init_shoe_v3_ren() {
     }
 
     var textures = {
-        shoe_col: load_texture('col_occ_shoe'),
-        shoe_nor: load_texture('nor_ids_shoe'),
-        sole_col: load_texture('col_occ_sole'),
-        sole_nor: load_texture('nor_ids_sole'),
-        tongue_col: load_texture('col_occ_tongue'),
-        tongue_nor: load_texture('nor_tongue'),
-        laces_col: load_texture('col_lace'),
-        laces_nor: load_texture('nor_lace', {wrap: gl.REPEAT}),
+        color: {
+            blue: {
+                shoe: load_texture('col_occ_shoe'),
+                sole: load_texture('col_occ_sole'),
+                tongue: load_texture('col_occ_tongue'),
+                lace: load_texture('col_lace'),
+            },
+
+            red1: {
+                shoe: load_texture('col_occ_shoe_r'),
+                sole: load_texture('col_occ_sole_r'),
+                tongue: load_texture('col_occ_tongue_r'),
+                lace: load_texture('col_lace_r'),
+            },
+
+            red2: {
+                shoe: load_texture('col_occ_shoe_r2'),
+                sole: load_texture('col_occ_sole_r2'),
+                tongue: load_texture('col_occ_tongue_r2'),
+                lace: load_texture('col_lace_r2'),
+            }
+        },
+
+        normal: {
+            shoe: load_texture('nor_ids_shoe'),
+            sole: load_texture('nor_ids_sole'),
+            tongue: load_texture('nor_tongue'),
+            lace: load_texture('nor_lace', {wrap: gl.REPEAT}),
+        },
 
         iem: load_envmap('cubes_iem'),
         pmrem: load_envmap('cubes_pmrem'),
-
-        shoe_col_r: load_texture('col_occ_shoe_r'),
-        sole_col_r: load_texture('col_occ_sole_r'),
-        tongue_col_r: load_texture('col_occ_tongue_r'),
-        laces_col_r: load_texture('col_lace_r'),
     };
+    var color_names = _.keys(textures.color);
+    var color_count = color_names.length;
 
     var part_ids = [
         0x0000ff,   // mesh
@@ -238,15 +256,14 @@ function cloudflow_init_shoe_v3_ren() {
     
     function draw_shoe(env) {
         // when drawing upper & sole, need to set id vector
-        var shoe_col = env.red ? textures.shoe_col_r : textures.shoe_col;
-        var sole_col = env.red ? textures.sole_col_r : textures.sole_col;
-        var tongue_col = env.red ? textures.tongue_col_r : textures.tongue_col;
-        var laces_col = env.red ? textures.laces_col_r : textures.laces_col;
-
+        var color_index = env.color % color_count;
+        var color_name = color_names[color_index];
+        var color = textures.color[color_name];
+        var normal = textures.normal;
 
         1&&draw_ob(env, obs.cf_upper, {
-            col: shoe_col,
-            nor: textures.shoe_nor,
+            col: color.shoe,
+            nor: normal.shoe,
             occ: 1,
 
             id1: env.part_select[0],
@@ -254,8 +271,8 @@ function cloudflow_init_shoe_v3_ren() {
         });
 
         1&&draw_ob(env, obs.cf_sole, {
-            col: sole_col,
-            nor: textures.sole_nor,
+            col: color.sole,
+            nor: normal.sole,
             occ: 1,
 
             id1: env.part_select[3],
@@ -263,14 +280,14 @@ function cloudflow_init_shoe_v3_ren() {
         });
 
         1&&draw_ob(env, obs.cf_tongue, {
-            col: tongue_col,
-            nor: textures.tongue_nor,
+            col: color.tongue,
+            nor: normal.tongue,
             occ: 1
         });
 
         1&&draw_ob(env, obs.cf_laces, {
-            col: laces_col,
-            nor: textures.laces_nor,
+            col: color.lace,
+            nor: normal.lace,
             nor_scale: 50,
             specular: 0.05,
             f0: 0.08
@@ -279,19 +296,19 @@ function cloudflow_init_shoe_v3_ren() {
         // little parts
         if (1) {
             draw_ob(env, obs.cf_rings, {
-                col: shoe_col,
+                col: color.shoe,
                 shiny: true
             });
             draw_ob(env, obs.cf_strips, {
-                col: shoe_col,
+                col: color.shoe,
                 id0: env.part_select[2]
             });
             draw_ob(env, obs.cf_logo_back, {
-                col: shoe_col,
+                col: color.shoe,
                 id0: env.part_select[2]
             });
-            draw_ob(env, obs.cf_logo_front, { col: sole_col });
-            draw_ob(env, obs.cf_logo_sole, { col: sole_col });
+            draw_ob(env, obs.cf_logo_front, { col: color.sole });
+            draw_ob(env, obs.cf_logo_sole, { col: color.sole });
         }
     }
 
