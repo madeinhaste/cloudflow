@@ -60,7 +60,7 @@ function main() {
 
         if (t) {
             var elapsed = t - t0;
-            var dt = elapsed/1000;
+            var dt = elapsed;
             canvas.dt = dt;
             t0 = t;
         }

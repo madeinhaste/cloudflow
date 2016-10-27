@@ -372,8 +372,8 @@ function cloudflow_init_shoe_v3_ren() {
         var pgm = programs.shoe_pick.use();
         pgm.uniformMatrix4fv('mvp', env.camera.mvp);
         pgm.uniformMatrix4fv('model_matrix', env.mat);
-        pick_ob(pgm, obs.cf_upper, textures.shoe_nor, pick_colors.red);
-        pick_ob(pgm, obs.cf_sole, textures.sole_nor, pick_colors.green);
+        pick_ob(pgm, obs.cf_upper, textures.normal.shoe, pick_colors.red);
+        pick_ob(pgm, obs.cf_sole, textures.normal.sole, pick_colors.green);
     }
 
     function ready() {

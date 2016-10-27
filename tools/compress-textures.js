@@ -46,5 +46,8 @@ function encode_texture(src_path, enc) {
     var cmd = `brotli --force --input ${dst_path} --output ${dst_br_path}`;
     execSync(cmd);
 
+    // brotli writes 0600
+    fs.chmodSync(dst_br_path, 0o644);
+
     console.log('wrote', dst_br_path, fileSize(fs.statSync(dst_br_path).size).human('jedec'));
 }

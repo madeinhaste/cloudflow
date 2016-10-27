@@ -22,6 +22,9 @@
             var token = next_token++;
             token_resolves[token] = resolve;
             //console.log('send token:', token);
+
+            // TODO make this transferable if possible
+
             worker.postMessage({
                 token: token,
                 data: src
