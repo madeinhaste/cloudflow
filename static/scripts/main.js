@@ -54,6 +54,10 @@ function cloudflow_main(canvas) {
         fps.fxaa = shoe.toggle_fxaa();
     });
 
+    key('m', function() {
+        sounds.mute();
+    });
+
     canvas.show_grid = false;
     canvas.time = 0;
 

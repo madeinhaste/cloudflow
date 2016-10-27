@@ -79,6 +79,7 @@ var sounds = (function() {
     }());
 
     var charge = 0;
+    var muted = false;
 
     return {
         ambient: set_ambient_sound_index,
@@ -108,7 +109,15 @@ var sounds = (function() {
                 charge = amount;
             }
         },
-        get: get_sound
+        get: get_sound,
+        mute: function(mute) {
+            if (_.isUndefined(mute)) {
+                // toggle
+                mute = !muted;
+            }
+            Howler.mute(mute);
+            muted = mute;
+        }
     };
 
 }());
