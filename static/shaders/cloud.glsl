@@ -5,6 +5,7 @@ attribute vec2 coord;
 
 varying vec2 v_texcoord;
 varying vec4 v_color;
+varying float v_depth;
 
 // cloud.vertex //
 uniform mat4 mvp;
@@ -25,6 +26,7 @@ void main() {
     v_texcoord = vec2(coord.x, 1.0-coord.y);
 
     v_color = texture2D(t_gradient, vec2(color, gradient_index));
+    v_depth = gl_Position.z * gl_Position.w;
 }
 
 // cloud.fragment //
@@ -32,16 +34,17 @@ uniform sampler2D t_color;
 uniform bool zpass;
 
 void main() {
-    float s = texture2D(t_color, v_texcoord).r;
-    gl_FragColor = vec4(s*v_color.rgb, s);
+    float fade = clamp(50.0 * v_depth, 0.0, 1.0);
+    fade = 1.0 - fade;
+    fade *= fade;
+    fade = 1.0 - fade;
 
-    /*
-    if (zpass) {
-        if (s != 1.0) discard;
-        gl_FragColor = vec4(v_color.rgb, 1.0);
-    } else {
-        if (s == 1.0) discard;
-        gl_FragColor = vec4(v_color.rgb, s);
-    }
-    */
+    //vec3 C = mix(vec3(1,0,0), vec3(0,1,0), fade);
+    //gl_FragColor = vec4(C, 1.0);
+    //return;
+
+    float s = fade * texture2D(t_color, v_texcoord).r;
+    if (s < 1.0/256.0) discard;
+
+    gl_FragColor = vec4(s*v_color.rgb, s);
 }

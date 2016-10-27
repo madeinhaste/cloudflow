@@ -12,6 +12,7 @@ function main() {
             'OES_texture_float_linear',
             'OES_standard_derivatives',
             'WEBGL_compressed_texture_s3tc',
+            'WEBKIT_WEBGL_compressed_texture_pvrtc',
             'EXT_shader_texture_lod',
             'ANGLE_instanced_arrays'
         ],
@@ -22,6 +23,7 @@ function main() {
             'shaders/earth.glsl',
             'shaders/reflections.glsl',
             'shaders/arc.glsl',
+            'shaders/background.glsl',
         ]
     });
 

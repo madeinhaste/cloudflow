@@ -33,6 +33,7 @@ function cloudflow_main(canvas) {
             'shaders/groove.glsl',
             'shaders/widget.glsl',
             'shaders/cube.glsl',
+            'shaders/background.glsl',
         ]
     });
 
@@ -202,6 +203,7 @@ function cloudflow_main(canvas) {
     }, false);
 
     var last_time = 0;
+    canvas.dt = 0;
     function animate(t) {
         canvas.time = t;
         var dt;
@@ -211,6 +213,7 @@ function cloudflow_main(canvas) {
         } else {
             var dt = t - last_time;
             last_time = t;
+            canvas.dt = dt;
         }
 
         if (shoe.ready())

@@ -19,7 +19,7 @@ function init_reflections() {
         arc2: webgl.get_program('arc2'),
         simple: webgl.get_program('simple'),
         landscape: webgl.get_program('landscape'),
-        background: webgl.get_program('enf_background')
+        background: webgl.get_program('background')
     };
 
     var n_arcs = 25;

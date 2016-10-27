@@ -12,6 +12,7 @@ function main() {
             'OES_texture_float_linear',
             'OES_standard_derivatives',
             'WEBGL_compressed_texture_s3tc',
+            'WEBKIT_WEBGL_compressed_texture_pvrtc',
             'EXT_shader_texture_lod',
             'ANGLE_instanced_arrays'
         ],
@@ -21,6 +22,7 @@ function main() {
             'shaders/cloud.glsl',
             'shaders/earth.glsl',
             'shaders/particles.glsl',
+            'shaders/background.glsl',
         ]
     });
 
@@ -51,8 +53,18 @@ function main() {
     canvas.pick = function() {
     };
 
+    var t0 = performance.now();
+    canvas.dt = 0.0;
     function animate(t) {
         requestAnimationFrame(animate);
+
+        if (t) {
+            var elapsed = t - t0;
+            var dt = elapsed/1000;
+            canvas.dt = dt;
+            t0 = t;
+        }
+
         canvas._draw();
     }
     animate(0);

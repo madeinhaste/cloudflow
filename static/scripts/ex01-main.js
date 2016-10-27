@@ -40,8 +40,17 @@ function main() {
     canvas.pick = function() {
     };
 
+    var t0 = performance.now();
     function animate(t) {
         requestAnimationFrame(animate);
+
+        if (t) {
+            var elapsed = t - t0;
+            var dt = elapsed;
+            canvas.dt = dt;
+            t0 = t;
+        }
+
         canvas._draw();
     }
     animate(0);

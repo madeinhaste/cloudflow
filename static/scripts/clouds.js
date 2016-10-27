@@ -1,5 +1,7 @@
 function init_clouds() {
 
+    var lerp = QWQ.lerp;
+
     function hex_color(s) {
         var c = vec3.create();
         return QWQ.color.hex_to_rgb(c, s);
@@ -58,6 +60,7 @@ function init_clouds() {
     // FIXME textures
     var textures = {
         cloud: cloudflow_loader.texture('zgf.cloud'),
+        //cloud: webgl.load_texture('data/tmp/cloud.jpg', {mimap: 1}),
         earth_nor: cloudflow_loader.texture('zgf.earth_nor', {wrap: gl.REPEAT}),
         gradient: make_gradient_texture()
     };
@@ -97,12 +100,20 @@ function init_clouds() {
 
             //QWQ.random.unit_vec3(P);
             //vec3.scale(P, P, QWQ.lerp(1.3, 1.5, Math.random()));
-            var scale = 0.03 * QWQ.lerp(10.0, 20.0, Math.random());
+
+            var scale = QWQ.lerp(10.0, 20.0, Math.random());
+            scale *= 0.03;
+            //scale *= 0.001;
+
+            //scale = 0.01;
             v.push(P[0], P[1], P[2], scale);
 
             //vec3.lerp(C, C0, C1, Math.random());
             //v.push(C[0], C[1], C[2], 1.0);
-            v.push(Math.random());
+
+            var c = Math.random();
+            c = 1.0 - c*c;
+            v.push(c);
         }
 
         return v;
@@ -136,7 +147,7 @@ function init_clouds() {
 
             //QWQ.random.unit_vec3(P);
             //vec3.scale(P, P, QWQ.lerp(1.3, 1.5, Math.random()));
-            var size = QWQ.lerp(1.0, 10.0, Math.random());
+            var size = 2.0 * QWQ.lerp(1.0, 10.0, Math.random());
             v.push(P[0], P[1], P[2], size);
         }
 
@@ -152,14 +163,16 @@ function init_clouds() {
             0, 0, 0, 1, 0, 0,
             0, 0, 0, 0, 1, 0,
             0, 0, 0, 0, 0, 1
-        ]))
+        ])),
+        quad: webgl.new_vertex_buffer(new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]))
     };
 
     var programs = {
         simple: webgl.get_program('simple'),
         cloud: webgl.get_program('cloud'),
         earth: webgl.get_program('earth'),
-        particles: webgl.get_program('particles')
+        particles: webgl.get_program('particles'),
+        background: webgl.get_program('background')
     };
 
     var mat = mat4.create();
@@ -175,6 +188,7 @@ function init_clouds() {
         pgm.uniformSampler2D('t_color', textures.cloud);
         pgm.uniformSampler2D('t_gradient', textures.gradient);
         pgm.uniform1f('gradient_index', gradient_index);
+        //pgm.uniform1f('gradient_index', 0);
         pgm.uniform1f('aspect', 1709/1085);
 
         // non-instanced attrib
@@ -241,7 +255,8 @@ function init_clouds() {
         pgm.uniformMatrix4fv('mvp', env.camera.mvp);
         pgm.uniformMatrix4fv('model_matrix', mat_earth);
         pgm.uniformMatrix3fv('normal_matrix', mat_earth_normal);
-        pgm.uniform3fv('viewpos', env.camera.view_pos);
+        pgm.uniform3fv('view_position', env.camera.view_pos);
+        pgm.uniform3f('light_position', 10, 10, 10);
         pgm.uniformSampler2D('t_normal', textures.earth_nor);
         pgm.uniform1f('normal_scale', 50.0);
         pgm.uniform3f('color', 1.0, 1.0, 1.0);
@@ -293,11 +308,11 @@ function init_clouds() {
     var D1 = vec3.create();
     var U1 = vec3.create();
 
-    var heights = [ 1.0, 1.2, 1.4, 1.1, 0.9 ];
+    var heights = [ 0.9, 1.1, 0.85, 1.05, 0.8 ];
 
     var last_x = 1;
     var bounce_at_x = 0.65;
-    var target_gradient_index = 0.0;
+    var target_gradient_index = 1.0;
     var gradient_index = 0.0;
 
     function update(env) {
@@ -333,7 +348,7 @@ function init_clouds() {
             y = Math.pow(y, 1.000);
         } else {
             y = Math.sin(2*(x-0.5)*Math.PI);
-            y = Math.pow(y, 0.125);
+            y = Math.pow(y, 0.500);
             y = -y;
         }
 
@@ -346,15 +361,21 @@ function init_clouds() {
         rry = y;
         rry = 0;
 
-        //height = 1.0;
+        //height = 1.5 + 0.5*env.mouse.pos_nd[1];
+
+        var min_height = 1.0;
+        var max_height = 1.8;
+        var s = Math.sin(2 * Math.PI * x);
+        //height = lerp(min_height, max_height, (s + 1)/2);
+        //height = 1.00;
 
         player.pos[0] = 0;
         player.pos[1] = height * Math.cos(player.theta);
         player.pos[2] = height * Math.sin(player.theta);
 
-        player.theta += 0.005;
-        //player.theta += 0.001;
-
+        //console.log(0.1 * env.dt);
+        player.theta += 0.10 * env.dt/1000;
+        //player.theta += 0.005;
         
 
         // frame
@@ -384,20 +405,24 @@ function init_clouds() {
             var cw = env.el.width;
             var ch = env.el.height;
 
-            var Q = 0.2;
-            var rx = Q * env.mouse.pos_nd[0];
-            var ry = Q * env.mouse.pos_nd[1];
+            var Qy = -0.300 * Math.PI;
+            var Qx = 0.200 * Math.PI;
+            var rx = Qx * env.mouse.pos_nd[1];
+            var ry = Qy * env.mouse.pos_nd[0];
+
+            var k = 0.1;
+            rx = target_rr[0] = lerp(target_rr[0], rx, k);
+            ry = target_rr[1] = lerp(target_rr[1], ry, k);
 
             //rx = ry = 0;
-
-            ry += -rry;
+            //ry += -rry;
 
             camera.update(player.pos, player.dir, player.up);
             mat4.invert(MM, camera.view);
 
             mat4.identity(mouserot);
-            mat4.rotateX(mouserot, mouserot, ry);
-            mat4.rotateY(mouserot, mouserot, rx);
+            mat4.rotateY(mouserot, mouserot, ry);
+            mat4.rotateX(mouserot, mouserot, rx);
 
             mat4.multiply(MM, MM, mouserot);
 
@@ -410,11 +435,25 @@ function init_clouds() {
         env.camera = old_camera;
     }
 
+    var target_rr = vec2.create();
+
     var camera = new webgl.Camera;
-    camera.fov = 60;
+    camera.fov = 30;
     camera.far = 800;
 
-    var bg = hex_color('3493ae');
+    var bg0 = hex_color('3493ae');
+    var bg1 = hex_color('002080');
+
+    function draw_background(env) {
+        gl.disable(gl.DEPTH_TEST);
+        var pgm = programs.background.use();
+        pgm.uniform3fv('color0', bg0);
+        pgm.uniform3fv('color1', bg1);
+        webgl.bind_vertex_buffer(buffers.quad);
+        pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
 
     function draw(env) {
         if (!ob) return;
@@ -423,9 +462,10 @@ function init_clouds() {
         env.camera = camera;
         vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
 
-        gl.clearColor(bg[0], bg[1], bg[2], 1.0);
+        //gl.clearColor(bg[0], bg[1], bg[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        draw_background(env);
         draw_earth(env);
         draw_clouds(env);
         draw_particles(env);

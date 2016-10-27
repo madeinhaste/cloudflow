@@ -27,9 +27,10 @@ void main() {
 #extension GL_EXT_shader_texture_lod : enable
 
 uniform vec3 color;
-uniform vec3 viewpos;
+uniform vec3 view_position;
 uniform sampler2D t_normal;
 uniform float normal_scale;
+uniform vec3 light_position;
 
 float G1V(float NdotV, float k) { return 1.0 / (NdotV*(1.0 - k) + k); }
 vec3 toLinear(vec3 rgb) { return pow(rgb, vec3(2.2)); }
@@ -41,8 +42,10 @@ vec3 filmic(vec3 c) {
 
 void main() {
     vec3 N = normalize(v_normal);
+    vec3 V = normalize(view_position - v_position);
+    vec3 L = normalize(light_position - v_position);
     
-    {
+    if (true) {
         vec3 T = normalize(v_tangent);
         vec3 B = cross(N, T);
         mat3 TBN = mat3(T, B, N);   // ts -> ws
@@ -52,8 +55,9 @@ void main() {
         N = mix(N, normalize(TBN * 2.0*(s - 0.5)), normal_mix);
     }
 
-    vec3 V = normalize(viewpos - v_position);
-    float NdotV = max(0.0, dot(N, V));
-    vec3 C = mix(0.7, 0.4, NdotV) * color;
-    gl_FragColor = vec4(C, 1.0);
+    float NdotL = max(0.0, dot(N, L));
+    vec3 C = mix(0.15, 0.7, NdotL) * color;
+
+    //vec3 C = mix(0.7, 0.4, NdotV) * color;
+    gl_FragColor = vec4(filmic(C), 1.0);
 }
