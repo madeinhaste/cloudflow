@@ -58,6 +58,8 @@ function cloudflow_main(canvas) {
         sounds.mute();
     });
 
+    //sounds.mute();
+
     canvas.show_grid = false;
     canvas.time = 0;
 

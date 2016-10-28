@@ -7,8 +7,23 @@ function init_speedboard() {
 
     var lerp = QWQ.lerp;
 
+    function hex_color(s) {
+        return QWQ.color.hex_to_rgb(vec3.create(), s);
+    }
+
+    var colors = {
+        bg1: vec3.fromValues(1.0, 1.0, 1.0),
+        bg0: vec3.fromValues(0.7, 0.9, 1.0),
+        //groove: hex_color('beff00')
+        groove: hex_color('e6ff00')
+        //bg0: vec3.fromValues(0.2, 0.3, 1.0),
+    };
+
+    // FIXME fabric texture will be loaded twice
+
     var textures = {
-        widget: cloudflow_loader.texture('spd.cloud_ao')
+        widget: cloudflow_loader.texture('spd.cloud_ao'),
+        fabric: cloudflow_loader.texture('mfl.nrm_lum_knit', {wrap:gl.REPEAT, aniso:8})
     };
 
     var programs = {
@@ -111,8 +126,13 @@ function init_speedboard() {
         var camera = env.camera;
 
         pgm.uniformMatrix4fv('mvp', camera.mvp);
+        pgm.uniformMatrix4fv('view', camera.view);
         pgm.uniformSampler2D('t_color', textures.widget);
         pgm.uniform1f('scale', 16);
+
+        pgm.uniform3fv('bg_color1', colors.bg0);
+        pgm.uniform3fv('bg_color0', colors.bg1);
+        pgm.uniform2f('resolution', camera.viewport[2], camera.viewport[3]);
 
         webgl.bind_vertex_buffer(ob.buffers.position);
         pgm.vertexAttribPointer('position', 3, gl.FLOAT, false, 0, 0);
@@ -162,7 +182,8 @@ function init_speedboard() {
             qtmp[3] = lerp(C[sp + 3], C[sp2 + 3], dt);
             quat.normalize(qtmp, tmp);
 
-            var dx = 24;
+            //var dx = 24;
+            var dx = 36;
             var dy = 16.0;
             pgm.uniform3f('translate', tmp[0] - dx, tmp[1] + dy, tmp[2]);
             quat.identity(rot0);
@@ -179,21 +200,34 @@ function init_speedboard() {
         }
     }
 
+    var face_normal = 0;
+    key('f', function() {
+        face_normal = face_normal ^ 1;
+    });
+
     function draw_scape(env) {
         var camera = env.camera;
         mat4.copy(mvp, camera.mvp);
         var pgm = programs.groove.use();
         pgm.uniformMatrix4fv('mvp', mvp);
-        pgm.uniform4f('color', 0.9, 1.0, 0.3, 1.0);
+        pgm.uniformMatrix4fv('view', camera.view);
+        //pgm.uniform4f('color', 0.9, 1.0, 0.3, 1.0);
+        pgm.uniform3fv('color', colors.groove);
         pgm.uniformSampler2D('t_curve', curve.tex);
+        pgm.uniformSampler2D('t_fabric', textures.fabric);
         pgm.uniform1f('time', time);
         pgm.uniform3fv('view_pos', camera.view_pos);
+        pgm.uniform1i('face_normal', face_normal);
+
+        pgm.uniform3fv('bg_color1', colors.bg0);
+        pgm.uniform3fv('bg_color0', colors.bg1);
+        pgm.uniform2f('resolution', camera.viewport[2], camera.viewport[3]);
 
         webgl.bind_vertex_buffer(buffers.verts);
         pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
 
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);
         gl.cullFace(gl.FRONT);
 
         webgl.bind_element_buffer(buffers.elems);
@@ -231,9 +265,8 @@ function init_speedboard() {
         gl.disable(gl.CULL_FACE);
 
         var pgm = programs.background.use();
-        pgm.uniform3f('color1', 0.7, 0.9, 1.0);
-        //pgm.uniform3f('color1', 0.3, 0.1, 0.8);
-        pgm.uniform3f('color0', 1, 1, 1);
+        pgm.uniform3fv('color1', colors.bg0);
+        pgm.uniform3fv('color0', colors.bg1);
         webgl.bind_vertex_buffer(buffers.quad);
         pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -256,11 +289,17 @@ function init_speedboard() {
         var Q0 = quat.create();
         var T = vec3.create();
         var F = vec3.create();
+        var U = vec3.create();
 
         var Q = quat.create();
         var dQ = quat.create();
 
         var tt = 0;
+        var mouse_rr = vec2.create();
+
+        var bank = 0.1;
+        var bank_amount = QWQ.RAD_PER_DEG * 90;
+        var qbank = quat.create();
 
         function update_curve(env) {
             var P = curve;
@@ -273,12 +312,19 @@ function init_speedboard() {
             var ry = 0;
             var rz = 0;
 
-            if (0 && env) {
+            if (1 && env) {
                 var cw = env.el.width;
                 var ch = env.el.height;
-                var a = 0.03;
-                rx += ((env.mouse.pos[1] / ch) - 0.5) * a;
-                ry += ((env.mouse.pos[0] / cw) - 0.5) * a;
+                var ax = 0.03;
+                var ay = 0.01;
+
+                var mouse_rx = -((env.mouse.pos[1] / ch) - 0.5) * ax;
+                var mouse_ry = -((env.mouse.pos[0] / cw) - 0.5) * ay;
+                mouse_rr[0] = lerp(mouse_rr[0], mouse_rx, 0.010);
+                mouse_rr[1] = lerp(mouse_rr[1], mouse_ry, 0.040);
+
+                rx += mouse_rr[0];
+                ry += mouse_rr[1];
             }
 
             if (1) {
@@ -338,24 +384,37 @@ function init_speedboard() {
             if (1 && camera) {
                 vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
 
-                T[0] = P[0] + 1.8*noise.simplex2(3*time, 0.358);
-                T[1] = P[1] + 1.0  + 1.0*noise.simplex2(5*time, 0.213);
-                T[2] = P[2] - 0;
+                if (1) {
+                    T[0] = P[0] + 1.8*noise.simplex2(3*time, 0.358);
+                    T[1] = P[1] + 1.0  + 1.0*noise.simplex2(5*time, 0.213);
+                    T[2] = P[2] - 0;
 
-                var sp = 8 * 10;
-                var k = 0.5;
-                T[0] = lerp(T[0], P[sp + 0], k);
-                T[1] = lerp(T[1], P[sp + 1], k);
-                T[2] = lerp(T[2], P[sp + 2], k);
+                    var sp = 8 * 10;
+                    var k = 0.5;
+                    T[0] = lerp(T[0], P[sp + 0], k);
+                    T[1] = lerp(T[1], P[sp + 1], k);
+                    T[2] = lerp(T[2], P[sp + 2], k);
 
-                var n = 10;
-                Q[0] = P[4*n + 0];
-                Q[1] = P[4*n + 1];
-                Q[2] = P[4*n + 2];
-                vec3.sub(Q, Q, T);
+                    var n = 10;
+                    Q[0] = P[4*n + 0];
+                    Q[1] = P[4*n + 1];
+                    Q[2] = P[4*n + 2];
+                    vec3.sub(Q, Q, T);
+                } else {
+                    T[0] = P[0];
+                    T[1] = P[1];
+                    T[2] = P[2];
+                }
+
+                //vec3.set(U, 0, 1, 0);
+                //vec3.transformQuat(U, U, qbank);
+
+                //bank = lerp(bank, ry * bank_amount, 0.1);
 
                 quat.identity(Q);
-                camera.update_quat(T, Q);
+                quat.rotateZ(Q, Q, noise.simplex2(0.123, time));
+
+                camera.update_quat(T, Q, U);
             }
         }
 
@@ -371,5 +430,6 @@ function init_speedboard() {
         draw: draw,
         update: update
     };
+
 
 }
