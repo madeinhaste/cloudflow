@@ -4,6 +4,7 @@ attribute vec2 coord;
 varying vec3 v_normal;
 varying vec3 v_view;
 varying vec3 v_position;
+varying vec2 v_coord;
 
 // landscape.vertex //
 uniform mat4 mvp;
@@ -29,11 +30,16 @@ void main() {
     gl_Position = mvp * vec4(P, 1.0);
     v_normal = -N;
     v_position = P;
+    v_coord = vec2(coord.x, coord.y + time);
 }
 
 // landscape.fragment //
+#extension GL_OES_standard_derivatives : enable
+
 uniform vec4 color;
 uniform vec3 view_pos;
+uniform mat2 stripe_mat0;
+uniform mat2 stripe_mat1;
 
 #define N_LIGHTS 3
 uniform vec3 light_position[N_LIGHTS];
@@ -41,6 +47,24 @@ uniform vec3 light_direction[N_LIGHTS];
 uniform vec3 light_direction2[N_LIGHTS];
 uniform vec3 light_color[N_LIGHTS];
 uniform vec2 light_falloff[N_LIGHTS];
+
+float grid(vec2 coord, float gsize, float gwidth) {
+    vec2 P = coord;
+    vec2 f = abs(fract(P * gsize)-0.5);
+    vec2 df = gsize * fwidth(P);
+    float mi = max(0.0, gwidth-1.0);
+    float ma = max(1.0, gwidth); //should be uniforms
+    vec2 g = clamp((f - df*mi) / (df * (ma-mi)), max(0.0, 1.0-gwidth), 1.0); // max(0.0,1.0-gwidth) should also be sent as uniform
+    float result = 2.0 * ((1.0 - g.x) + (1.0 - g.y));
+    return result;
+}
+
+float stripe(vec2 coord, mat2 mat) {
+    vec2 co = mat * coord;
+    float y = abs(fract(co.y) - 0.5);
+    return smoothstep(0.050, 0.040, y);
+    //return 1.0 - step(0.050, y);
+}
 
 vec3 toLinear(vec3 rgb) {
     return pow(rgb, vec3(2.2));
@@ -98,6 +122,17 @@ void main() {
         //C = (light_direction2[i]+1.0)/2.0;
     }
 
+    {
+        float s = min(1.0, stripe(v_coord, stripe_mat0) + stripe(v_coord, stripe_mat1));
+        float albedo = mix(0.125, 1.25, s);
+        C *= albedo;
+    }
+
+
     gl_FragColor = vec4(filmic(C), 1.0);
     //gl_FragColor = vec4(C, 1.0);
+
+    //gl_FragColor.rgb = vec3(0.0, grid(v_coord, 80.0, 1.0), 0.0);
+    //gl_FragColor.r = stripe(v_coord, stripe_mat0);
+    //gl_FragColor.b = stripe(v_coord, stripe_mat1);
 }

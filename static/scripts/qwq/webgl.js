@@ -161,6 +161,14 @@ var webgl = (function() {
             gl.uniform4fv(location, v);
     };
 
+    Program.prototype.uniformMatrix2fv = function(name, data, transpose) {
+        var location = this.getUniformLocation(name);
+        if (location) {
+            transpose = transpose || false;
+            gl.uniformMatrix2fv(location, transpose, data);
+        }
+    };
+
     Program.prototype.uniformMatrix3fv = function(name, data, transpose) {
         var location = this.getUniformLocation(name);
         if (location) {

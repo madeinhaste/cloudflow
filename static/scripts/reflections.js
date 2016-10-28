@@ -7,6 +7,16 @@ function init_reflections() {
 
     var lerp = QWQ.lerp;
 
+    function hex_color(s) {
+        return QWQ.color.hex_to_rgb(vec3.create(), s);
+    }
+
+    var colors = {
+        bg0: hex_color('191E89'),
+        bg1: hex_color('000000'),
+        scape: hex_color('30A0FF')
+    };
+
     function random(a, b) {
         return lerp(a, b, Math.random());
     }
@@ -188,6 +198,15 @@ function init_reflections() {
         ext.vertexAttribDivisorANGLE(attrib_index0, 0);
     }
 
+    function make_stripe_matrix(scale, angle) {
+        var m = mat2.create();
+        mat2.scale(m, m, [scale, scale]);
+        return mat2.rotate(m, m, QWQ.RAD_PER_DEG * angle);
+    }
+
+    var stripe_mat0 = make_stripe_matrix(2, 30);
+    var stripe_mat1 = make_stripe_matrix(2, -40);
+
     function draw_scape() {
         var pgm = programs.landscape.use();
         pgm.uniformMatrix4fv('mvp', mvp);
@@ -195,6 +214,9 @@ function init_reflections() {
         pgm.uniformSampler2D('t_scape', textures.scape);
         pgm.uniform1f('time', time);
         pgm.uniform3fv('view_pos', camera.view_pos);
+
+        pgm.uniformMatrix2fv('stripe_mat0', stripe_mat0);
+        pgm.uniformMatrix2fv('stripe_mat1', stripe_mat1);
 
         light_params.setup(pgm);
 
@@ -328,16 +350,16 @@ function init_reflections() {
     var l = new Light;
     vec3.set(l.pos, 03, 5, 10);
     l.set_target([1.1, 0, 5]);
-    //vec3.set(l.dir, 0, 0, -1);
-    vec3.set(l.color, 0.7, 1.0, 1.5);
-    vec3.scale(l.color, l.color, 0.2);
+    //vec3.set(l.color, 0.7, 1.0, 1.5);
+    vec3.copy(l.color, colors.scape);
+    vec3.scale(l.color, l.color, 0.8);
+
     l.fov = 50;
     lights.push(l);
 
     // spots
     var l = new Light;
     vec3.set(l.pos, -6, 3, 8);
-    //vec3.set(l.color, 1, 0.2, 0);
     vec3.set(l.color, 1, 1.2, 0.3);
     vec3.scale(l.color, l.color, 2.2);
     lights.push(l);
@@ -345,7 +367,6 @@ function init_reflections() {
     var l = new Light;
     vec3.set(l.pos, 6, 5, 7);
     vec3.set(l.color, 0.7, 1.0, 1.5);
-    //vec3.set(l.color, 0, 0.9, 0.65);
     lights.push(l);
 
 
@@ -358,17 +379,15 @@ function init_reflections() {
     function draw_background() {
         gl.disable(gl.DEPTH_TEST);
         var pgm = programs.background.use();
-        //pgm.uniform3f('color0', 1, 0, 0);
-        //pgm.uniform3f('color1', 1, 1, 0);
-        pgm.uniform3f('color0', 0, 0, 0);
-        pgm.uniform3f('color1', 0.3, 0.1, 0.8);
+        pgm.uniform3fv('color0', colors.bg1);
+        pgm.uniform3fv('color1', colors.bg0);
         webgl.bind_vertex_buffer(buffers.quad);
         pgm.vertexAttribPointer('coord', 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
     function draw(env, player) {
-        //vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
+        vec4.copy(camera.viewport, gl.getParameter(gl.VIEWPORT));
         mat4.copy(mvp, player ? camera.mvp : env.camera.mvp);
 
         _.each(lights, function(l, i) {
@@ -397,6 +416,7 @@ function init_reflections() {
 
     function update(env) {
         var theta = noise.simplex2(0.25 * time, 0.123);
+        theta = 0;
         theta += 0.5 * env.mouse.pos_nd[0];
         cam_dir[2] = -Math.cos(theta);
         cam_dir[0] = Math.sin(theta);
