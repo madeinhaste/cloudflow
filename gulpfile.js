@@ -14,10 +14,10 @@ gulp.task('usemin', function() {
 gulp.task('copy-assets', function(){
     var assets = [
         'data/**',
-        'fonts/*',
+        'fonts/**',
         'images/**',
         'sounds/**',
-        'styles/*',
+        'styles/**',
         'scripts/**',
         'shaders/**',
     ];
