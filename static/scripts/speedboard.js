@@ -15,7 +15,8 @@ function init_speedboard() {
         bg1: vec3.fromValues(1.0, 1.0, 1.0),
         bg0: vec3.fromValues(0.7, 0.9, 1.0),
         //groove: hex_color('beff00')
-        groove: hex_color('e6ff00')
+        //groove: hex_color('ffff00')
+        groove: vec3.fromValues(2, 1, 0)
         //bg0: vec3.fromValues(0.2, 0.3, 1.0),
     };
 
@@ -318,10 +319,12 @@ function init_speedboard() {
                 var ax = 0.03;
                 var ay = 0.01;
 
-                var mouse_rx = -((env.mouse.pos[1] / ch) - 0.5) * ax;
-                var mouse_ry = -((env.mouse.pos[0] / cw) - 0.5) * ay;
-                mouse_rr[0] = lerp(mouse_rr[0], mouse_rx, 0.010);
-                mouse_rr[1] = lerp(mouse_rr[1], mouse_ry, 0.040);
+                var mouse_rx = -env.mouse.pos_nd[1] * ax;
+                var mouse_ry = -env.mouse.pos_nd[0] * ay;
+
+                var k = 1;
+                mouse_rr[0] = lerp(mouse_rr[0], mouse_rx, k*0.010);
+                mouse_rr[1] = lerp(mouse_rr[1], mouse_ry, k*0.040);
 
                 rx += mouse_rr[0];
                 ry += mouse_rr[1];
@@ -412,7 +415,7 @@ function init_speedboard() {
                 //bank = lerp(bank, ry * bank_amount, 0.1);
 
                 quat.identity(Q);
-                quat.rotateZ(Q, Q, noise.simplex2(0.123, time));
+                quat.rotateZ(Q, Q, 0.5*noise.simplex2(0.123, time));
 
                 camera.update_quat(T, Q, U);
             }

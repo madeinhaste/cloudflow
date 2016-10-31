@@ -36,8 +36,15 @@ void main() {
     P += translate;
 
     gl_Position = mvp * vec4(P, 1.0);
-    v_texcoord = coord;
     v_position = P;
+
+    {
+        vec2 co = coord;
+        //float y = coord.y;
+        //co.x = 2.0 * (co.x - 0.5) * mix(1.0, 1.0, y);
+        //co.x = 0.5 * (co.x + 1.0);
+        v_texcoord = co;
+    }
 }
 
 // meshflow.fragment //
@@ -152,7 +159,7 @@ void main() {
     vec3 color = mix(color1, color0, pow(1.8*C.a, 0.5));
     //vec3 color = C.rgb;
     float h = hole(co, 0.7);
-    color *= mix(0.6, 1.0, h);
+    color *= mix(1.0, 0.5, h);
     float alpha = 1.0;
     gl_FragColor = vec4(lighting(C.rgb, color), alpha);
 #elif defined(MESH)
