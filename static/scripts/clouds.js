@@ -406,7 +406,7 @@ function init_clouds() {
             var ch = env.el.height;
 
             var Qy = -0.300 * Math.PI;
-            var Qx = 0.200 * Math.PI;
+            var Qx = -0.200 * Math.PI;
             var rx = Qx * env.mouse.pos_nd[1];
             var ry = Qy * env.mouse.pos_nd[0];
 
