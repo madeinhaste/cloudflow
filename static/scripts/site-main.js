@@ -182,6 +182,9 @@ $(function() {
         if (part) {
             $('.cf-description')
                 .text(get_copy(part+'.rollover'));
+        } else {
+            $('.cf-description')
+                .text('');
         }
     }
 
