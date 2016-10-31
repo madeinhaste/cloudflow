@@ -98,11 +98,10 @@ $(function() {
             }
         };
 
-        var charger = $('.cf-part-charge')[0];
-        cf_api.on_charge = function(amount) {
-            amount = Math.min(1, 1.0 * amount);
-            var w = ~~(amount * 100);
-            charger.style.width = w + '%';
+        //var charger = $('.cf-part-charge')[0];
+        cf_api.on_charge = function(charging) {
+            $('.cf-charger-blue').toggleClass('cf-charger-charged', charging);
+            $('.cf-instruction').toggleClass('cf-instruction-charged', charging);
         };
 
         cf_api.on_loading = function(frac) {
@@ -125,12 +124,11 @@ $(function() {
 
     function hide_all() {
         var names = [
-            'instructions-container',
+            'lower-third',
             'experienced-overlay',
             'sticker',
             'loading',
             'links',
-            'instructions-charge'
         ];
 
         names.forEach(function(name) {
@@ -173,18 +171,16 @@ $(function() {
             });
     }
 
-    function configure_instructions(text) {
-        $('.cf-instructions-container').show();
-        $('.cf-instructions-text')
-            .text(get_copy(text));
+    function configure_instruction(text) {
+        $('.cf-lower-third').show();
+        $('.cf-instruction').text(get_copy(text));
     }
 
     function configure_part_description(part) {
-        $('.cf-part-description-container')
-            .css({ opacity: part ? 1 : 0 });
+        //$('.cf-part-description-container') .css({ opacity: part ? 1 : 0 });
 
         if (part) {
-            $('.cf-part-description')
+            $('.cf-description')
                 .text(get_copy(part+'.rollover'));
         }
     }
@@ -210,7 +206,7 @@ $(function() {
     function page3() {
         configure_sticker('small', 'shortcut', 'introducing');
         configure_links();
-        configure_instructions('ui.click_and_hold');
+        configure_instruction('ui.click_and_hold');
         configure_part_description(null);
         cf_api.set_visible(true);
     }
@@ -218,7 +214,7 @@ $(function() {
     function page4() {
         configure_sticker('small', 'shortcut', 'introducing');
         configure_links();
-        configure_instructions('ui.click_and_hold');
+        configure_instruction('ui.click_and_hold');
         configure_part_description(hover_part);
         $('.cf-instructions-charge').show();
     }

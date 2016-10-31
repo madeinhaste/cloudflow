@@ -126,7 +126,15 @@ function cloudflow_main(canvas) {
             sounds.rollover(hover_part);
     }
 
-    var last_charge = 0;
+    var charging = false;
+    function set_charging(b) {
+        if (b == charging)
+            return;
+
+        charging = b;
+        sounds.charge(b ? 1 : 0);
+        api.on_charge(b ? 1 : 0);
+    }
 
     canvas.draw = function() {
         if (!visible)
@@ -166,19 +174,9 @@ function cloudflow_main(canvas) {
                 this.camera.far = 800;
 
                 set_experience_visible(0);
-                var charge = Math.max(0, vec2.length(shoe.rumble2) - 0.1);
-                if (charge !== last_charge) {
-                    api.on_charge(charge);
-                    last_charge = charge;
-                }
-
                 shoe.draw(this);
 
-                if (shoe.rumble) {
-                    sounds.charge(1);
-                } else {
-                    sounds.charge(0);
-                }
+                set_charging(!!shoe.rumble);
             }
         }
     };

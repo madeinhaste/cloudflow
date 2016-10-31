@@ -87,65 +87,64 @@
 
 /* instructions */
 
-.cf-instructions-container {
+.cf-lower-third {
     position: absolute;
-    width: 40%;
+    width: 80%;
     left: 50%;
     transform: translate(-50%, 0);
-    bottom: 5.50%;
-    //background-color: rgba(255,0,0, 0.1);
+    bottom: 5%;
 
-    display: flex:
+    display: flex;
     flex-direction: column;
+    align-items: center;
+
     pointer-events: none;
 }
 
-.cf-instructions-text {
-    text-align: center;
+.cf-instruction {
     font: 400 21px helvneue;
-    color: #444;
+    color: #333;
+    transition: color 1s ease-out;
+    text-align: center;
     text-transform: uppercase;
-    white-space: pre-line;
-    margin-bottom: 2.0%;
 }
 
-.cf-part-charge {
+.cf-instruction-charged {
+    color: #115FA5;
+}
+
+.cf-charger {
+    position: relative;
+    display: block;
+    height: 2px;
+    background-color: #989898;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.cf-charger-blue {
     position: absolute;
     top: 0;
     left: 50%;
-    width: 0;
-    height: 100%;
     transform: translate(-50%, 0);
-    border-bottom: 1px solid #0051a0;
-    border-top: 1px solid #0051a0;
+    display: block;
+    height: 100%;
+    width: 0%;
+    transition: width 1s ease-out;
+    background-color: #115FA5;
 }
 
-.cf-part-description-container {
-    position: relative;
-
-    text-align: center;
-    height: 186px;
-    //padding: 6.5%;
-    //background-color: rgba(0,0,255, 0.1);
-    color: #333;
-    border-top: 1px solid #666;
-    border-bottom: 1px solid #666;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    opacity: 0;
-    transition: opacity 2s ease;
+.cf-charger-charged {
+    width: 100%;
 }
 
-.cf-part-description {
+.cf-description {
     text-align: center;
-    vertical-align: middle;
     font: 38px neutraface;
+    max-width: 750px;
     color: #333;
+    height: 100px;
 }
-
 
 /* experienced */
 
