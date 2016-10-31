@@ -50,14 +50,20 @@ function main() {
         enable_fxaa: true,
         use_normal2: true,
         color: 2,
-        grid: false
+        grid: false,
+        params: {
+            diffuse: 1.0,
+            specular: 1.0
+        }
     };
 
     key('f', function() {
         ren_env.enable_fxaa = !ren_env.enable_fxaa;
     });
 
-    //key('c', function() { ++ren_env.color; });
+    key('c', function() {
+        ren_env.color = ren_env.color ? 0 : 2;
+    });
 
     key('g', function() {
         ren_env.grid = !ren_env.grid;
@@ -266,6 +272,15 @@ function main() {
         canvas._draw();
     }
     animate(0);
+
+    var params = {
+    };
+
+    1 && window.dat && (function() {
+        var gui = new dat.GUI();
+        gui.add(ren_env.params, 'diffuse', 0, 10);
+        gui.add(ren_env.params, 'specular', 0, 10);
+    }());
 
 }
 

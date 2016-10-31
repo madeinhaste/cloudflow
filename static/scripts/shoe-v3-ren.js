@@ -102,6 +102,11 @@ function cloudflow_init_shoe_v3_ren() {
         pgm.uniformMatrix3fv('normal_matrix', mat_normal);
     }
 
+    var default_params = {
+        diffuse: 1.0,
+        specular: 1.0
+    };
+
     function draw_ob(env, ob, obtex) {
         var pgm;
         if (obtex.highlight) {
@@ -136,20 +141,22 @@ function cloudflow_init_shoe_v3_ren() {
         if (obtex.occ)
             pgm.uniformSampler2D('t_occ', obtex.occ);
 
+        var params = env.params || default_params;
+
         pgm.uniform1f('lod', 5.0);
         pgm.uniform1f('f0', obtex.f0 || 0.05);
-        pgm.uniform1f('specular', obtex.specular || 0.2);
+        pgm.uniform1f('specular', (obtex.specular || 0.2) * params.specular);
         pgm.uniform1f('normal_mix', 1.0);
         pgm.uniform1f('normal_scale', obtex.nor_scale ? obtex.nor_scale : 1.0);
         pgm.uniform1i('use_normal2', env.use_normal2);
-        pgm.uniform1f('ambient', 1.0);
+        pgm.uniform1f('ambient', 1.0 * params.diffuse);
         pgm.uniform1f('occlusion', obtex.occ || 0);
 
         if (obtex.shiny) {
             // for the rings
             pgm.uniform1f('lod', 5.0);
             pgm.uniform1f('f0', 0.90);
-            pgm.uniform1f('specular', 0.5);
+            pgm.uniform1f('specular', 0.5 * params.specular);
         }
 
         var id0 = obtex.id0 || 0;

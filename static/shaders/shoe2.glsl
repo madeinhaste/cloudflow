@@ -227,8 +227,8 @@ void main() {
         Cs = F * spec_occ * Cs;
     }
 
-    C =  mix(Cd, Cs, specular);
-    //C = Cd + specular * Cs;
+    //C =  mix(Cd, Cs, specular);
+    C = Cd + specular * Cs;
 
     gl_FragColor = vec4(alpha * filmic(C), alpha);
     //gl_FragColor = vec4(vec3(id), alpha);
