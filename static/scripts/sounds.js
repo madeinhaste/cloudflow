@@ -60,7 +60,7 @@ var sounds = (function() {
 
     var play_rollover_sound = (function() {
         // idx == hover_part (0..3)
-        var rollover_wait = 250;
+        var rollover_wait = 500;
         var rollover_sounds = [
             make_rollover_sound('rzo/rzo-hover-mfl'),
             make_rollover_sound('rzo/rzo-hover-zgf'),
