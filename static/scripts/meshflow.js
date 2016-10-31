@@ -170,7 +170,7 @@ function init_meshflow() {
         //time += 0.0001;
         //mat4.copy(mvp, env.camera.mvp);
         //return;
-        time += 0.005;
+        time += 0.005 * 0.80;
 
         if (camera) {
             var h = (1 + env.mouse.pos_nd[1])/2;
