@@ -108,7 +108,7 @@ void main() {
             spot = 0.0;
 
         //if (abs(a) > 0.01)
-            spot *= smoothstep(0.030, 0.00, abs(a));
+            spot *= smoothstep(0.015, 0.00, abs(a));
 
         vec3 H = normalize(L + V);
         float NdotL = max(dot(N, L), 0.0);
@@ -124,7 +124,7 @@ void main() {
 
     {
         float s = min(1.0, stripe(v_coord, stripe_mat0) + stripe(v_coord, stripe_mat1));
-        float albedo = mix(0.125, 1.25, s);
+        float albedo = mix(0.050, 0.125, s);
         C *= albedo;
     }
 
