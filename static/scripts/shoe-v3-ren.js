@@ -54,6 +54,8 @@ function cloudflow_init_shoe_v3_ren() {
 
         iem: load_envmap('cubes_iem'),
         pmrem: load_envmap('cubes_pmrem'),
+
+        turbulence: webgl.load_texture('data/tmp/turbulence.png', {wrap: gl.REPEAT, mipmap: 1})
     };
     var color_names = _.keys(textures.color);
     var color_count = color_names.length;
@@ -119,12 +121,14 @@ function cloudflow_init_shoe_v3_ren() {
         pgm.uniform3fv('viewpos', camera.view_pos);
         setup_matrix(pgm, env.mat);
 
-        pgm.uniform1f('time', env.time/200000);
+        pgm.uniform1f('time', env.time/20000);
 
         pgm.uniformSamplerCube('t_iem', textures.iem);
         pgm.uniformSamplerCube('t_rem', textures.pmrem);
 
         pgm.uniformSampler2D('t_color', obtex.col);
+        pgm.uniformSampler2D('t_noise', textures.turbulence);
+        pgm.uniform2f('resolution', env.cw, env.ch);
 
         if (obtex.nor)
             pgm.uniformSampler2D('t_normal', obtex.nor);
@@ -419,6 +423,16 @@ function cloudflow_init_shoe_v3_ren() {
             //$('#debug').text(to_hex(id));
             //return part_ids.indexOf(id)
         },
-        ready: ready
+        ready: ready,
+        set_texture: function(env, texid, img) {
+            var color_index = env.color % color_count;
+            var color_name = color_names[color_index];
+            var color = textures.color[color_name];
+
+            var texture = color[texid];
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+            gl.generateMipmap(gl.TEXTURE_2D);
+        }
     };
 }

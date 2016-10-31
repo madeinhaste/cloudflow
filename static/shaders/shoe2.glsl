@@ -32,6 +32,7 @@ uniform samplerCube t_iem;
 uniform samplerCube t_rem;
 uniform sampler2D t_color;
 uniform sampler2D t_normal;
+uniform sampler2D t_noise;
 
 uniform float lod;
 uniform vec3 viewpos;
@@ -45,6 +46,7 @@ uniform bool use_normal2;
 uniform vec3 id_blend;
 
 uniform float time;
+uniform vec2 resolution;
 
 
 float G1V(float NdotV, float k) {
@@ -176,6 +178,28 @@ void main() {
         grid_blend += id_blend[0];
         grid_blend = min(1.0, grid_blend);
 
+        if (true) {
+            //vec2 co = 4.0 * gl_FragCoord.xy / resolution;
+            float z = 1.0 / 2.5;
+            vec2 co1 = z * 4.0 * vec2(v_texcoord.x, v_texcoord.y + time);
+            vec2 co2 = z * 8.0 * vec2(v_texcoord.x + time, v_texcoord.y);
+            float noise = mix(
+                texture2D(t_noise, co1).r,
+                texture2D(t_noise, co2).g,
+                0.5);
+
+            grid_blend = min(1.0, grid_blend + noise) * 0.5;
+            //grid_blend = step(0.25, grid_blend);
+            grid_blend = step(0.50, grid_blend);
+
+            /*
+            grid_blend = mix(
+                grid_blend * step(0.25, noise),
+                grid_blend,
+                grid_blend * grid_blend);
+                */
+        }
+
         Cd = mix(Cd_tex.rgb, Cd_grid, grid_blend);
         occ = mix(1.0, Cd_tex.a, occlusion);
     }
@@ -208,4 +232,5 @@ void main() {
 
     gl_FragColor = vec4(alpha * filmic(C), alpha);
     //gl_FragColor = vec4(vec3(id), alpha);
+
 }

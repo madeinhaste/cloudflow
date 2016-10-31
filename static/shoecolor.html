@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<meta charset=UTF-8>
+<title>cloudflow|running_zone</title>
+<style>
+    canvas.webgl { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    #debug {
+        display: block;
+        white-space: pre-line;
+        position: absolute;
+        top: 4px;
+        left: 6px;
+        color: #fff;
+        font: 300 20px Cousine, monospace;
+        text-align: right;
+    }
+
+    .texture-wells {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+
+        display: flex;
+        flex-direction: column;
+    }
+
+    .texture-well {
+        position: relative;
+    }
+
+    .texture-well-name {
+        position: absolute;
+        font: 300 12px Cousine, monospace;
+        color: #000;
+        background-color: #fff;
+        padding: 2px 4px;
+        pointer-events: none;
+    }
+
+    .texture-well-canvas {
+        width: 64px;
+        height: 64px;
+        background-color: #ccc;
+    }
+</style>
+
+<link rel="stylesheet" type="text/css" href="styles/glsl-error.css">
+
+<script>
+    (function() {
+        var script = document.createElement('script');
+        script.src = `${location.protocol}//${location.hostname}:35729/livereload.js`;
+        script.async = true;
+        document.querySelector('head').appendChild(script);
+    }());
+</script>
+
+<div id="main">
+    <div id="debug"></div>
+
+    <div class="texture-wells">
+        <div data-texid="shoe" class="texture-well">
+            <span class="texture-well-name">shoe</span>
+            <canvas class="texture-well-canvas"></canvas>
+        </div>
+
+        <div data-texid="sole" class="texture-well">
+            <span class="texture-well-name">sole</span>
+            <canvas class="texture-well-canvas"></canvas>
+        </div>
+
+        <div data-texid="tongue" class="texture-well">
+            <span class="texture-well-name">tongue</span>
+            <canvas class="texture-well-canvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="glsl-error"></div>
+
+<script src="scripts/vendor/jquery.js"></script>
+<script src="scripts/vendor/lodash.js"></script>
+<script src="scripts/vendor/keymaster.js"></script>
+<script src="scripts/vendor/gl-matrix.js"></script>
+<script src="scripts/vendor/msgpack.js"></script>
+<script src="scripts/vendor/noise.js"></script>
+
+<script src="scripts/vendor/brotli-dec.js"></script>
+<script src="scripts/brotli.js"></script>
+
+<script src="scripts/polyfills/fetch.js"></script>
+<script src="scripts/qwq/utils.js"></script>
+<script src="scripts/qwq/webgl.js"></script>
+<script src="scripts/loader.js"></script>
+<script src="scripts/retina-detect.js"></script>
+<script src="scripts/canvas3d.js"></script>
+<script src="scripts/texture-loader2.js"></script>
+<script src="scripts/object-loader2.js"></script>
+<script src="scripts/shoe-v3-ren.js"></script>
+<script src="scripts/dropzone.js"></script>
+<script src="scripts/shoecolor-main.js"></script>
