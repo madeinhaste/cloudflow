@@ -16,6 +16,7 @@ function init_reflections() {
         bg1: hex_color('000000'),
         scape: hex_color('30A0FF')
     };
+    vec3.scale(colors.bg0, colors.bg0, 1.00);
 
     function random(a, b) {
         return lerp(a, b, Math.random());
@@ -361,12 +362,14 @@ function init_reflections() {
     var l = new Light;
     vec3.set(l.pos, -6, 3, 8);
     vec3.set(l.color, 1, 1.2, 0.3);
-    vec3.scale(l.color, l.color, 2.2);
+    vec3.scale(l.color, l.color, 20.0);
     lights.push(l);
 
     var l = new Light;
     vec3.set(l.pos, 6, 5, 7);
     vec3.set(l.color, 0.7, 1.0, 1.5);
+    vec3.scale(l.color, l.color, 10.0);
+
     lights.push(l);
 
 
@@ -409,7 +412,7 @@ function init_reflections() {
         }
     }
     
-    var cam_pos = vec3.fromValues(0, 0.35, 10);
+    var cam_pos = vec3.fromValues(0, 0.45, 10);
     var cam_dir = vec3.fromValues(0, 0, -1);
     var camera = new webgl.Camera;
     camera.fov = 80;
