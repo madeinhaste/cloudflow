@@ -127,7 +127,6 @@ $(function() {
             'lower-third',
             'experienced-overlay',
             'sticker',
-            'loading',
             'links',
         ];
 
@@ -155,9 +154,9 @@ $(function() {
     }
 
     function configure_loading(percent) {
-        $('.cf-loading')
-            .show()
-            .html(percent + '% loading');
+        $('.cf-lower-third').show();
+        $('.cf-instruction').text(percent + '% loading');
+        $('.cf-charger').css({ width: percent + '%' });
     }
 
     function configure_links() {
