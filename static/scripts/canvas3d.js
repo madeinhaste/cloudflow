@@ -121,13 +121,13 @@ var Canvas3D = (function() {
 
         var canvas = this.el = (opts.el || document.createElement('canvas'));
 
-        var sources = [ 'shaders/default.glsl' ];
-        if (opts.sources) sources.push.apply(sources, opts.sources);
+        //var sources = [ 'shaders/default.glsl' ];
+        //if (opts.sources) sources.push.apply(sources, opts.sources);
 
         window.gl = webgl.setup_canvas(canvas, {
             antialias: opts.antialias || false,
             extensions: opts.extensions || [],
-            shaderSources: sources
+            shaderSources: opts.sources
         });
         
         console.assert(gl);

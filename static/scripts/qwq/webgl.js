@@ -282,6 +282,12 @@ var webgl = (function() {
     // program loader
     var shaderSources = {};
     function fetchShaderSources(urls) {
+        if (!_.isArray(urls)) {
+            // baked
+            shaderSources = urls;
+            return;
+        }
+
         shaderSources = {};
 
         function processSourceText(text) {
