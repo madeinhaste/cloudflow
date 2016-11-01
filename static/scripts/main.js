@@ -4,36 +4,23 @@ function cloudflow_main(canvas) {
 
     var lerp = QWQ.lerp;
 
-    var canvas = new Canvas3D({
+    var canvas = new Canvas3D_v2({
         el: canvas,
-        antialias: false,
-        extensions: [
-            'OES_element_index_uint',
-            'OES_texture_half_float',
-            'OES_texture_half_float_linear',
-            'OES_texture_float',
-            'OES_texture_float_linear',
-            'OES_standard_derivatives',
-            'WEBGL_compressed_texture_s3tc',
-            'WEBKIT_WEBGL_compressed_texture_pvrtc',
-            'EXT_shader_texture_lod',
-            'ANGLE_instanced_arrays'
-        ],
-        sources: [
-            'shaders/default.glsl',
-            'shaders/shoe2.glsl',
-            'shaders/shoe_pick2.glsl',
-            'shaders/fxaa.glsl',
-            'shaders/meshflow.glsl',
-            'shaders/cloud.glsl',
-            'shaders/earth.glsl',
-            'shaders/particles.glsl',
-            'shaders/reflections.glsl',
-            'shaders/arc.glsl',
-            'shaders/groove.glsl',
-            'shaders/widget.glsl',
-            'shaders/cube.glsl',
-            'shaders/background.glsl',
+        shaders: [
+            'default',
+            'shoe2',
+            'shoe_pick2',
+            'fxaa',
+            'meshflow',
+            'cloud',
+            'earth',
+            'particles',
+            'reflections',
+            'arc',
+            'groove',
+            'widget',
+            'cube',
+            'background'
         ]
     });
 
@@ -58,7 +45,7 @@ function cloudflow_main(canvas) {
         sounds.mute();
     });
 
-    //sounds.mute();
+    sounds.mute();
 
     canvas.show_grid = false;
     canvas.time = 0;
@@ -188,11 +175,11 @@ function cloudflow_main(canvas) {
         }
     };
 
-    document.addEventListener('mousedown', function(e) {
+    function on_hold() {
         shoe.start_rumble(canvas);
-    }, false);
+    }
 
-    document.addEventListener('mouseup', function(e) {
+    function on_release() {
         if (!shoe.rumble)
             return;
 
@@ -204,7 +191,13 @@ function cloudflow_main(canvas) {
             vec2.set(shoe.trans, 0, 0);
             vec2.set(canvas.orbit.rotate, 0, 0);
         }
-    }, false);
+    }
+
+    document.addEventListener('mousedown', on_hold, false);
+    document.addEventListener('mouseup', on_release, false);
+
+    canvas.el.addEventListener('touchstart', on_hold, false);
+    canvas.el.addEventListener('touchend', on_release, false);
 
     var last_time = 0;
     canvas.dt = 0;
@@ -227,6 +220,7 @@ function cloudflow_main(canvas) {
 
         if (1) {
             shoe.update(canvas, dt);
+
             var result = canvas._pick();
             if (result !== undefined) {
                 shoe.set_picked_id(result);

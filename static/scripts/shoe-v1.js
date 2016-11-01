@@ -33,6 +33,8 @@ function cloudflow_init_shoe() {
 
         rot: vec3.create(),
         rot_neutral: vec3.create(),
+        rot_vel: vec3.create(),
+
         trans: vec3.create(),
         rumble2: vec2.create(),
         part_select: new Float32Array(4),
@@ -55,19 +57,33 @@ function cloudflow_init_shoe() {
     }
 
     function update_shoe(env) {
-        var rx = env.mouse.pos_nd[1];
-        var ry = 1.5 * env.mouse.pos_nd[0];
+        if (env.interaction_mode == 'mouse') {
+            var rx = env.mouse.pos_nd[1];
+            var ry = 1.5 * env.mouse.pos_nd[0];
 
-        if (rx > -0.2) {
-            var k = Math.min(1, (rx + 0.2) / 0.3);
-            rx += QWQ.RAD_PER_DEG * k * 90;
+            if (rx > -0.2) {
+                var k = Math.min(1, (rx + 0.2) / 0.3);
+                rx += QWQ.RAD_PER_DEG * k * 90;
+            }
+
+            //rx = ry = 0;
+            var k = 0.1;
+
+            shoe.rot[0] = lerp(shoe.rot[0], rx, k);
+            shoe.rot[1] = lerp(shoe.rot[1], ry, k);
         }
+        else if (env.interaction_mode == 'touch') {
+            var rx = env.mouse.delta_nd[1];
+            var ry = env.mouse.delta_nd[0];
 
-        //rx = ry = 0;
-        var k = 0.1;
+            var k = 0.2;
+            shoe.rot_vel[0] += k * rx;
+            shoe.rot_vel[1] += k * ry;
 
-        shoe.rot[0] = lerp(shoe.rot[0], rx, k);
-        shoe.rot[1] = lerp(shoe.rot[1], ry, k);
+            vec3.add(shoe.rot, shoe.rot, shoe.rot_vel);
+            vec3.scale(shoe.rot_vel, shoe.rot_vel, 0.95);
+
+        }
 
         if (shoe.rumble) {
             shoe.rumble_amount = 1.0;
@@ -175,17 +191,6 @@ function cloudflow_init_shoe() {
         return ren.pick(ren_env);
     }
 
-    function show_selected_part_name() {
-        var index = shoe.selected_part_index;
-        $('#debug').text(
-            (index < 0) ? '' : [
-                'MESH',
-                'SOLE',
-                'ENFORCEMENT',
-                'MIDSOLE'
-            ][index]);
-    }
-
     function set_picked_id(id) {
         var index = ren.get_index_from_picked_id(id);
         if (index !== shoe.selected_part_index) {
@@ -217,7 +222,7 @@ function cloudflow_init_shoe() {
         vec3.scale(shoe.rot_neutral, shoe.rot_neutral, QWQ.RAD_PER_DEG);
     }
     
-    1 && window.dat && (function() {
+    0 && window.dat && (function() {
         var gui = new dat.GUI();
         dat.GUI.toggleHide();
         gui.add(params, 'rx', -180, 180);
