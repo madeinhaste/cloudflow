@@ -144,13 +144,21 @@ vec3 lighting(vec3 normal, vec3 color) {
 
 void main() {
     vec2 co = v_texcoord;
+
+    float yy = v_texcoord.y;
+    yy *= yy * yy;
+
+    co.x = 2.0 * (co.x - 0.525);
+    co.x = co.x * mix(0.25, 2.0, 1.0 - yy);
+    co.x = 0.5 * (co.x + 1.0);
+    co.x += fract(drift);
+
     co.y -= time;
-    co.x += drift;
 
 #if defined(STRIPES)
     float x = fract(128.0 * co.x);
     x = abs(x - 0.5);
-    x = 1.0 - smoothstep(0.1, 0.110, x);
+    x = 1.0 - smoothstep(0.1, 0.200, x);
     vec3 color = vec3(0.02, 0.00, 0.10);
     float alpha = x;
     gl_FragColor = vec4(color, alpha);
@@ -169,4 +177,6 @@ void main() {
     float alpha = h;
     gl_FragColor = vec4(lighting(C.rgb, color), alpha);
 #endif
+
+    //gl_FragColor = vec4(yy, 0.0, 0.0, 1.0);
 }
