@@ -149,7 +149,7 @@ $(function() {
             .removeClass('cf-sticker-transform-large cf-sticker-transform-small')
             .addClass('cf-sticker-transform-' + size);
 
-        var sticker_languages = ['en', 'fr', 'de', 'jp'];
+        var sticker_languages = ['en', 'fr', 'de', 'jp', 'it'];
         var lang = _.includes(sticker_languages, language) ? language : 'en';
 
         $('.cf-sticker-img')
