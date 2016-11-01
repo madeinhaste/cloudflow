@@ -60,7 +60,8 @@ var sounds = (function() {
 
     var play_rollover_sound = (function() {
         // idx == hover_part (0..3)
-        var rollover_wait = 500;
+        var rollover_wait = 250;
+        var rollover_volume = 0.200;
         var rollover_sounds = [
             make_rollover_sound('rzo/rzo-hover-mfl'),
             make_rollover_sound('rzo/rzo-hover-zgf'),
@@ -70,7 +71,7 @@ var sounds = (function() {
 
         function make_rollover_sound(path) {
             var sound = get_sound(path);
-            return _.throttle(function() { sound.play() }, rollover_wait);
+            return _.throttle(function() { sound.volume(rollover_volume).play() }, rollover_wait);
         }
             
         return function(idx) {
