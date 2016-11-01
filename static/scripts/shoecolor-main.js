@@ -49,7 +49,7 @@ function main() {
         part_select: new Float32Array(4),
         enable_fxaa: true,
         use_normal2: true,
-        color: 2,
+        color: 1,
         grid: false,
         params: {
             diffuse: 1.0,
@@ -62,7 +62,7 @@ function main() {
     });
 
     key('c', function() {
-        ren_env.color = ren_env.color ? 0 : 2;
+        ren_env.color = ren_env.color ? 0 : 1;
     });
 
     key('g', function() {

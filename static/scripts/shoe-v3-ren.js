@@ -30,19 +30,12 @@ function cloudflow_init_shoe_v3_ren() {
                 lace: load_texture('col_lace'),
             },
 
-            red1: {
-                shoe: load_texture('col_occ_shoe_r'),
-                sole: load_texture('col_occ_sole_r'),
-                tongue: load_texture('col_occ_tongue_r'),
-                lace: load_texture('col_lace_r'),
+            red: {
+                shoe: load_texture('col_occ_shoe_r3'),
+                sole: load_texture('col_occ_sole_r3'),
+                tongue: load_texture('col_occ_tongue_r3'),
+                lace: load_texture('col_lace_r3'),
             },
-
-            red2: {
-                shoe: load_texture('col_occ_shoe_r2'),
-                sole: load_texture('col_occ_sole_r2'),
-                tongue: load_texture('col_occ_tongue_r2'),
-                lace: load_texture('col_lace_r2'),
-            }
         },
 
         normal: {
@@ -103,9 +96,22 @@ function cloudflow_init_shoe_v3_ren() {
     }
 
     var default_params = {
-        diffuse: 1.0,
-        specular: 1.0
+        red: {
+            diffuse: 1.50,
+            specular: 0.75
+        },
+
+        blue: {
+            diffuse: 1.00,
+            specular: 1.00
+        }
     };
+
+    function get_default_params(env) {
+        var color_index = env.color % color_count;
+        var color_name = color_names[color_index];
+        return default_params[color_name];
+    }
 
     function draw_ob(env, ob, obtex) {
         var pgm;
@@ -141,7 +147,7 @@ function cloudflow_init_shoe_v3_ren() {
         if (obtex.occ)
             pgm.uniformSampler2D('t_occ', obtex.occ);
 
-        var params = env.params || default_params;
+        var params = env.params || get_default_params(env);
 
         pgm.uniform1f('lod', 5.0);
         pgm.uniform1f('f0', obtex.f0 || 0.05);
