@@ -177,8 +177,9 @@ function init_meshflow() {
             h = QWQ.clamp(h, 0.0, 1.0);
             time += 0.005*h;
 
-            h = lerp(-0.95, 2.0, h);
+            h = lerp(-0.95, 4.0, h);
             cam_pos[1] = lerp(cam_pos[1], h, 0.1);
+            //cam_pos[1] = 1.5;   // XXX
 
             var mx = env.mouse.pos_nd[0];
             drift += 0.003 * mx;
