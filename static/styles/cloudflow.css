@@ -191,6 +191,7 @@
 .cf-description {
     text-align: center;
     font: 38px neutraface;
+    letter-spacing: -1px;
     max-width: 750px;
     color: #333;
     height: 100px;
@@ -254,6 +255,7 @@
 
 .cf-experienced {
     font: 38px neutraface;
+    letter-spacing: -1px;
     color: #3c3c3c;
     line-height: 125%;
     text-align: center;
