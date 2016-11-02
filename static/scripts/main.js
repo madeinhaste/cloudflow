@@ -56,7 +56,8 @@ function cloudflow_main(canvas) {
     canvas.camera.far = 800;
     vec4.set(canvas.clear_color, 0, 0, 0, 0);
     vec3.set(canvas.orbit.rotate, 0, 0, 0);
-    var target_orbit_distance = 22;
+    var target_orbit_distance = 22; // good for landscape
+    //var target_orbit_distance = 40; // good for portait
     canvas.orbit.distance = 0;
 
     var shoe = cloudflow_init_shoe();
@@ -224,8 +225,15 @@ function cloudflow_main(canvas) {
             canvas.dt = dt;
         }
 
-        if (shoe.ready())
+        if (shoe.ready()) {
+            var cw = window.innerWidth;
+            var ch = window.innerHeight;
+            if (cw < ch)
+                target_orbit_distance = 40;
+            else
+                target_orbit_distance = 22;
             canvas.orbit.distance = lerp(canvas.orbit.distance, target_orbit_distance, 0.003*dt);
+        }
 
         requestAnimationFrame(animate);
 
@@ -243,13 +251,19 @@ function cloudflow_main(canvas) {
             }
         }
 
-        var dpr = canvas.retina ? canvas.dpr : 1;
-        var cx = canvas.mouse.pos[0] / dpr;
-        var cy = canvas.mouse.pos[1] / dpr;
-        el_hand.style.transform = (
-            'translate(' + cx + 'px, ' + cy + 'px)' +
-            ' translate(-50%, -50%) scale(2.0)'
-        );
+        if (experience_visible) {
+            // update hand
+            var dpr = canvas.retina ? canvas.dpr : 1;
+            var cx = canvas.mouse.pos[0] / dpr;
+            var cy = canvas.mouse.pos[1] / dpr;
+            if (canvas.interaction_mode == 'touch')
+                cy -= 100;
+
+            el_hand.style.transform = (
+                'translate(' + cx + 'px, ' + cy + 'px)' +
+                ' translate(-50%, -50%) scale(3.0)'
+            );
+        }
 
         canvas._draw();
         //fps.update();
