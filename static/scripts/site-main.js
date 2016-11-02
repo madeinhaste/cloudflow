@@ -117,7 +117,8 @@ $(function() {
         return cf_api;
     }());
 
-    $('.cf-experienced-close-bar a').on('click', function(e) {
+    //$('.cf-experienced-close-bar a').on('click', function(e) {
+    $('.cf-experienced-overlay').on('click', function(e) {
         e.preventDefault();
         close_experienced();
     });
