@@ -1,6 +1,8 @@
 function cloudflow_init_shoe() {
 
     var lerp = QWQ.lerp;
+    var clamp = QWQ.clamp;
+
     function fbm(x, y, n) {
         var w = 1;
         var s = 0.0;
@@ -47,12 +49,22 @@ function cloudflow_init_shoe() {
     };
 
     function update_part_selection(dt) {
-        var delta = dt * 0.0015;
+        //var delta = dt * 0.0015;
         for (var i = 0; i < 4; ++i) {
-            if (i == shoe.selected_part_index)
-                shoe.part_select[i] = Math.min(1, shoe.part_select[i] + delta);
-            else
-                shoe.part_select[i] = Math.max(0, shoe.part_select[i] - 3*delta);
+            var curr = shoe.part_select[i];
+            var next = curr;
+            if (i == shoe.selected_part_index) {
+                if (curr < 0.8) 
+                    next = lerp(curr, 1.0, 0.1);
+                else
+                    next = lerp(curr, 1.0, 0.05);
+            }
+            else {
+                next = lerp(curr, 0.0, 0.01);
+            }
+
+            next = clamp(next, 0, 1);
+            shoe.part_select[i] = next;
         }
     }
 
