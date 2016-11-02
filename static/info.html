@@ -26,7 +26,7 @@
             ctx.msBackingStorePixelRatio ||
             ctx.oBackingStorePixelRatio ||
             ctx.backingStorePixelRatio || 1);
-        return `${dpr}:${bspr}`;
+        return dpr + ':' + bspr;
     }
 
     function get_info() {
@@ -43,7 +43,7 @@
                 renderer: gl.getParameter(gl.RENDERER),
             };
 
-            Object.assign(info, gl_info);
+            _.assign(info, gl_info);
 
             var ext_names = gl.getSupportedExtensions();
             info['extensions'] = ext_names;
@@ -85,5 +85,5 @@
 
     get_info();
 
-    document.write(`<pre>${get_info()}</pre>`);
+    document.write('<pre>' + get_info() + '</pre>');
 </script>

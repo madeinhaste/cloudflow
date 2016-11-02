@@ -2,7 +2,7 @@
 
 <script>
     // example usage
-    document.write(`<pre>${ cloudflow_check_webgl() ? 'Interactive' : 'Fallback'}</pre>`);
+    document.write('<pre>' + (cloudflow_check_webgl() ? 'Interactive' : 'Fallback') + '</pre>');
 
     function cloudflow_check_webgl() {
         try {
@@ -10,6 +10,20 @@
             var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
             if (!gl)
                 return false;
+
+            // webgl version
+            var version = (function() {
+                var v = gl.getParameter(gl.VERSION);
+                var m = v.match(/^WebGL ((\d+)\.(\d+))/);
+                return m ? parseFloat(m[1]) : 0.0;
+            }());
+
+            if (version < 0.96) {
+                // IE11: 0.94
+                // Edge: 0.96
+                // Chrome, Safari, Firefox: 1.0
+                return false;
+            }
 
             var supported_extensions = gl.getSupportedExtensions();
             function check_extensions() {
@@ -19,12 +33,13 @@
                 return true;
             }
 
-            // required extensions
+            // mandatory extensions
             var ok = check_extensions(
-                'OES_element_index_uint',
                 'ANGLE_instanced_arrays',
-                'OES_texture_float', 'OES_texture_float_linear',
-                'OES_standard_derivatives');
+                'OES_standard_derivatives',
+                'OES_texture_float',
+                'OES_texture_float_linear'
+            );
             
             // compressed texture formats
             ok = ok && (
