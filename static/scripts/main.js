@@ -180,17 +180,7 @@ function cloudflow_main(canvas) {
     }
 
     function on_release() {
-        if (!shoe.rumble)
-            return;
-
-        shoe.rumble = false;
-
-        if (canvas.time - shoe.rumble_start_time > 2000) {
-            canvas.orbit.distance = 500;
-            vec2.set(shoe.rot, 0, 0);
-            vec2.set(shoe.trans, 0, 0);
-            vec2.set(canvas.orbit.rotate, 0, 0);
-        }
+        shoe.stop_rumble(canvas);
     }
 
     document.addEventListener('mousedown', on_hold, false);

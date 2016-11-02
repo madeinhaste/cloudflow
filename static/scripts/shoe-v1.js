@@ -32,6 +32,7 @@ function cloudflow_init_shoe() {
         rumble_fly_vec: vec3.create(),
 
         start_rumble: start_rumble,
+        stop_rumble: stop_rumble,
 
         rot: vec3.create(),
         rot_neutral: vec3.create(),
@@ -100,7 +101,9 @@ function cloudflow_init_shoe() {
         if (shoe.rumble) {
             shoe.rumble_amount = 1.0;
         } else {
-            shoe.rumble_amount = Math.max(0.0, shoe.rumble_amount - 0.015);
+            shoe.rumble_amount *= 0.95;
+            if (shoe.rumble_amount < 0.05)
+                shoe.rumble_amount = 0;
         }
 
         env.draw_funworld = false;
@@ -112,7 +115,8 @@ function cloudflow_init_shoe() {
 
             if (t > duration + post_duration) {
                 env.draw_funworld = true;
-            } else if (t > duration) {
+            } else if (t > duration && shoe.rumble) {
+                // flip off
                 var u = t - duration;
 
                 vec3.scaleAndAdd(shoe.trans, shoe.trans, shoe.rumble_fly_vec, u);
@@ -211,15 +215,42 @@ function cloudflow_init_shoe() {
     }
 
     function start_rumble(env) {
-        if (shoe.selected_part_index >= 0) {
-            shoe.rumble = true;
-            shoe.rumble_start_time = env.time;
+        // called once from main on mousedown/touchstart
 
-            // random fly off direction
-            vec3.set(shoe.rumble_fly_vec,
-                lerp(-3, 3, Math.random()),
-                lerp(-2.5, 2.5, Math.random()),
-                10.0);
+        if (shoe.selected_part_index < 0) {
+            // nothing selected
+            return;
+        }
+
+        shoe.rumble = true;
+        shoe.rumble_start_time = env.time;
+        shoe.rumble_amount = 0;
+        vec2.set(shoe.rumble2, 0, 0);
+
+        // random fly off direction
+        vec3.set(shoe.rumble_fly_vec,
+            lerp(-3, 3, Math.random()),
+            lerp(-2.5, 2.5, Math.random()),
+            10.0);
+    }
+
+    function stop_rumble(env) {
+        // called once from main on mouseup/touchend
+
+        if (!shoe.rumble) {
+            // not rumbling
+            return;
+        }
+
+        shoe.rumble = false;
+        //shoe.rumble_amount = 0.2;
+        //vec2.set(shoe.rumble2, 0, 0);
+
+        if (env.time - shoe.rumble_start_time > 2000) {
+            env.orbit.distance = 500;
+            vec2.set(shoe.rot, 0, 0);
+            vec2.set(shoe.trans, 0, 0);
+            vec2.set(canvas.orbit.rotate, 0, 0);
         }
     }
 
