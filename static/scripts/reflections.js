@@ -450,7 +450,9 @@ function init_reflections() {
         // 60fps
         // 90bpm = ...
 
-        var phi = 0.040*Math.sin(cam_time);
+        var wobble = (1 + 0.5*noise.simplex2(0.05 * cam_time, 0.123));
+        wobble = lerp(0.000, 0.050, wobble);
+        var phi = wobble * Math.sin(cam_time);
         cam_time += Math.PI * beats_per_frame;
 
         cam_look[1] = lerp(cam_look[1], -0.5 * my, 0.05);
