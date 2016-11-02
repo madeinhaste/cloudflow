@@ -58,7 +58,7 @@
 .cf-links li {
     list-style: none;
     display: inline-block;
-    font: 400 21px helvneue;
+    font: 400 14px helvneue;
     padding: 0 20px;
 }
 
@@ -151,7 +151,7 @@
 }
 
 .cf-instruction {
-    font: 400 21px helvneue;
+    font: 400 13px helvneue;
     color: #333;
     transition: color 1s ease-out;
     text-align: center;
@@ -208,7 +208,6 @@
     }
 
     .cf-instruction {
-        font-size: 16px;
     }
 
     .cf-description {
