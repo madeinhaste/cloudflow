@@ -235,8 +235,6 @@ $(function() {
     }
 
     function show_page(index) {
-        console.log('SHOW_PAGE:', cf_api);
-
         //if (index == page_index) return;
 
         if (index < 0 || index >= pages.length)

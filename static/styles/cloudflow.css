@@ -292,3 +292,13 @@
     filter: blur(30px);
     opacity: 0.3;
 }
+
+/* hand */
+.cf-hand {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1s ease;
+}

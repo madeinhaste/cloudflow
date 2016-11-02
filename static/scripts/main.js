@@ -2,6 +2,8 @@ var USE_TEXLOD_FIX = false;
 
 function cloudflow_main(canvas) {
 
+    var el_hand = $('.cf-hand')[0];
+
     var lerp = QWQ.lerp;
 
     var canvas = new Canvas3D_v2({
@@ -80,7 +82,13 @@ function cloudflow_main(canvas) {
 
             // for sounds
             if (idx == 1) meshflow.enter(false);
+            el_hand.style.opacity = 1;
+            setTimeout(function() { el_hand.style.opacity = 0; }, 3000);
+            canvas.el.style.cursor = 'none';
         } else {
+            canvas.el.style.cursor = 'default';
+            el_hand.style.opacity = 0;
+
             sounds.leave_experience();
             // flip shoe color
             shoe.color = shoe.color ? 0 : 1;
@@ -98,6 +106,7 @@ function cloudflow_main(canvas) {
 
     var api_update_on_hover = _.throttle(function() {
         api.on_hover(hover_part);
+
     }, 250);
     
     function set_hover_part() {
@@ -109,8 +118,12 @@ function cloudflow_main(canvas) {
         //api.on_hover(hover_part);
         api_update_on_hover();
 
-        if (hover_part >= 0)
+        if (hover_part >= 0) {
+            canvas.el.style.cursor = 'pointer';
             sounds.rollover(hover_part);
+        } else {
+            canvas.el.style.cursor = 'default';
+        }
     }
 
     var charging = false;
@@ -229,6 +242,14 @@ function cloudflow_main(canvas) {
                 }
             }
         }
+
+        var dpr = canvas.retina ? canvas.dpr : 1;
+        var cx = canvas.mouse.pos[0] / dpr;
+        var cy = canvas.mouse.pos[1] / dpr;
+        el_hand.style.transform = (
+            'translate(' + cx + 'px, ' + cy + 'px)' +
+            ' translate(-50%, -50%) scale(2.0)'
+        );
 
         canvas._draw();
         //fps.update();
