@@ -254,14 +254,18 @@ function cloudflow_main(canvas) {
         if (experience_visible) {
             // update hand
             var dpr = canvas.retina ? canvas.dpr : 1;
-            var cx = canvas.mouse.pos[0] / dpr;
-            var cy = canvas.mouse.pos[1] / dpr;
-            if (canvas.interaction_mode == 'touch')
-                cy -= 100;
+            var cx = canvas.mouse.pos[0];
+            var cy = canvas.mouse.pos[1];
+            //var cx = canvas.mouse.pos_nd[0];
+            //var cy = canvas.mouse.pos_nd[1];
+            //cx = (cx + 1)/2;
+            //cy = (cy + 1)/2;
+
+            //if (canvas.interaction_mode == 'touch') cy -= 100;
 
             el_hand.style.transform = (
                 'translate(' + cx + 'px, ' + cy + 'px)' +
-                ' translate(-50%, -50%) scale(3.0)'
+                ' translate(-50%, -50%) scale(1.0)'
             );
         }
 
