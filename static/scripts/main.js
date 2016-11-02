@@ -79,7 +79,7 @@ function cloudflow_main(canvas) {
             sounds.enter_experience();
 
             // for sounds
-            if (idx == 1) meshflow.enter(!shoe.color);
+            if (idx == 1) meshflow.enter(false);
         } else {
             sounds.leave_experience();
             // flip shoe color
