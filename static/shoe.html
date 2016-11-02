@@ -28,7 +28,8 @@
 <script>
     (function() {
         var script = document.createElement('script');
-        script.src = `${location.protocol}//${location.hostname}:35729/livereload.js`;
+        script.src = (location.protocol + '//' +
+                      location.hostname + ':35729/livereload.js');
         script.async = true;
         document.querySelector('head').appendChild(script);
     }());
@@ -40,6 +41,9 @@
 </div>
 
 <div class="glsl-error"></div>
+
+<script src="scripts/polyfills/fetch.js"></script>
+<script src="scripts/polyfills/promise.js"></script>
 
 <script src="scripts/vendor/jquery.js"></script>
 <script src="scripts/vendor/lodash.js"></script>
@@ -54,8 +58,6 @@
 <script src="scripts/vendor/brotli-dec.js"></script>
 <script src="scripts/brotli.js"></script>
 <script src="scripts/loader.js"></script>
-
-<script src="scripts/polyfills/fetch.js"></script>
 
 <script src="scripts/qwq/utils.js"></script>
 <script src="scripts/qwq/webgl.js"></script>
