@@ -16,8 +16,13 @@ function init_speedboard() {
         bg0: vec3.fromValues(0.7, 0.9, 1.0),
         //groove: hex_color('beff00')
         //groove: hex_color('ffff00')
-        groove: vec3.fromValues(2, 1, 0)
+        //groove: vec3.fromValues(2, 1, 0),
+        //groove: hex_color('B5C21A'),
+        groove: hex_color('C1D82F'),
         //bg0: vec3.fromValues(0.2, 0.3, 1.0),
+
+        widget0: hex_color('C1D82F'),
+        widget1: hex_color('cccccc'),
     };
 
     // FIXME fabric texture will be loaded twice
@@ -160,11 +165,11 @@ function init_speedboard() {
         for (var i = 0; i < 16; ++i) {
             var ii = 8 * i;
 
-            var ci = (i + Math.floor(time_mult*time)) % 5;
-            if (ci < 3)
-                pgm.uniform3f('color', 1, 1, 1);
+            var ci = (i + Math.floor(time_mult*time)) % 10;
+            if (ci < 7)
+                pgm.uniform3fv('color', colors.widget1);
             else
-                pgm.uniform3f('color', 0.5, 1, 0.5);
+                pgm.uniform3fv('color', colors.widget0);
 
             vec3.set(tmp, 0.0, 0.0, 0);
 
