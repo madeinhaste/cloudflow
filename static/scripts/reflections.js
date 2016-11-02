@@ -1,4 +1,13 @@
 function init_reflections() {
+
+    var sfx = [
+        sounds.get('enf/enf-fx1'),
+        sounds.get('enf/enf-fx2'),
+        sounds.get('enf/enf-fx3'),
+        sounds.get('enf/enf-fx4'),
+        sounds.get('enf/enf-fx5'),
+    ];
+
     function fract(x) {
         var xi = Math.floor(x);
         var xf = x - xi;
@@ -429,6 +438,7 @@ function init_reflections() {
     var beats_per_minute = 180;
     var beats_per_second = beats_per_minute / 60;
     var beats_per_frame = beats_per_second * secs_per_frame;
+    var next_sfx_time = 0;
 
     function update(env) {
         var mx = env.mouse.pos_nd[0];
@@ -451,7 +461,7 @@ function init_reflections() {
         // 90bpm = ...
 
         var wobble = (1 + 0.5*noise.simplex2(0.05 * cam_time, 0.123));
-        wobble = lerp(0.000, 0.050, wobble);
+        wobble = lerp(0.000, 0.040, wobble);
         var phi = wobble * Math.sin(cam_time);
         cam_time += Math.PI * beats_per_frame;
 
@@ -475,6 +485,16 @@ function init_reflections() {
 
         camera.update(cam_pos, cam_dir);
         time -= 0.005;
+
+        if (env.time >= next_sfx_time) {
+            var delay = expovariate(1000.0);
+            next_sfx_time = env.time + delay;
+            _.sample(sfx).play();
+        }
+    }
+
+    function expovariate(mu) {
+        return -mu * Math.log(1.0 - Math.random());
     }
 
     return {

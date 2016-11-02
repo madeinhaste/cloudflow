@@ -37,6 +37,8 @@ function main() {
     var reflections = init_reflections();
     var fps = new QWQ.FPS('#debug');
 
+    canvas.time = 0;
+
     canvas.draw = function() {
         reflections.update(this, use_player_cam ? this.camera : null);
 
@@ -54,6 +56,7 @@ function main() {
     };
 
     function animate(t) {
+        canvas.time = t;
         requestAnimationFrame(animate);
         canvas._draw();
     }
