@@ -1,4 +1,16 @@
 function init_speedboard() {
+
+    var sfx = [
+        sounds.get('spd/spd-fx1'),
+        sounds.get('spd/spd-fx2'),
+        sounds.get('spd/spd-fx3'),
+        sounds.get('spd/spd-fx4'),
+    ];
+
+    function expovariate(mu) {
+        return -mu * Math.log(1.0 - Math.random());
+    }
+
     function fract(x) {
         var xi = Math.floor(x);
         var xf = x - xi;
@@ -250,6 +262,8 @@ function init_speedboard() {
     var cam_pos = vec3.fromValues(0, 1.50, 12);
     var cam_dir = vec3.fromValues(0, 0, -1);
 
+    var next_sfx_time = 0;
+
     function update(env) {
         //var camera = env.camera;
         //camera.fov = 50;
@@ -264,6 +278,12 @@ function init_speedboard() {
         time += 0.005;
         //time += 0.001;
         curve.update(env);
+
+        if (env.time >= next_sfx_time) {
+            var delay = expovariate(5000.0);
+            next_sfx_time = env.time + delay;
+            _.sample(sfx).play();
+        }
     }
 
     function draw_background() {

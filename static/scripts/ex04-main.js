@@ -56,6 +56,7 @@ function main() {
     };
 
     function animate(t) {
+        canvas.time = t;
         requestAnimationFrame(animate);
         canvas._draw();
     }
