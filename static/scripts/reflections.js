@@ -6,6 +6,7 @@ function init_reflections() {
     }
 
     var lerp = QWQ.lerp;
+    var clamp = QWQ.clamp;
 
     function hex_color(s) {
         return QWQ.color.hex_to_rgb(vec3.create(), s);
@@ -414,15 +415,62 @@ function init_reflections() {
     
     var cam_pos = vec3.fromValues(0, 0.45, 10);
     var cam_dir = vec3.fromValues(0, 0, -1);
+    var cam_up = vec3.fromValues(0, 1, 0);
     var camera = new webgl.Camera;
+
+    var cam_rot = quat.create();
+
     camera.fov = 80;
 
+    var cam_look = vec2.create();
+    var cam_time = 0;
+
+    var secs_per_frame = 1.0/60;
+    var beats_per_minute = 180;
+    var beats_per_second = beats_per_minute / 60;
+    var beats_per_frame = beats_per_second * secs_per_frame;
+
     function update(env) {
+        var mx = env.mouse.pos_nd[0];
+        var my = env.mouse.pos_nd[1];
+
+        cam_look[0] = lerp(cam_look[0], -0.5 * mx, 0.05);
+
         var theta = noise.simplex2(0.25 * time, 0.123);
         theta = 0;
-        theta += 0.5 * env.mouse.pos_nd[0];
-        cam_dir[2] = -Math.cos(theta);
-        cam_dir[0] = Math.sin(theta);
+        theta += cam_look[0];
+
+        var max_theta = 0.4;
+
+        quat.identity(cam_rot);
+        quat.rotateY(cam_rot, cam_rot, theta);
+
+        // seconds per frame = 1.0/60
+
+        // 60fps
+        // 90bpm = ...
+
+        var phi = 0.040*Math.sin(cam_time);
+        cam_time += Math.PI * beats_per_frame;
+
+        cam_look[1] = lerp(cam_look[1], -0.5 * my, 0.05);
+        phi += cam_look[1];
+        quat.rotateX(cam_rot, cam_rot, phi);
+
+        //cam_dir[2] = -Math.cos(theta);
+        //cam_dir[0] = Math.sin(theta);
+
+
+
+        //theta = 0;
+        //cam_up[0] = 0;
+        //cam_up[1] = Math.cos(theta);
+        //cam_up[2] = Math.sin(theta);
+        //vec3.normalize(cam_up, cam_up);
+
+        vec3.set(cam_dir, 0, 0, -1);
+        vec3.transformQuat(cam_dir, cam_dir, cam_rot);
+
         camera.update(cam_pos, cam_dir);
         time -= 0.005;
     }
