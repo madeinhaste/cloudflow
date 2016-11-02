@@ -498,7 +498,7 @@ function init_reflections() {
         time -= 0.005;
 
         if (env.time >= next_sfx_time) {
-            var delay = expovariate(2000.0);
+            var delay = expovariate(5000.0);
             next_sfx_time = env.time + delay;
             _.sample(sfx).play();
         }
