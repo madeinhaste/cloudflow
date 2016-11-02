@@ -9,6 +9,7 @@ uniform mat4 mvp;
 uniform vec4 arc;       // arc params
 uniform float radius;       // arc params
 uniform float time;
+uniform float z_offset;
 
 vec3 transform_quat(vec3 v, vec4 q) {
     vec3 t = 2.0 * cross(q.xyz, v);
@@ -17,12 +18,12 @@ vec3 transform_quat(vec3 v, vec4 q) {
 
 vec3 evaluate_arc(float u) {
     float z = arc.z + 2.0 * time;
-    float x = fract(2.0*u + z);
+    float x = fract(0.3*u + z);
     float y = 1.0 - pow(2.0*(x - 0.5), 2.0);
     y *= arc.w;
     y += arc.y;
-    vec3 P = vec3(arc.x, y, 10.0 * u);
-    P.z += z;
+    vec3 P = vec3(arc.x, y, 3.0 * u);
+    P.z += arc.z + z_offset;
     return P;
 }
 
@@ -76,7 +77,7 @@ void main() {
     vec3 V = normalize(view_pos - P);
 
     vec3 C = vec3(0.001);
-    for (int i = 0; i < N_LIGHTS; ++i) {
+    for (int i = 1; i < N_LIGHTS; ++i) {
         vec3 L = normalize(light_position[i] - P);
         float spot = dot(light_direction[i], -L);
 
@@ -117,4 +118,5 @@ void main() {
     }
 
     gl_FragColor = vec4(filmic(C), 1.0);
+    //gl_FragColor = vec4(1, 0, 1, 1);
 }

@@ -43,7 +43,7 @@ function init_reflections() {
         background: webgl.get_program('background')
     };
 
-    var n_arcs = 25;
+    var n_arcs = 10;
     var n_arc_verts = 256;
     var arcs = [];
     var n_circle_verts = 16;
@@ -54,9 +54,10 @@ function init_reflections() {
             params: vec4.fromValues(
                     3 * random(-1, 1),
                     0.2,
-                    random(100, 1),
+                    random(10, 1),
                     random(0.5, 3)),
-            radius: random(0.01, 0.02)
+            radius: random(0.01, 0.02),
+            z_offset: 10
         });
     });
 
@@ -200,10 +201,18 @@ function init_reflections() {
         for (var i = 0; i < n_arcs; ++i) {
             var arc = arcs[i];
             pgm.uniform4fv('arc', arc.params);
+            pgm.uniform1f('z_offset', arc.z_offset);
             pgm.uniform1f('radius', arc.radius);
             ext.drawElementsInstancedANGLE(
                 gl.TRIANGLE_STRIP, n_circle_elems, gl.UNSIGNED_SHORT, 0,
                 n_arc_verts);
+
+            // update arc
+            if (arc.z_offset > 0) {
+                arc.z_offset -= 0.02;
+                arc.params[0] += 0.02*noise.simplex2(1.2 * time, 0.123 + 0.4238*i);
+                arc.params[0] = clamp(arc.params[0], -3, 3);
+            }
         }
 
         ext.vertexAttribDivisorANGLE(attrib_index0, 0);
@@ -373,12 +382,14 @@ function init_reflections() {
     vec3.set(l.pos, -6, 3, 8);
     vec3.set(l.color, 1, 1.2, 0.3);
     vec3.scale(l.color, l.color, 20.0);
+    //vec3.scale(l.color, l.color, 0.0);
     lights.push(l);
 
     var l = new Light;
     vec3.set(l.pos, 6, 5, 7);
     vec3.set(l.color, 0.7, 1.0, 1.5);
     vec3.scale(l.color, l.color, 10.0);
+    //vec3.scale(l.color, l.color, 0.0);
 
     lights.push(l);
 
@@ -487,7 +498,7 @@ function init_reflections() {
         time -= 0.005;
 
         if (env.time >= next_sfx_time) {
-            var delay = expovariate(1000.0);
+            var delay = expovariate(2000.0);
             next_sfx_time = env.time + delay;
             _.sample(sfx).play();
         }
