@@ -158,7 +158,7 @@ void main() {
 
         float grid_blend = 0.0;
 
-        float id_edge = 0.20;
+        float id_edge = 0.50;
 
         {
             // id1
@@ -176,32 +176,25 @@ void main() {
 
         // id3
         grid_blend += id_blend[0];
-        grid_blend = min(1.0, grid_blend);
+        //grid_blend = min(1.0, grid_blend);
 
         if (true) {
             //vec2 co = 4.0 * gl_FragCoord.xy / resolution;
             float z = 1.0 / 2.5;
             vec2 co1 = z * 4.0 * vec2(v_texcoord.x, v_texcoord.y + time);
             vec2 co2 = z * 8.0 * vec2(v_texcoord.x + time, v_texcoord.y);
-            float noise = mix(
-                texture2D(t_noise, co1).r,
-                texture2D(t_noise, co2).g,
-                0.5);
+            float noise = mix(texture2D(t_noise, co1).r, texture2D(t_noise, co2).g, 0.5);
+            //float noise = texture2D(t_noise, co1).g;
 
-            grid_blend = min(1.0, grid_blend + noise) * 0.5;
-            //grid_blend = step(0.25, grid_blend);
+            grid_blend = (grid_blend + noise) * 0.5;
             grid_blend = step(0.50, grid_blend);
-
-            /*
-            grid_blend = mix(
-                grid_blend * step(0.25, noise),
-                grid_blend,
-                grid_blend * grid_blend);
-                */
         }
 
         Cd = mix(Cd_tex.rgb, Cd_grid, grid_blend);
+        //Cd = vec3(grid_blend);
+
         occ = mix(1.0, Cd_tex.a, occlusion);
+        //occ = 1.0;
     }
 
     vec3 Ambient = (textureCube(t_iem, -N).rgb) * ambient;
@@ -209,7 +202,7 @@ void main() {
     
     Cd = occ * Ambient * Cd;
 
-    vec3 Cs;
+    vec3 Cs = vec3(0.0);
     if (true) {
         float F0 = f0;
         float NdotV = max(0.0, dot(N, V));

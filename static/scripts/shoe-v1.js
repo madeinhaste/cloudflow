@@ -56,9 +56,9 @@ function cloudflow_init_shoe() {
             var next = curr;
             if (i == shoe.selected_part_index) {
                 if (curr < 0.8) 
-                    next = lerp(curr, 1.0, 0.1);
-                else
                     next = lerp(curr, 1.0, 0.05);
+                else
+                    next = lerp(curr, 1.0, 0.025);
             }
             else {
                 next = lerp(curr, 0.0, 0.01);
