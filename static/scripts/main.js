@@ -123,11 +123,16 @@ function cloudflow_main(canvas) {
         api.on_charge(b ? 1 : 0);
     }
 
+    //var $debug = $('.debug');
+
     canvas.draw = function() {
         if (!visible)
             return;
 
         if (1) {
+            //var b = [this.draw_funworld, shoe.rumble, hover_part];
+            //$debug.text(b);
+            
             if (this.draw_funworld && shoe.rumble && hover_part >= 0) {
                 set_experience_visible(hover_part + 1);
 
@@ -170,13 +175,16 @@ function cloudflow_main(canvas) {
 
     canvas.pick = function() {
         if (visible && !this.draw_funworld) {
-            shoe.pick(this);
-            set_hover_part();
+            if (!shoe.rumble) {
+                shoe.pick(this);
+                //set_hover_part();
+            }
         }
     };
 
     function on_hold() {
-        shoe.start_rumble(canvas);
+        if (hover_part >= 0)
+            shoe.start_rumble(canvas);
     }
 
     function on_release() {
@@ -211,9 +219,14 @@ function cloudflow_main(canvas) {
         if (1) {
             shoe.update(canvas, dt);
 
-            var result = canvas._pick();
-            if (result !== undefined) {
-                shoe.set_picked_id(result);
+            if (!shoe.rumble) {
+                // only pick when not rumbling (or in experience)
+                var result = canvas._pick();
+                if (result !== undefined) {
+                    //console.log('pick:', result);
+                    shoe.set_picked_id(result);
+                    set_hover_part();
+                }
             }
         }
 

@@ -250,7 +250,7 @@ function cloudflow_init_shoe() {
             env.orbit.distance = 500;
             vec2.set(shoe.rot, 0, 0);
             vec2.set(shoe.trans, 0, 0);
-            vec2.set(canvas.orbit.rotate, 0, 0);
+            vec2.set(env.orbit.rotate, 0, 0);
         }
     }
 
