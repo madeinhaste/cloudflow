@@ -39,10 +39,6 @@ void main() {
     fade *= fade;
     fade = 1.0 - fade;
 
-    //vec3 C = mix(vec3(1,0,0), vec3(0,1,0), fade);
-    //gl_FragColor = vec4(C, 1.0);
-    //return;
-
     float s = fade * texture2D(t_color, v_texcoord).r;
     if (s < 1.0/256.0) discard;
 

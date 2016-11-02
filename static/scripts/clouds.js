@@ -59,8 +59,10 @@ function init_clouds() {
 
     // FIXME textures
     var textures = {
-        cloud: cloudflow_loader.texture('zgf.cloud'),
-        //cloud: webgl.load_texture('data/tmp/cloud.jpg', {mimap: 1}),
+        // not sure why, PVR tex not working (because 2x1 ?)
+        //cloud: cloudflow_loader.texture('zgf.cloud'),
+
+        cloud: webgl.load_texture('data/tmp/cloud.jpg', {mipmap: 1}),
         earth_nor: cloudflow_loader.texture('zgf.earth_nor', {wrap: gl.REPEAT}),
         gradient: make_gradient_texture()
     };
