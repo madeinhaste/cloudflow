@@ -211,7 +211,7 @@ void main() {
 #ifdef HAVE_TEXLOD
         Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
 #else
-        Cs = toLinear(textureCube(t_rem, R, 0.9).rgb);
+        Cs = toLinear(textureCube(t_rem, R, 3.0).rgb);
 #endif
 
         Cs = vec3(rgb_to_luminance(Cs));

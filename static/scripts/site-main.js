@@ -1,5 +1,53 @@
 $(function() {
 
+    var cf_api = (function() {
+        var api = cloudflow_main($('.cf-webgl')[0]);
+        api.set_visible(false);
+
+        api.on_experience = function(b) {
+            if (b) {
+                hide_all();
+            } else {
+                show_page(4);
+            }
+        };
+
+        api.on_hover = function(part) {
+            if (part >= 0)
+                hover_part = hover_parts[part];
+
+            if (page_index == 2 && part >= 0) {
+                show_page(3);
+            }
+            else if (page_index == 3) {
+                if (part < 0)
+                    show_page(2);
+                else
+                    show_page(3);
+            }
+        };
+
+        //var charger = $('.cf-part-charge')[0];
+        api.on_charge = function(charging) {
+            $('.cf-charger-blue').toggleClass('cf-charger-charged', charging);
+            $('.cf-instruction').toggleClass('cf-instruction-charged', charging);
+        };
+
+        api.on_loading = function(frac) {
+            if (page_index == 0 && frac > 0.5)
+                show_page(1);
+
+            configure_loading(Math.round(100 * frac));
+
+            if (frac >= 1.0)
+                show_page(2);
+        };
+
+        return api;
+    }());
+    console.log('API:', cf_api);
+
+
     // http://stackoverflow.com/questions/7731778/get-query-string-parameters-with-jquery
     function get_url_param(key) {
         key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
@@ -65,57 +113,9 @@ $(function() {
             });
     }
 
-    show_page(page_index);
-
     // part names for copies
     var hover_parts = [ 'mesh', 'outsole', 'enforcement', 'speedboard' ];
     var hover_part = hover_parts[3];
-
-    var cf_api = (function() {
-        cf_api = cloudflow_main($('.cf-webgl')[0]);
-        cf_api.set_visible(false);
-
-        cf_api.on_experience = function(b) {
-            if (b) {
-                hide_all();
-            } else {
-                show_page(4);
-            }
-        };
-
-        cf_api.on_hover = function(part) {
-            if (part >= 0)
-                hover_part = hover_parts[part];
-
-            if (page_index == 2 && part >= 0) {
-                show_page(3);
-            }
-            else if (page_index == 3) {
-                if (part < 0)
-                    show_page(2);
-                else
-                    show_page(3);
-            }
-        };
-
-        //var charger = $('.cf-part-charge')[0];
-        cf_api.on_charge = function(charging) {
-            $('.cf-charger-blue').toggleClass('cf-charger-charged', charging);
-            $('.cf-instruction').toggleClass('cf-instruction-charged', charging);
-        };
-
-        cf_api.on_loading = function(frac) {
-            if (page_index == 0 && frac > 0.5)
-                show_page(1);
-
-            configure_loading(Math.round(100 * frac));
-
-            if (frac >= 1.0)
-                show_page(2);
-        };
-
-        return cf_api;
-    }());
 
     //$('.cf-experienced-close-bar a').on('click', function(e) {
     $('.cf-experienced-overlay').on('click', function(e) {
@@ -235,6 +235,8 @@ $(function() {
     }
 
     function show_page(index) {
+        console.log('SHOW_PAGE:', cf_api);
+
         //if (index == page_index) return;
 
         if (index < 0 || index >= pages.length)
@@ -261,6 +263,8 @@ $(function() {
     function show_prev_page() {
         show_page(page_index - 1);
     }
+
+    show_page(page_index);
 
     /*
     $('.cf-webgl').on('click', function() {

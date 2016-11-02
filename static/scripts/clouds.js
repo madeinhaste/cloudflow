@@ -36,10 +36,9 @@ function init_clouds() {
         var texture = webgl.new_texture({
             width: width,
             height: 2,
-            format: gl.RGB,
             filter: gl.LINEAR
         });
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, c);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
         return texture;
     }
 

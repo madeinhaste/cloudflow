@@ -527,7 +527,7 @@ var webgl = (function() {
                 var extensions = this.extensions = {};
                 _.each(options.extensions, function(name) {
                     extensions[name] = gl.getExtension(name);
-                    console.log(name, extensions[name]);
+                    //console.log(name, extensions[name]);
                 });
 
                 window.gl = gl;

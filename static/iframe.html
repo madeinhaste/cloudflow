@@ -1,101 +1,87 @@
 <!doctype html>
-<link rel="stylesheet" href="styles/site2.css">
-<link rel="stylesheet" href="styles/cloudflow.css">
-<link rel="stylesheet" href="styles/debug.css">
-
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="styles/site2.css">
+    <link rel="stylesheet" href="styles/cloudflow.css">
+    <link rel="stylesheet" href="styles/debug.css">
+</head>
 <body>
+    <div class="debug"></div>
 
-<div class="debug"></div>
+    <div class="cf-container">
+        <canvas class="cf-webgl"></canvas>
 
-<div class="cf-container">
-    <canvas class="cf-webgl"></canvas>
-
-    <div class="cf-sticker">
-        <img class="cf-sticker-img" src="">
-    </div>
-
-    <div class="cf-links">
-        <ul>
-            <li><a data-copy="ui.shop_men" href="#"></a>
-            <li><a data-copy="ui.shop_women" href="#"></a>
-        </ul>
-    </div>
-
-    <div class="cf-lower-third">
-        <div class="cf-instruction">
+        <div class="cf-sticker">
+            <img class="cf-sticker-img" src="">
         </div>
 
-        <div class="cf-charger">
-            <div class="cf-charger-blue"></div>
+        <div class="cf-links">
+            <ul>
+                <li><a data-copy="ui.shop_men" href="#"></a>
+                <li><a data-copy="ui.shop_women" href="#"></a>
+            </ul>
         </div>
 
-        <div class="cf-description">
-        </div>
-    </div>
-
-    <div class="cf-experienced-overlay">
-        <div class="cf-experienced-container">
-            <div class="cf-experienced-headline">
-                Speedboard
+        <div class="cf-lower-third">
+            <div class="cf-instruction">
             </div>
 
-            <div class="cf-experienced">
-                Speedboard with responsive flex and rocker promotes flow-motion.
-                The cloudflow speedboard is all about a responsive ride.
+            <div class="cf-charger">
+                <div class="cf-charger-blue"></div>
             </div>
 
-            <div class="cf-experienced-close-bar">
-                <a href="#">
+            <div class="cf-description">
+            </div>
+        </div>
+
+        <div class="cf-experienced-overlay">
+            <div class="cf-experienced-container">
+                <div class="cf-experienced-headline"></div>
+                <div class="cf-experienced"></div>
+                <div class="cf-experienced-close-bar">
                     <img class="cf-experienced-close-icon" src="images/cross.svg">
-                </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- build:js scripts/bundle.js -->
-<script src="scripts/polyfills/fetch.js"></script>
-<script src="scripts/polyfills/promise.js"></script>
+    <!-- build:js scripts/bundle.js -->
+    <script src="scripts/polyfills/fetch.js"></script>
+    <script src="scripts/polyfills/promise.js"></script>
 
-<script src="scripts/vendor/jquery.js"></script>
-<script src="scripts/vendor/lodash.js"></script>
-<script src="scripts/vendor/keymaster.js"></script>
-<script src="scripts/vendor/gl-matrix.js"></script>
-<script src="scripts/vendor/msgpack.js"></script>
-<script src="scripts/vendor/noise.js"></script>
-<script src="scripts/vendor/howler.min.js"></script>
-<script src="scripts/vendor/brotli-dec.js"></script>
-<script src="scripts/brotli.js"></script>
+    <script src="scripts/vendor/jquery.js"></script>
+    <script src="scripts/vendor/lodash.js"></script>
+    <script src="scripts/vendor/keymaster.js"></script>
+    <script src="scripts/vendor/gl-matrix.js"></script>
+    <script src="scripts/vendor/msgpack.js"></script>
+    <script src="scripts/vendor/noise.js"></script>
+    <script src="scripts/vendor/howler.min.js"></script>
+    <script src="scripts/vendor/brotli-dec.js"></script>
+    <script src="scripts/brotli.js"></script>
 
-<script src="scripts/qwq/utils.js"></script>
-<script src="scripts/qwq/webgl.js"></script>
-<script src="scripts/retina-detect.js"></script>
+    <script src="scripts/qwq/utils.js"></script>
+    <script src="scripts/qwq/webgl.js"></script>
+    <script src="scripts/retina-detect.js"></script>
 
-<script src="scripts/orbit.js"></script>
-<script src="scripts/canvas3d_v2.js"></script>
+    <script src="scripts/orbit.js"></script>
+    <script src="scripts/canvas3d_v2.js"></script>
 
-<script src="scripts/texture-loader2.js"></script>
-<script src="scripts/object-loader2.js"></script>
-<script src="scripts/loader.js"></script>
-<script src="scripts/sounds.js"></script>
+    <script src="scripts/texture-loader2.js"></script>
+    <script src="scripts/object-loader2.js"></script>
+    <script src="scripts/loader.js"></script>
+    <script src="scripts/sounds.js"></script>
 
-<script src="scripts/meshflow.js"></script>
-<script src="scripts/clouds.js"></script>
-<script src="scripts/reflections.js"></script>
-<script src="scripts/speedboard.js"></script>
-<script src="scripts/shoe-v3-ren.js"></script>
-<script src="scripts/shoe-v1.js"></script>
-<script src="scripts/main.js"></script>
-<script src="scripts/site-main.js"></script>
-<!-- endbuild -->
+    <script src="scripts/meshflow.js"></script>
+    <script src="scripts/clouds.js"></script>
+    <script src="scripts/reflections.js"></script>
+    <script src="scripts/speedboard.js"></script>
+    <script src="scripts/shoe-v3-ren.js"></script>
+    <script src="scripts/shoe-v1.js"></script>
+    <script src="scripts/main.js"></script>
+    <script src="scripts/site-main.js"></script>
+    <!-- endbuild -->
 
-<script>
-    (function() {
-        var script = document.createElement('script');
-        script.src = (location.protocol + '//' +
-                      location.hostname + ':35729/livereload.js');
-        script.async = true;
-        document.querySelector('head').appendChild(script);
-    }());
-</script>
-
+</body>
+</html>
