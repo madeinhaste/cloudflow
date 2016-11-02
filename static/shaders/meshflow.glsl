@@ -18,6 +18,9 @@ vec3 get_pos(vec2 co) {
 
     float y = 1.0 - co.y;
     P.y = 3.0 * y * y;
+
+    float x = abs(co.x - 0.5);
+    P.y += 7.0 * x*x;
     return P;
 }
 
