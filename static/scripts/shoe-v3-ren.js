@@ -3,7 +3,7 @@ function cloudflow_init_shoe_v3_ren() {
     var HAVE_TEXLOD = webgl.extensions.EXT_shader_texture_lod ? 1 : undefined;
 
     var obs = null;
-    cloudflow_loader.models('rzo.cf_1022_v2')
+    cloudflow_loader.models('rzo.cf_1102')
         .then(function(data) {
             obs = data;
         });
@@ -25,14 +25,14 @@ function cloudflow_init_shoe_v3_ren() {
         color: {
             blue: {
                 shoe: load_texture('col_occ_shoe'),
-                sole: load_texture('col_occ_sole'),
+                sole: load_texture('col_occ_sole2'),
                 tongue: load_texture('col_occ_tongue'),
                 lace: load_texture('col_lace'),
             },
 
             red: {
                 shoe: load_texture('col_occ_shoe_r3'),
-                sole: load_texture('col_occ_sole_r3'),
+                sole: load_texture('col_occ_sole2_r3'),
                 tongue: load_texture('col_occ_tongue_r3'),
                 lace: load_texture('col_lace_r3'),
             },
