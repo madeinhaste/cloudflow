@@ -274,6 +274,25 @@
     height: 30px;
 }
 
+@media (max-width: 800px) {
+    .cf-experienced {
+        font: 30px neutraface;
+    }
+    .cf-experienced-close-bar {
+        top: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .cf-experienced {
+        font: 20px neutraface;
+    }
+    .cf-experienced-close-bar {
+        top: 25px;
+    }
+}
+
+
 /* loading */
 
 .cf-loading {
