@@ -79,8 +79,8 @@ $(function() {
         $(window.frameElement).attr('lang') ||
         'en');
 
-    console.info('cloudflow: url query:', location.search);
-    console.info('cloudflow: language:', language);
+    //console.info('cloudflow: url query:', location.search);
+    //console.info('cloudflow: language:', language);
 
     var pages = [ page1, page2, page3, page4, page5 ];
     var page_index = -1;

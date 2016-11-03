@@ -54,7 +54,7 @@ var Canvas3D_v2 = (function() {
             sources = _.map(opts.shaders, function(s) {
                 return 'shaders/' + s + '.glsl';
             });
-            console.log(sources);
+            //console.log(sources);
         }
 
         window.gl = webgl.setup_canvas(canvas, {

@@ -35,7 +35,7 @@ var cloudflow_loader = (function() {
         time_end(id);
         loader.on_progress(++done);
         if (todo == 0) {
-            console.log('ALL DONE!', done);
+            //console.log('ALL DONE!', done);
             time_end('*ALL*');
             loader.on_complete();
         }
