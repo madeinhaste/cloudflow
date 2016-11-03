@@ -45,7 +45,6 @@ $(function() {
 
         return api;
     }());
-    console.log('API:', cf_api);
 
 
     // http://stackoverflow.com/questions/7731778/get-query-string-parameters-with-jquery
@@ -164,13 +163,12 @@ $(function() {
     }
 
     function configure_links() {
-        $('.cf-links').show();
         $('.cf-links')
+            .show()
             .find('a')
             .each(function(index, el) {
                 $(el)
                     .text(get_copy(el.dataset.copy))
-                    .attr('href', 'https://www.on-running.com/');
             });
     }
 
@@ -180,8 +178,6 @@ $(function() {
     }
 
     function configure_part_description(part) {
-        //$('.cf-part-description-container') .css({ opacity: part ? 1 : 0 });
-
         if (part) {
             $('.cf-description')
                 .text(get_copy(part+'.rollover'));

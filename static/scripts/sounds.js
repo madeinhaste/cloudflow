@@ -43,7 +43,6 @@ var sounds = (function() {
 
                 if (!ambient && startup) {
                     // start-up fade in
-                    console.log('STARTUP');
                     s.volume(0);
                     s.play();
                     s.fade(0.0, ambient_volume, 10000);

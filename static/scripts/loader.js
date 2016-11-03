@@ -19,7 +19,7 @@ var cloudflow_loader = (function() {
     function time_end(id) {
         var now = performance.now();
         var elapsed = now - start_times[id];
-        console.log('loader:', id, Math.round(elapsed)+'ms');
+        //console.log('loader:', id, Math.round(elapsed)+'ms');
     }
 
     time_start('*ALL*');
