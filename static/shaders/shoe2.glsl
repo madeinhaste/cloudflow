@@ -78,35 +78,26 @@ float edgeFactor(vec2 co){
 }
 
 float grid(vec2 coord, float gsize, float gwidth) {
-    // http://www.gamedev.net/topic/529926-terrain-contour-lines-using-pixel-shader/
-    // http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates/
     vec2 P = coord;
     vec2 f = abs(fract(P * gsize)-0.5);
     vec2 df = gsize * fwidth(P);
     float mi = max(0.0, gwidth-1.0);
-    float ma = max(1.0, gwidth); //should be uniforms
-    vec2 g = clamp((f - df*mi) / (df * (ma-mi)), max(0.0, 1.0-gwidth), 1.0); // max(0.0,1.0-gwidth) should also be sent as uniform
+    float ma = max(1.0, gwidth);
+    vec2 g = clamp((f - df*mi) / (df * (ma-mi)), max(0.0, 1.0-gwidth), 1.0);
     float result = 2.0 * ((1.0 - g.x) + (1.0 - g.y));
     return result;
-}
-
-float rgb_to_luminance(vec3 rgb) {
-    const vec3 Y = vec3(0.2126, 0.7152, 0.0722);
-    return dot(rgb, Y);
 }
 
 float saturate(float x) { return clamp(x, 0.0, 1.0); }
 vec3 saturate(vec3 x) { return clamp(x, 0.0, 1.0); }
 
-float specular_occlusion(vec3 dNormalW, vec3 dViewDirW, float dAo) {
-    float material_occludeSpecularIntensity = 1.0;
-    float dGlossiness = 0.8;
-    float specPow = exp2(dGlossiness * 11.0);
-    float specOcc = saturate(pow(dot(dNormalW, dViewDirW) + dAo, 0.01*specPow) - 1.0 + dAo);
-    specOcc = mix(1.0, specOcc, material_occludeSpecularIntensity);
-    return specOcc;
+float specular_occlusion2(float NdotV, float occ) {
+    return saturate(pow(NdotV + occ, 4.0) - 1.0 + occ);
 }
 
+vec3 decode_rgbm(vec4 rgbm) {
+    return 6.0 * rgbm.rgb * rgbm.a;
+}
 
 void main() {
     float alpha = 1.0;
@@ -149,9 +140,6 @@ void main() {
 
     {
         vec4 Cd_tex = toLinear(texture2D(t_color, v_texcoord));
-        //Cd_tex.rgb = vec3(rgb_to_luminance(Cd_tex.rgb));
-
-        //vec2 grid_co = vec2(v_texcoord.x+time, v_texcoord.y);
         vec2 grid_co = v_texcoord;
 
         vec3 Cd_grid = mix(vec3(0.3), vec3(0.50), grid(grid_co, 80.0, 0.80));
@@ -176,10 +164,8 @@ void main() {
 
         // id3
         grid_blend += id_blend[0];
-        //grid_blend = min(1.0, grid_blend);
 
         if (true) {
-            //vec2 co = 4.0 * gl_FragCoord.xy / resolution;
             float z = 1.0 / 2.5;
             vec2 co1 = z * 4.0 * vec2(v_texcoord.x, v_texcoord.y + time);
             vec2 co2 = z * 8.0 * vec2(v_texcoord.x + time, v_texcoord.y);
@@ -191,15 +177,10 @@ void main() {
         }
 
         Cd = mix(Cd_tex.rgb, Cd_grid, grid_blend);
-        //Cd = vec3(grid_blend);
-
         occ = mix(1.0, Cd_tex.a, occlusion);
-        //occ = 1.0;
     }
 
-    vec3 Ambient = (textureCube(t_iem, -N).rgb) * ambient;
-    Ambient = vec3(rgb_to_luminance(Ambient));
-    
+    vec3 Ambient = decode_rgbm(textureCube(t_iem, -N)) * ambient;
     Cd = occ * Ambient * Cd;
 
     vec3 Cs = vec3(0.0);
@@ -208,22 +189,15 @@ void main() {
         float NdotV = max(0.0, dot(N, V));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
 
-#ifdef HAVE_TEXLOD
-        Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
-#else
-        Cs = toLinear(textureCube(t_rem, R, 3.0).rgb);
-#endif
+        Cs = toLinear(decode_rgbm(textureCube(t_rem, R)));
 
-        Cs = vec3(rgb_to_luminance(Cs));
-
-        float spec_occ = specular_occlusion(N, V, occ);
-        Cs = F * spec_occ * Cs;
+        //float spec_occ = specular_occlusion(N, V, occ);
+        float spec_occ = specular_occlusion2(NdotV, occ);
+        float x = saturate(F) * spec_occ * specular;
+        Cs = x * Cs;
     }
 
-    //C =  mix(Cd, Cs, specular);
-    C = Cd + specular * Cs;
+    C = Cd + Cs;
 
-    gl_FragColor = vec4(alpha * filmic(C), alpha);
-    //gl_FragColor = vec4(vec3(id), alpha);
-
+    gl_FragColor = vec4(filmic(C), 1.0);
 }

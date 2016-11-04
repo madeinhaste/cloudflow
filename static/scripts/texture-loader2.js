@@ -162,7 +162,7 @@
                     gl.compressedTexImage2D(target, level, glInternalFormat, levelWidth, levelHeight, 0, image); 
                     //console.log('compressedTexImage2D', target, levelWidth, levelHeight, image.length);
                 } else {
-                    if (convert_half_to_float) {
+                    if (glTypeSize !== 1 && convert_half_to_float) {
                         image = convert_half_to_float_array(image);
                     }
                     gl.texImage2D(target, level, glBaseInternalFormat, levelWidth, levelHeight, 0, glBaseInternalFormat, glType, image);
@@ -194,9 +194,12 @@
                 levelHeight = pixelHeight >> level;
 
                 var image;
-                if (convert_half_to_float)
+                if (glTypeSize == 1) {
+                    image = new Uint8Array(4 * levelWidth * levelHeight);
+                }
+                else if (convert_half_to_float) {
                     image = new Float32Array(3 * levelWidth * levelHeight);
-                else {
+                } else {
                     console.assert(glType == webgl.extensions.OES_texture_half_float.HALF_FLOAT_OES);
                     image = new Uint16Array(3 * levelWidth * levelHeight);
                 }
@@ -281,11 +284,14 @@
     function load_texture_ktx2(target, path, opts, callback) {
         var ext;
         if (opts && opts.uncompressed)
-            ext = '.ktx.br';
+            ext = '.ktx';
         else if (webgl.extensions.WEBKIT_WEBGL_compressed_texture_pvrtc)
-            ext = '.pvr.ktx.br';
+            ext = '.pvr.ktx';
         else if (webgl.extensions.WEBGL_compressed_texture_s3tc)
-            ext = '.s3.ktx.br';
+            ext = '.s3.ktx';
+
+        if (!(opts && opts.nobr))
+            ext += '.br';
 
         // FIXME: etc, atsc etc
 

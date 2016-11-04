@@ -13,12 +13,13 @@ function cloudflow_init_shoe_v3_ren() {
         return cloudflow_loader.texture(base + name, opts);
     }
 
-    function load_envmap(name) {
+    function load_envmap(name, opts) {
         var base = 'rzo.envmaps.';
-        return cloudflow_loader.texture(base + name, {
+        opts = _.defaults(opts, {
             target: gl.TEXTURE_CUBE_MAP,
             uncompressed: true
         });
+        return cloudflow_loader.texture(base + name, opts);
     }
 
     var textures = {
@@ -45,8 +46,8 @@ function cloudflow_init_shoe_v3_ren() {
             lace: load_texture('nor_lace', {wrap: gl.REPEAT}),
         },
 
-        iem: load_envmap('cubes_iem'),
-        pmrem: load_envmap('cubes_pmrem'),
+        iem: load_envmap('cubes_iem2'),
+        pmrem: load_envmap('cubes_pmrem2'),
 
         turbulence: webgl.load_texture('data/tmp/turbulence.png', {wrap: gl.REPEAT, mipmap: 1})
     };

@@ -34,9 +34,8 @@ vec3 toLinear(vec3 rgb) {
     return pow(rgb, vec3(2.2));
 }
 
-float rgb_to_luminance(vec3 rgb) {
-    const vec3 Y = vec3(0.2126, 0.7152, 0.0722);
-    return dot(rgb, Y);
+vec3 decode_rgbm(vec4 rgbm) {
+    return 6.0 * rgbm.rgb * rgbm.a;
 }
 
 void main() {
@@ -44,31 +43,18 @@ void main() {
     vec3 N = normalize(v_normal);
     vec3 R = -reflect(V, N);
 
-    vec3 C = vec3(0.0);
     vec3 Cd = vec3(0.50);
-    vec3 Ambient = textureCube(t_iem, -N).rgb;
-    Ambient = vec3(rgb_to_luminance(Ambient));
-    C += Ambient * Cd;
+    vec3 Ambient = decode_rgbm(textureCube(t_iem, -N));
+    vec3 C = Ambient * Cd;
 
     if (true) {
         float F0 = 0.03;
         float NdotV = max(0.0, dot(N, V));
         float F = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
         float lod = 5.0;
-
-#ifdef HAVE_TEXLOD
-        vec3 Cs = toLinear(textureCubeLodEXT(t_rem, R, lod).rgb);
-#else
-        vec3 Cs = toLinear(textureCube(t_rem, R, 2.0).rgb);
-#endif
-
-        Cs = vec3(rgb_to_luminance(Cs));
-
-        //C += vec3(0.35) * F;
-        //C += vec3(0.001) * F;
+        vec3 Cs = toLinear(decode_rgbm(textureCube(t_rem, R)));
         C += 0.8 * F * Cs;
     }
 
     gl_FragColor = vec4(filmic(C), 1.0);
-    //gl_FragColor = vec4((N+1.0)/2.0, 1.0);
 }
