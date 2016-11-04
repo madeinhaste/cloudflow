@@ -21,19 +21,35 @@ function retina_detect(gl) {
     }
 
     var version = gl.getParameter(gl.VERSION);
-    if (version.match(/Apple A10 GPU/)) {
+
+    var debug_info = gl.getExtension('WEBGL_debug_renderer_info');
+    var renderer = '';
+    if (debug_info)
+        renderer = gl.getParameter(debug_info.UNMASKED_RENDERER_WEBGL);
+
+    function check_gpu(re) {
+        return version.match(re) || renderer.match(re);
+    }
+
+
+    if (check_gpu(/Apple A10 GPU/)) {
         // iPhone 7
         return true;
     }
 
-    if (version.match(/Apple A9X GPU/)) {
+    if (check_gpu(/Apple A9X GPU/)) {
         // iPad Pro
         return true;
     }
 
-    if (version.match(/Apple A9 GPU/)) {
+    if (check_gpu(/Apple A9 GPU/)) {
         // iPhone 6s (untested)
         return true;
+    }
+
+    if (check_gpu(/Apple A8 GPU/)) {
+        // iPhone 6
+        return false;
     }
 
     if (version.match(/(OpenGL ES 2.0 Chromium)/) &&
