@@ -1,5 +1,21 @@
 $(function() {
 
+    // http://stackoverflow.com/questions/7731778/get-query-string-parameters-with-jquery
+    function get_url_param(key) {
+        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
+        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
+
+    // determine language and setup loading sticker first
+    var language = (
+        get_url_param('lang') ||
+        $(window.frameElement).attr('lang') ||
+        'en');
+    configure_sticker('large', 'introducing');
+
+    // init webgl
+
     var cf_api = (function() {
         var api = cloudflow_main($('.cf-webgl')[0]);
         api.set_visible(false);
@@ -47,13 +63,6 @@ $(function() {
     }());
 
 
-    // http://stackoverflow.com/questions/7731778/get-query-string-parameters-with-jquery
-    function get_url_param(key) {
-        key = key.replace(/[*+?^$.\[\]{}()|\\\/]/g, "\\$&"); // escape RegEx meta chars
-        var match = location.search.match(new RegExp("[?&]"+key+"=([^&]+)(&|$)"));
-        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
-    }
-
     // iframe events
     window.onmessage = function(e) {
         var o = (e.origin || e.originalEvent.origin);
@@ -74,11 +83,6 @@ $(function() {
     hide_all();
 
     var copy_table = null;
-    var language = (
-        get_url_param('lang') ||
-        $(window.frameElement).attr('lang') ||
-        'en');
-
     //console.info('cloudflow: url query:', location.search);
     //console.info('cloudflow: language:', language);
 
@@ -149,7 +153,7 @@ $(function() {
             .removeClass('cf-sticker-transform-large cf-sticker-transform-small')
             .addClass('cf-sticker-transform-' + size);
 
-        var sticker_languages = ['en', 'fr', 'de', 'jp', 'it'];
+        var sticker_languages = ['en', 'fr', 'de', 'ja', 'it'];
         var lang = _.includes(sticker_languages, language) ? language : 'en';
 
         $('.cf-sticker-img')
