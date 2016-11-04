@@ -21,9 +21,7 @@ function init_meshflow() {
     var lerp = QWQ.lerp;
 
     var textures = {
-        //fabric: cloudflow_loader.texture('mfl.fabric', {wrap:gl.REPEAT, aniso:8})
-        //fabric: cloudflow_loader.texture('mfl.fabric', {wrap:gl.REPEAT, aniso:8})
-        fabric: cloudflow_loader.texture('mfl.nrm_lum_knit', {wrap:gl.REPEAT, aniso:8})
+        fabric: cloudflow_loader.texture('common.nrm_lum_knit2', {wrap:gl.REPEAT, aniso:8})
     };
 
     var programs = {

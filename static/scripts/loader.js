@@ -4,7 +4,7 @@ var cloudflow_loader = (function() {
     var done = 0;
 
     var loader = {
-        texture: load_texture,
+        texture: _.memoize(load_texture),
         models: load_models,
         on_progress: function(done) {},
         on_complete: function() {}
@@ -19,12 +19,17 @@ var cloudflow_loader = (function() {
     function time_end(id) {
         var now = performance.now();
         var elapsed = now - start_times[id];
-        //console.log('loader:', id, Math.round(elapsed)+'ms');
+        console.log('loader:', id, Math.round(elapsed)+'ms');
     }
 
     time_start('*ALL*');
 
+    //var seen = new Set;
+
     function inc_resource(id) {
+        //if (seen.has(id)) { console.warn('SEEN:', id); }
+        //seen.add(id);
+
         ++todo;
         time_start(id);
         //console.log('todo:', ++todo);
@@ -35,7 +40,7 @@ var cloudflow_loader = (function() {
         time_end(id);
         loader.on_progress(++done);
         if (todo == 0) {
-            //console.log('ALL DONE!', done);
+            console.log('ALL DONE!', done);
             time_end('*ALL*');
             loader.on_complete();
         }
@@ -59,10 +64,11 @@ var cloudflow_loader = (function() {
         if (opts && opts.target)
             target = opts.target;
 
-        inc_resource(id);
+        var noblock = opts && opts.noblock;
+        if (!noblock) inc_resource(id);
         var path = 'data/textures/' + slash(id);
         return webgl.load_texture_ktx2(target, path, opts, function() {
-            dec_resource(id);
+            if (!noblock) dec_resource(id);
         });
     }
 

@@ -32,10 +32,10 @@ function cloudflow_init_shoe_v3_ren() {
             },
 
             red: {
-                shoe: load_texture('col_occ_shoe_r3'),
-                sole: load_texture('col_occ_sole2_r3'),
-                tongue: load_texture('col_occ_tongue_r3'),
-                lace: load_texture('col_lace_r3'),
+                shoe: load_texture('col_occ_shoe_r3', {noblock:1}),
+                sole: load_texture('col_occ_sole2_r3', {noblock:1}),
+                tongue: load_texture('col_occ_tongue_r3', {noblock:1}),
+                lace: load_texture('col_lace_r3', {noblock:1}),
             },
         },
 

@@ -26,13 +26,7 @@ function init_speedboard() {
     var colors = {
         bg1: vec3.fromValues(1.0, 1.0, 1.0),
         bg0: vec3.fromValues(0.7, 0.9, 1.0),
-        //groove: hex_color('beff00')
-        //groove: hex_color('ffff00')
-        //groove: vec3.fromValues(2, 1, 0),
-        //groove: hex_color('B5C21A'),
         groove: hex_color('C1D82F'),
-        //bg0: vec3.fromValues(0.2, 0.3, 1.0),
-
         widget0: hex_color('C1D82F'),
         widget1: hex_color('cccccc'),
     };
@@ -41,7 +35,7 @@ function init_speedboard() {
 
     var textures = {
         widget: cloudflow_loader.texture('spd.cloud_ao'),
-        fabric: cloudflow_loader.texture('mfl.nrm_lum_knit', {wrap:gl.REPEAT, aniso:8})
+        fabric: cloudflow_loader.texture('common.nrm_lum_knit2', {wrap:gl.REPEAT, aniso:8})
     };
 
     var programs = {
