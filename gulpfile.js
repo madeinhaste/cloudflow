@@ -1,17 +1,17 @@
 var gulp = require('gulp');
 var concat = require('gulp-concat');
 var usemin = require('gulp-usemin');
-var uglify = require('gulp-uglify');
+var terser = require('gulp-terser');
 
 gulp.task('usemin', function() {
-    gulp.src('static/iframe.html')
+    return gulp.src('static/iframe.html')
         .pipe(usemin({
-            js: [ uglify() ]
+            js: [ terser() ]
         }))
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('copy-assets', function(){
+gulp.task('copy-assets', function() {
     var assets = [
         'data/**',
         'fonts/**',
@@ -22,11 +22,8 @@ gulp.task('copy-assets', function(){
         'shaders/**',
     ];
 
-    gulp.src(assets, { cwd: 'static', base: 'static' })
+    return gulp.src(assets, { cwd: 'static', base: 'static' })
         .pipe(gulp.dest('build'));
 });
 
-gulp.task('default', [
-    'copy-assets',
-    'usemin'
-]);
+gulp.task('default', gulp.series('copy-assets', 'usemin'));

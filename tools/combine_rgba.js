@@ -49,6 +49,38 @@ if (args.color && args.alpha) {
     }
 }
 
+else if (args.color) {
+    var color = load_image(args.color);
+
+    var w = color.width;
+    var h = color.height;
+    //console.assert(w == alpha.width && h == alpha.height);
+    //console.assert(color.data.length == alpha.data.length);
+
+    var out = new PNG({ width: w, height: h });
+
+    var dp = 0;
+    var dp_end = 4 * w * h;
+    var color_src = color.data;
+    //var alpha_src = alpha.data;
+    var dst = out.data;
+    while (dp < dp_end) {
+        var a = color_src[dp + 3];
+
+        //dst[dp + 0] = color_src[dp + 0];
+        //dst[dp + 1] = color_src[dp + 1];
+        //dst[dp + 2] = color_src[dp + 2];
+
+        dst[dp + 0] = a;
+        dst[dp + 1] = a;
+        dst[dp + 2] = a;
+
+
+        dst[dp + 3] = 255;
+        dp += 4;
+    }
+}
+
 else if (args.normal && args.id) {
     var normal = load_image(args.normal);
     var id = load_image(args.id);
